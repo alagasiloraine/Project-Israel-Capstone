@@ -1,19 +1,21 @@
-import { createRouter, createWebHistory } from 'vue-router'
 import LandingPage from '../views/users/LandingPage.vue'
+import Dashboard from '../views/users/Dashboard.vue'
+import CropPrediction from '../views/users/CropPrediction.vue'
 
-const routes = [
+export const userRoutes = [
   {
     path: '/',
-    name: 'landing',
+    name: 'Landing',
     component: LandingPage
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: Dashboard
+  },
+  {
+    path: '/prediction',
+    name: 'CropPrediction',
+    component: CropPrediction
   }
-  // Other routes can be added here
 ]
-
-const router = createRouter({
-  history: createWebHistory(),
-  routes
-})
-
-export default router
-

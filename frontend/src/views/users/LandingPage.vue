@@ -7,6 +7,21 @@
     <div class="absolute right-10 top-10">
       <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-01-10%20222641-c2lJTr5U07lKYFT46CXk3p1esF1bbf.png" alt="Decorative leaf" class="w-16 h-16 opacity-20 rotate-90" />
     </div>
+    
+    <div class="absolute top-6 right-6 flex items-center gap-4">
+    <router-link 
+      to="/login" 
+      class="px-6 py-2 rounded-full bg-white text-[#2B5329] border border-[#2B5329] hover:bg-[#2B5329] hover:text-white transition-colors duration-300"
+    >
+      Login
+    </router-link>
+    <router-link 
+      to="/register" 
+      class="px-6 py-2 rounded-full bg-[#2B5329] text-white hover:bg-[#1F3D1F] transition-colors duration-300"
+    >
+      Sign up
+    </router-link>
+  </div>
 
     <!-- Main content -->
     <div class="container mx-auto px-6 py-12 flex items-center min-h-screen">
