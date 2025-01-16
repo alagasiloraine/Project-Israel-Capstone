@@ -1,141 +1,113 @@
 <template>
-    <div class="flex h-screen bg-[#f8f9fa] font-poppins">
-      <!-- Sidebar -->
-      <div class="hidden md:flex md:flex-shrink-0">
-        <div :class="[
-          'flex flex-col bg-[#002B1D] transition-all duration-300 ease-in-out rounded-tr-3xl rounded-br-3xl relative',
-          isCollapsed ? 'w-20' : 'w-[280px]'
-        ]">
-          <!-- Logo Section -->
-          <div class="flex flex-col items-center px-6 py-4 border-b border-[#1a4d4f]">
-            <div :class="['flex items-center justify-center transition-all duration-300', isCollapsed ? 'w-16 h-16' : 'w-24 h-24']">
-              <img 
-                src="/images/project-israel-logo-removebg-preview.png" 
-                alt="Project Israel" 
-                class="w-full h-full object-contain"
-              />
+  <div class="flex h-screen bg-[#f8f9fa] font-poppins">
+    <Sidebar />
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Dashboard Content -->
+      <main class="flex-1 overflow-y-auto bg-gradient-to-br from-green-50 to-emerald-50 p-6 relative">
+        <!-- Background Pattern -->
+        <!-- <div class="absolute inset-0 pattern-dots pattern-green-500 pattern-bg-white pattern-size-2 pattern-opacity-5"></div> -->
+
+        <!-- Content Container -->
+        <div class="max-w-7xl mx-auto relative z-10 ml-12">
+          <!-- Top Metrics Cards -->
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+            <!-- Nitrogen Level -->
+            <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-green-100">
+              <div class="flex items-center justify-between mb-2">
+                <Leaf class="h-5 w-5 text-green-600" />
+                <span class="text-xs font-medium text-green-600">N</span>
+              </div>
+              <div class="text-2xl font-bold text-gray-800">96.01</div>
+              <div class="text-xs text-gray-500">Nitrogen Level (mg/kg)</div>
             </div>
-            <span class="text-white text-2xl font-semibold mt-4" :class="[isCollapsed ? 'hidden' : 'block']">
-              Project Israel
-            </span>
-          </div>
-  
-          <!-- Toggle Button - Outside Sidebar -->
-          <button 
-            @click="toggleSidebar"
-            class="absolute -right-12 top-12 px-4 py-3 rounded-lg bg-[#002B1D] hover:bg-[#1a4d4f] text-gray-300 hover:text-[#8FE3CF] transition-colors shadow-lg"
-          >
-            <Menu v-if="isCollapsed" class="h-5 w-5" />
-            <PanelLeftClose v-else class="h-5 w-5" />
-          </button>
-  
-          <!-- Navigation -->
-          <nav class="flex-1 px-6 py-8">
-            <div v-show="!isCollapsed" class="mb-8">
-              <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-                MENU
-              </h3>
+
+            <!-- Phosphorus Level -->
+            <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-blue-100">
+              <div class="flex items-center justify-between mb-2">
+                <TestTube class="h-5 w-5 text-blue-600" />
+                <span class="text-xs font-medium text-blue-600">P</span>
+              </div>
+              <div class="text-2xl font-bold text-gray-800">22.85</div>
+              <div class="text-xs text-gray-500">Phosphorus Level (mg/kg)</div>
             </div>
-            
-            <div class="space-y-6">
-              <router-link 
-                v-for="item in menuItems" 
-                :key="item.name"
-                :to="item.href"
-                :class="[
-                  'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150',
-                  isCollapsed ? 'justify-center' : '',
-                  item.current ? 'bg-[#1a4d4f] text-white' : 'text-gray-300 hover:bg-[#1a4d4f] hover:text-white'
-                ]"
-              >
-                <component 
-                  :is="item.icon" 
-                  :class="[
-                    'flex-shrink-0 h-5 w-5',
-                    item.current ? 'text-[#8FE3CF]' : 'text-gray-400 group-hover:text-[#8FE3CF]'
-                  ]"
-                />
-                <span 
-                  :class="['ml-4 transition-opacity duration-300', isCollapsed ? 'hidden' : 'block']"
-                >
-                  {{ item.name }}
-                </span>
-              </router-link>
+
+            <!-- Potassium Level -->
+            <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-purple-100">
+              <div class="flex items-center justify-between mb-2">
+                <TestTubes class="h-5 w-5 text-purple-600" />
+                <span class="text-xs font-medium text-purple-600">K</span>
+              </div>
+              <div class="text-2xl font-bold text-gray-800">87.04</div>
+              <div class="text-xs text-gray-500">Potassium Level (mg/kg)</div>
             </div>
-          </nav>
-  
-          <!-- Profile Section --><!-- Profile Section -->
-            <div class="border-t border-[#1a4d4f] p-6">
-            <div class="flex items-center" :class="{ 'justify-center': isCollapsed }">
-                <div :class="['flex items-center justify-center transition-all duration-300', isCollapsed ? 'w-16 h-16' : 'w-12 h-12']">
-                <img 
-                    src="/images/profile-example.jpg" 
-                    class="w-full h-full rounded-full object-cover border-2 border-[#1a4d4f]" 
-                    alt="Profile" 
-                />
-                </div>
-                <div v-if="!isCollapsed" class="ml-3">
-                <p class="text-sm font-medium text-white">John Doe</p>
-                <p class="text-xs text-gray-400">Farmer</p>
-                </div>
+
+            <!-- Soil pH Level -->
+            <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-orange-100">
+              <div class="flex items-center justify-between mb-2">
+                <Beaker class="h-5 w-5 text-orange-600" />
+                <span class="text-xs font-medium text-orange-600">pH</span>
+              </div>
+              <div class="text-2xl font-bold text-gray-800">7.22</div>
+              <div class="text-xs text-gray-500">Soil pH Level</div>
             </div>
+
+            <!-- Temperature -->
+            <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-red-100">
+              <div class="flex items-center justify-between mb-2">
+                <Thermometer class="h-5 w-5 text-red-600" />
+                <span class="text-xs font-medium text-red-600">Temp</span>
+              </div>
+              <div class="text-2xl font-bold text-gray-800">32.52</div>
+              <div class="text-xs text-gray-500">Temperature (°C)</div>
             </div>
-        </div>
-      </div>
-  
-      <!-- Main Content -->
-      <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Search Bar -->
-        <div class="bg-white border-b shadow-sm">
-          <div class="px-6 py-4 flex justify-end">
-            <div class="relative w-72">
-              <input
-                type="text"
-                placeholder="Search..."
-                class="w-full pl-10 pr-4 py-3 rounded-full border-2 border-gray-200 focus:outline-none focus:border-[#002B1D] text-base font-medium"
-              />
-              <Search class="absolute left-3 top-3.5 h-5 w-5 text-gray-600" />
+
+            <!-- Humidity -->
+            <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-sky-100">
+              <div class="flex items-center justify-between mb-2">
+                <Droplets class="h-5 w-5 text-sky-600" />
+                <span class="text-xs font-medium text-sky-600">RH</span>
+              </div>
+              <div class="text-2xl font-bold text-gray-800">76.68</div>
+              <div class="text-xs text-gray-500">Humidity (%)</div>
             </div>
           </div>
-        </div>
-  
-        <!-- Dashboard Content -->
-        <main class="flex-1 overflow-y-auto bg-[#f8f9fa] p-6">
-          <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <!-- Regular Cards with Line Charts -->
-              <template v-for="(metric, index) in metrics" :key="index">
-                <div 
-                  v-if="metric.type !== 'pie'"
-                  class="bg-white rounded-lg shadow-md p-6"
-                >
-                  <div class="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 class="text-lg font-medium text-gray-800">{{ metric.title }}</h3>
-                      <p class="text-sm text-gray-500">Overview</p>
+
+          <div class="flex gap-8">
+            <!-- Left Section - Metrics -->
+            <div class="flex-1">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Regular Cards with Line Charts -->
+                <template v-for="(metric, index) in metrics" :key="index">
+                  <div 
+                    v-if="metric.type !== 'pie'"
+                    class="bg-white rounded-xl shadow-md p-6"
+                  >
+                    <div class="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 class="text-lg font-medium text-gray-800">{{ metric.title }}</h3>
+                        <p class="text-sm text-gray-500">Overview</p>
+                      </div>
+                      <component :is="metric.icon" :class="`h-6 w-6 ${metric.iconColor}`" />
                     </div>
-                    <component :is="metric.icon" :class="`h-6 w-6 ${metric.iconColor}`" />
+                    <div class="text-3xl font-bold text-gray-800 mb-4">{{ metric.value }}</div>
+                    <div class="h-[200px]">
+                      <canvas :ref="el => { if (el) lineChartRefs[index] = el }"></canvas>
+                    </div>
                   </div>
-                  <div class="text-3xl font-bold text-gray-800 mb-4">{{ metric.value }}</div>
-                  <div class="h-[200px]">
-                    <canvas :ref="el => { if (el) lineChartRefs[index] = el }"></canvas>
-                  </div>
-                </div>
-  
+                </template>
+
                 <!-- Motor Status Card with Pie Chart -->
-                <div 
-                  v-else
-                  class="bg-white rounded-lg shadow-md p-6"
-                >
+                <div class="bg-white rounded-xl shadow-md p-6">
                   <div class="flex justify-between items-start mb-4">
                     <div>
-                      <h3 class="text-lg font-medium text-gray-800">{{ metric.title }}</h3>
+                      <h3 class="text-lg font-medium text-gray-800">Motor Status</h3>
                       <p class="text-sm text-gray-500">Overview</p>
                     </div>
                     <Power class="h-6 w-6 text-purple-500" />
                   </div>
                   <div class="h-[200px] relative">
-                    <canvas :ref="el => { if (el) pieChartRef = el }"></canvas>
+                    <canvas ref="pieChartRef"></canvas>
                   </div>
                   <div class="flex justify-center gap-4 mt-4">
                     <div class="flex items-center">
@@ -148,222 +120,197 @@
                     </div>
                   </div>
                 </div>
-              </template>
+
+                <!-- Water Level Card -->
+                <div class="bg-white rounded-3xl p-8 shadow-xl">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="text-xl font-bold mb-14">Water Level</div>
+                    <Waves class="w-6 h-6 text-[#4ade80]" />
+                  </div>
+                  <div class="text-sm text-gray-500 mb-6">As of now:</div>
+                  
+                  <!-- Water Level Pie Chart -->
+                  <div class="relative w-48 h-48 mx-auto">
+                    <div class="absolute inset-0 rounded-full bg-gray-100"></div>
+                    <div 
+                      class="absolute inset-0 rounded-full transition-all duration-1000"
+                      :style="{
+                        background: `conic-gradient(#3b82f6 ${waterLevel * 3.6}deg, #f3f4f6 ${waterLevel * 3.6}deg)`
+                      }"
+                    ></div>
+                    <div class="absolute inset-4 rounded-full bg-white flex items-center justify-center">
+                      <span class="text-3xl font-bold text-gray-800">{{ waterLevel }}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+
+
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted } from 'vue';
-  import { Chart, registerables } from 'chart.js';
-  import { 
-    Search, 
-    Menu,
-    PanelLeftClose,
-    Sprout, 
-    Thermometer, 
-    Droplet, 
-    Waves, 
-    Power, 
-    TreePine,
-    TrendingUp,
-    LayoutDashboard,
-    Brain,
-    BarChart2,
-    Cpu,
-    Database
-  } from 'lucide-vue-next';
-  
-  Chart.register(...registerables);
-  
-  const isCollapsed = ref(false);
-  const toggleSidebar = () => {
-    isCollapsed.value = !isCollapsed.value;
-  };
-  
-  const menuItems = [
-    { name: 'Overview', href: '/dashboard', icon: LayoutDashboard, current: true },
-    { name: 'Crop Prediction', href: '/prediction', icon: Brain, current: false },
-    // { name: 'Statistics', href: '/statistics', icon: BarChart2, current: false },
-    { name: 'Device Control', href: '/device', icon: Cpu, current: false },
-    { name: 'Sensor Data', href: '/sensors', icon: Database, current: false },
-    { name: 'Soil Analysis', href: '/soil', icon: Sprout, current: false },
-  ];
-  
-  const lineChartRefs = ref([]);
-  const pieChartRef = ref(null);
-  
-  const lineChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { Chart, registerables } from 'chart.js';
+import { 
+  Sprout, 
+  Thermometer, 
+  Droplet, 
+  Droplets,
+  Waves, 
+  Power,
+  Wheat,
+  MoreHorizontal,
+  Leaf,
+  TreePine,
+  TestTube,
+  TestTubes,
+  Beaker
+} from 'lucide-vue-next';
+import Sidebar from './Sidebar.vue';
+
+Chart.register(...registerables);
+
+const lineChartRefs = ref([]);
+const pieChartRef = ref(null);
+const waterLevel = ref(75);
+
+const metrics = [
+  {
+    title: 'Soil Moisture',
+    value: '45%',
+    icon: Sprout,
+    iconColor: 'text-green-600',
+    type: 'line',
+    chartData: {
+      labels: ['0', '10', '20', '30', '40', '50'],
+      datasets: [{
+        data: [30, 40, 45, 50, 45, 45],
+        borderColor: '#4CAF50',
+        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+        fill: true
+      }]
+    }
+  },
+  {
+    title: 'Temperature',
+    value: '28°C',
+    icon: Thermometer,
+    iconColor: 'text-red-500',
+    type: 'line',
+    chartData: {
+      labels: ['0', '10', '20', '30', '40', '50'],
+      datasets: [{
+        data: [25, 27, 28, 28, 29, 28],
+        borderColor: '#FF5722',
+        backgroundColor: 'rgba(255, 87, 34, 0.1)',
+        fill: true
+      }]
+    }
+  },
+  {
+    title: 'Humidity',
+    value: '65%',
+    icon: Droplet,
+    iconColor: 'text-blue-500',
+    type: 'line',
+    chartData: {
+      labels: ['0', '10', '20', '30', '40', '50'],
+      datasets: [{
+        data: [60, 62, 65, 63, 65, 65],
+        borderColor: '#2196F3',
+        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+        fill: true
+      }]
+    }
+  }
+];
+
+const lineChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false
+    }
+  },
+  scales: {
+    x: {
+      display: true,
+      grid: {
         display: false
       }
     },
-    scales: {
-      x: {
-        display: true,
-        grid: {
-          display: false
-        }
-      },
-      y: {
-        display: true,
-        beginAtZero: true,
-        max: 100,
-        ticks: {
-          stepSize: 10
-        }
-      }
-    },
-    elements: {
-      line: {
-        tension: 0.4
-      },
-      point: {
-        radius: 4
+    y: {
+      display: true,
+      beginAtZero: true,
+      max: 100,
+      ticks: {
+        stepSize: 10
       }
     }
-  };
-  
-  const pieChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false
-      }
+  },
+  elements: {
+    line: {
+      tension: 0.4
+    },
+    point: {
+      radius: 4
     }
-  };
-  
-  const metrics = [
-    {
-      title: 'Soil Moisture',
-      value: '45%',
-      icon: Sprout,
-      iconColor: 'text-green-600',
-      type: 'line',
-      chartData: {
-        labels: ['0', '10', '20', '30', '40', '50'],
-        datasets: [{
-          data: [30, 40, 45, 50, 45, 45],
-          borderColor: '#4CAF50',
-          backgroundColor: 'rgba(76, 175, 80, 0.1)',
-          fill: true
-        }]
-      }
-    },
-    {
-      title: 'Temperature',
-      value: '28°C',
-      icon: Thermometer,
-      iconColor: 'text-red-500',
-      type: 'line',
-      chartData: {
-        labels: ['0', '10', '20', '30', '40', '50'],
-        datasets: [{
-          data: [25, 27, 28, 28, 29, 28],
-          borderColor: '#FF5722',
-          backgroundColor: 'rgba(255, 87, 34, 0.1)',
-          fill: true
-        }]
-      }
-    },
-    {
-      title: 'Humidity',
-      value: '65%',
-      icon: Droplet,
-      iconColor: 'text-blue-500',
-      type: 'line',
-      chartData: {
-        labels: ['0', '10', '20', '30', '40', '50'],
-        datasets: [{
-          data: [60, 62, 65, 63, 65, 65],
-          borderColor: '#2196F3',
-          backgroundColor: 'rgba(33, 150, 243, 0.1)',
-          fill: true
-        }]
-      }
-    },
-    {
-      title: 'Water Level',
-      value: '75%',
-      icon: Waves,
-      iconColor: 'text-cyan-500',
-      type: 'line',
-      chartData: {
-        labels: ['0', '10', '20', '30', '40', '50'],
-        datasets: [{
-          data: [70, 72, 75, 73, 75, 75],
-          borderColor: '#00BCD4',
-          backgroundColor: 'rgba(0, 188, 212, 0.1)',
-          fill: true
-        }]
-      }
-    },
-    {
-      title: 'Motor Status',
-      value: 'Active',
-      icon: Power,
+  }
+};
+
+const pieChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false
+    }
+  }
+};
+
+onMounted(() => {
+  // Initialize line charts
+  metrics.forEach((metric, index) => {
+    if (metric.type === 'line' && lineChartRefs.value[index]) {
+      new Chart(lineChartRefs.value[index].getContext('2d'), {
+        type: 'line',
+        data: metric.chartData,
+        options: lineChartOptions
+      });
+    }
+  });
+
+  // Initialize pie chart for motor status
+  if (pieChartRef.value) {
+    new Chart(pieChartRef.value.getContext('2d'), {
       type: 'pie',
-      chartData: {
+      data: {
         labels: ['OFF', 'ON'],
         datasets: [{
           data: [86.5, 13.5],
           backgroundColor: ['#2196F3', '#4CAF50'],
           borderWidth: 0
         }]
-      }
-    },
-    {
-      title: 'Best Crop',
-      value: 'Rice',
-      icon: TreePine,
-      iconColor: 'text-orange-500',
-      type: 'line',
-      chartData: {
-        labels: ['0', '10', '20', '30', '40', '50'],
-        datasets: [{
-          data: [80, 85, 90, 88, 92, 90],
-          borderColor: '#FF9800',
-          backgroundColor: 'rgba(255, 152, 0, 0.1)',
-          fill: true
-        }]
-      }
-    }
-  ];
-  
-  onMounted(() => {
-    // Initialize line charts
-    metrics.forEach((metric, index) => {
-      if (metric.type === 'line' && lineChartRefs.value[index]) {
-        new Chart(lineChartRefs.value[index].getContext('2d'), {
-          type: 'line',
-          data: metric.chartData,
-          options: lineChartOptions
-        });
-      }
+      },
+      options: pieChartOptions
     });
-  
-    // Initialize pie chart for motor status
-    if (pieChartRef.value) {
-      new Chart(pieChartRef.value.getContext('2d'), {
-        type: 'pie',
-        data: metrics.find(m => m.type === 'pie').chartData,
-        options: pieChartOptions
-      });
-    }
-  });
-  </script>
-  
-  <style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-  
-  /* Add any additional custom styles here */
-  </style>
-  
-  
+  }
+});
+</script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+.pattern-dots {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: calc(10 * 1px) calc(10 * 1px);
+}
+</style>
+
