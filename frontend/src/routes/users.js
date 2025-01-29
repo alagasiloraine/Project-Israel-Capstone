@@ -8,6 +8,7 @@ import Humidity from '../views/users/Humidity.vue'
 import Temperature from '../views/users/Temperature.vue'
 import MotorControl from '../views/users/MotorControl.vue'
 import SoilAnalysis from '../views/users/SoilAnalysis.vue'
+import UserProfile from '../views/users/UserProfile.vue'
 
 export const userRoutes = [
   {
@@ -59,5 +60,10 @@ export const userRoutes = [
     path: '/soil',
     name: 'SoilAnalysis',
     component: SoilAnalysis
+  },
+  {
+    path: '/profile',
+    name: 'UserProfile',
+    component: UserProfile
   },
 ]

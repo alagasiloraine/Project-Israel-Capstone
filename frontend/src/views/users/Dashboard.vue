@@ -5,9 +5,6 @@
     <div class="flex-1 flex flex-col overflow-hidden">
       <!-- Dashboard Content -->
       <main class="flex-1 overflow-y-auto bg-gradient-to-br from-green-50 to-emerald-50 p-6 relative">
-        <!-- Background Pattern -->
-        <!-- <div class="absolute inset-0 pattern-dots pattern-green-500 pattern-bg-white pattern-size-2 pattern-opacity-5"></div> -->
-
         <!-- Content Container -->
         <div class="max-w-7xl mx-auto relative z-10 ml-12">
           <!-- Top Metrics Cards -->
@@ -145,8 +142,41 @@
                 </div>
               </div>
             </div>
+          </div>
 
-
+          <!-- Overall Performance Section -->
+          <div class="bg-white rounded-xl shadow-md p-6 mt-8">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h3 class="text-lg font-medium text-gray-800">Overall Performance</h3>
+                <p class="text-sm text-gray-500">Last 7 days overview</p>
+              </div>
+              <div class="flex flex-wrap gap-4">
+                <div class="flex items-center">
+                  <div class="w-3 h-3 rounded-full bg-purple-400 mr-2"></div>
+                  <span class="text-sm text-gray-600">Temperature</span>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-3 h-3 rounded-full bg-orange-400 mr-2"></div>
+                  <span class="text-sm text-gray-600">Humidity</span>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-3 h-3 rounded-full bg-green-400 mr-2"></div>
+                  <span class="text-sm text-gray-600">Soil Moisture</span>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-3 h-3 rounded-full bg-blue-400 mr-2"></div>
+                  <span class="text-sm text-gray-600">Water Level</span>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-3 h-3 rounded-full bg-red-400 mr-2"></div>
+                  <span class="text-sm text-gray-600">Motor Status</span>
+                </div>
+              </div>
+            </div>
+            <div class="h-[400px]">
+              <canvas ref="performanceChartRef"></canvas>
+            </div>
           </div>
         </div>
       </main>
@@ -178,6 +208,7 @@ Chart.register(...registerables);
 
 const lineChartRefs = ref([]);
 const pieChartRef = ref(null);
+const performanceChartRef = ref(null);
 const waterLevel = ref(75);
 
 const metrics = [
@@ -302,6 +333,135 @@ onMounted(() => {
       options: pieChartOptions
     });
   }
+
+  // Initialize performance chart
+  if (performanceChartRef.value) {
+    new Chart(performanceChartRef.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: ['19 July', '20 July', '21 July', '22 July', '23 July', '24 July', '25 July', '26 July'],
+        datasets: [
+          {
+            label: 'Temperature',
+            data: [45, 42, 40, 38, 32, 35, 38, 40],
+            borderColor: '#A78BFA', // Purple
+            backgroundColor: 'rgba(167, 139, 250, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#A78BFA'
+          },
+          {
+            label: 'Humidity',
+            data: [35, 38, 32, 28, 25, 30, 35, 38],
+            borderColor: '#FB923C', // Orange
+            backgroundColor: 'rgba(251, 146, 60, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#FB923C'
+          },
+          {
+            label: 'Soil Moisture',
+            data: [50, 48, 52, 55, 49, 47, 51, 53],
+            borderColor: '#4ADE80', // Green
+            backgroundColor: 'rgba(74, 222, 128, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#4ADE80'
+          },
+          {
+            label: 'Water Level',
+            data: [70, 72, 68, 75, 73, 71, 69, 74],
+            borderColor: '#60A5FA', // Blue
+            backgroundColor: 'rgba(96, 165, 250, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#60A5FA'
+          },
+          {
+            label: 'Motor Status',
+            data: [0, 1, 0, 1, 1, 0, 1, 0],
+            borderColor: '#F87171', // Red
+            backgroundColor: 'rgba(248, 113, 113, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#F87171',
+            stepped: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            backgroundColor: 'white',
+            titleColor: '#374151',
+            bodyColor: '#374151',
+            borderColor: '#E5E7EB',
+            borderWidth: 1,
+            padding: 12,
+            displayColors: true,
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.parsed.y !== null) {
+                  if (label === 'Motor Status: ') {
+                    label += context.parsed.y === 1 ? 'ON' : 'OFF';
+                  } else {
+                    label += context.parsed.y;
+                  }
+                }
+                return label;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#6B7280'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              stepSize: 20,
+              color: '#6B7280'
+            },
+            grid: {
+              color: '#E5E7EB'
+            }
+          }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        }
+      }
+    });
+  }
 });
 </script>
 
@@ -313,4 +473,3 @@ onMounted(() => {
   background-size: calc(10 * 1px) calc(10 * 1px);
 }
 </style>
-
