@@ -77,29 +77,43 @@ class CropRecommendationModel:
             if not self.load_model():
                 raise Exception("Model not trained or loaded")
         
-        # Convert input data to DataFrame
-        input_df = pd.DataFrame([input_data])
-        
-        # Ensure correct feature order
-        input_df = input_df[self.features]
-        
-        # Scale the input data
-        input_scaled = self.scaler.transform(input_df)
-        
-        # Make prediction
-        prediction = self.model.predict(input_scaled)
-        
-        # Get probability scores for all crops
-        probabilities = self.model.predict_proba(input_scaled)[0]
-        
-        # Get top 3 recommendations with their probabilities
-        top_3_idx = np.argsort(probabilities)[-3:][::-1]
-        recommendations = [
-            {
-                'crop': self.model.classes_[idx],
-                'probability': float(probabilities[idx])
-            }
-            for idx in top_3_idx
-        ]
-        
-        return recommendations
+        try:
+            # Convert input data to DataFrame with numeric values
+            if isinstance(input_data, dict):
+                # Convert all values to float
+                numeric_input = {k: float(v) for k, v in input_data.items()}
+                input_df = pd.DataFrame([numeric_input])
+            else:
+                input_df = pd.DataFrame(input_data)
+            
+            # Ensure all required features are present
+            missing_features = set(self.features) - set(input_df.columns)
+            if missing_features:
+                raise ValueError(f"Missing required features: {missing_features}")
+            
+            # Ensure correct feature order
+            input_df = input_df[self.features]
+            
+            # Scale the input data
+            input_scaled = self.scaler.transform(input_df)
+            
+            # Make prediction
+            prediction = self.model.predict(input_scaled)
+            
+            # Get probability scores for all crops
+            probabilities = self.model.predict_proba(input_scaled)[0]
+            
+            # Get top 3 recommendations with their probabilities
+            top_3_idx = np.argsort(probabilities)[-3:][::-1]
+            recommendations = [
+                {
+                    'crop': self.model.classes_[idx],
+                    'probability': float(probabilities[idx])
+                }
+                for idx in top_3_idx
+            ]
+            
+            return recommendations
+            
+        except Exception as e:
+            raise Exception(f"Error making prediction: {str(e)}")

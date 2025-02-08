@@ -18,12 +18,12 @@ def train_crop_model(data_path):
     # Prepare the data
     print("Preparing data...")
     df = pd.read_csv(data_path)
-    if 'crop' not in df.columns:
-        print("Error: The dataset must contain a 'crop' column as the target variable.")
+    if 'label' not in df.columns:
+        print("Error: The dataset must contain a 'label' column as the target variable.")
         return
     
-    X = df.drop(columns=['crop'])
-    y = df['crop']
+    X = df.drop(columns=['label'])
+    y = df['label']
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
