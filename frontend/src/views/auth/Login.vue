@@ -113,7 +113,18 @@
                   </div>
                 </div>
 
-                <div>
+                <div class="flex items-center justify-between mt-2">
+                  <div class="flex items-center">
+                    <input
+                      id="remember-me"
+                      type="checkbox"
+                      v-model="rememberMe"
+                      class="h-4 w-4 rounded border-gray-300 cursor-pointer text-[#2B5329] focus:ring-[#2B5329] focus:ring-offset-0 checked:bg-[#2B5329] checked:border-[#2B5329] hover:border-[#2B5329]"
+                    />
+                    <label for="remember-me" class="ml-2 block text-sm text-gray-700 cursor-pointer">
+                      Remember me
+                    </label>
+                  </div>
                   <router-link to="/forgotpassword" class="text-xs text-[#2B5329] hover:text-[#FFA500] transition-colors">
                     Forgot password?
                   </router-link>
@@ -184,6 +195,7 @@ const showPassword = ref(false)
 const isMobile = ref(window.innerWidth < 640)
 const transitionKey = ref(0)
 const contentStyle = ref({})
+const rememberMe = ref(false)
 
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640
@@ -191,6 +203,12 @@ const handleResize = () => {
 
 onMounted(() => {
   window.addEventListener('resize', handleResize)
+  // Check for remembered email
+  const rememberedEmail = localStorage.getItem('rememberedEmail')
+  if (rememberedEmail) {
+    email.value = rememberedEmail
+    rememberMe.value = true
+  }
 })
 
 onUnmounted(() => {
@@ -243,6 +261,12 @@ const handleRequestNow = () => {
 
 const handleLogin = () => {
   if (email.value === 'staff@example.com' && password.value === 'password123') {
+    if (rememberMe.value) {
+      // Store login info in localStorage - in a real app, store a token instead
+      localStorage.setItem('rememberedEmail', email.value)
+    } else {
+      localStorage.removeItem('rememberedEmail')
+    }
     console.log('Login successful')
     router.push('/dashboard')
   } else {
@@ -323,4 +347,15 @@ button, input, label {
     padding: 2rem;
   }
 }
+
+input[type="checkbox"]:checked {
+  background-color: #2B5329;
+  border-color: #2B5329;
+}
+
+input[type="checkbox"]:focus {
+  --tw-ring-color: #2B5329;
+  --tw-ring-offset-width: 0px;
+}
 </style>
+
