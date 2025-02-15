@@ -120,10 +120,10 @@
                 </div>
 
                 <button 
-                  type="submit" 
+                  type="submit" :disabled="isLoading"
                   class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
                 >
-                  Get Started
+                {{ isLoading ? "Signing In..." : "Sign In" }}
                 </button>
 
                 <div class="relative my-4">
@@ -176,6 +176,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Eye, EyeOff, Chrome, Facebook } from 'lucide-vue-next'
+import api from '../../api/index.js'
 
 const router = useRouter()
 const email = ref('')
@@ -184,6 +185,7 @@ const showPassword = ref(false)
 const isMobile = ref(window.innerWidth < 640)
 const transitionKey = ref(0)
 const contentStyle = ref({})
+const isLoading = ref(false);
 
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640
@@ -241,15 +243,35 @@ const handleRequestNow = () => {
   }, 500)
 }
 
-const handleLogin = () => {
-  if (email.value === 'staff@example.com' && password.value === 'password123') {
-    console.log('Login successful')
-    router.push('/dashboard')
-  } else {
-    console.log('Login failed')
-    alert('Invalid email or password')
+const handleLogin = async () => {
+  if (!email.value || !password.value) {
+    alert("Please enter both email and password.");
+    return;
   }
-}
+
+  isLoading.value = true;
+
+  try {
+    const response = await api.post("/auth/login", {
+      email: email.value,
+      password: password.value,
+    });
+
+    console.log("Login successful:", response.data);
+    alert("Login successful!");
+    
+    // Save token to localStorage or Vuex/Pinia for authentication
+    localStorage.setItem("token", response.data.token);
+    localStorage.setItem("userId", response.data.userId);
+
+    router.push("/dashboard");
+  } catch (error) {
+    console.error("Login failed:", error.response?.data || error);
+    alert(error.response?.data?.detail || "Login failed. Please try again.");
+  } finally {
+    isLoading.value = false;
+  }
+};
 </script>
 
 <style scoped>

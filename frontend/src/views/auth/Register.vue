@@ -166,10 +166,10 @@
                 </div>
 
                 <button
-                  type="submit"
+                  type="submit" :disabled="isLoading"
                   class="w-full flex justify-center py-1 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
                 >
-                  Sign Up
+                  {{ isLoading ? "Signing Up..." : "Sign Up" }}
                 </button>
               </form>
 
@@ -216,12 +216,14 @@
       </div>
     </transition>
   </div>
+
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ArrowLeft, Eye, EyeOff, Chrome, Facebook, LogIn } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import api from '../../api/index.js'
 
 const router = useRouter()
 const transitionKey = ref(0)
@@ -234,7 +236,8 @@ const form = ref({
   password: '',
   acceptTerms: false
 })
-
+const isLoading = ref(false);
+const message = ref("");
 const showPassword = ref(false)
 const passwordStrength = ref(0)
 const isMobile = ref(window.innerWidth < 640)
@@ -314,9 +317,31 @@ const checkPasswordStrength = () => {
   passwordStrength.value = strength
 }
 
-const handleSubmit = () => {
-  console.log('Form submitted:', form.value)
-}
+const handleSubmit = async () => {
+  console.log("Form submitted:", form.value);
+
+  if (!form.value.acceptTerms) {
+    message.value = "You must accept the terms and conditions.";
+    return;
+  }
+
+  isLoading.value = true;
+
+  try {
+    const response = await api.post("/auth/register", form.value);
+    message.value = response.data.message;
+    console.log("Registration success:", response.data);
+
+    // ✅ Pass the UID in the query when navigating
+    router.push(`/login/verification?uid=${response.data.userId}`);
+  } catch (error) {
+    message.value = error.response?.data?.detail || "Registration failed.";
+    console.error("Error:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 </script>
 
 <style>
