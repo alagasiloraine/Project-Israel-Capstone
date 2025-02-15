@@ -106,7 +106,7 @@
                   type="submit" 
                   class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200 mt-6"
                 >
-                  Verify Account
+                  {{ isLoading ? "Verifying..." : "Verify" }}
                 </button>
 
                 <div class="text-center mt-6">
@@ -133,16 +133,20 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft } from 'lucide-vue-next'
+import api from '../../api/index.js'
 
 const router = useRouter()
+const route = useRoute()
 const verificationCode = ref(['', '', '', '', '', ''])
 const codeInputs = ref([])
 const isMobile = ref(window.innerWidth < 640)
 const transitionKey = ref(0)
 const contentStyle = ref({})
 const resendTimer = ref(0)
+const uid = ref(null);
+const isLoading = ref(false);
 
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640
@@ -184,27 +188,82 @@ const focusNext = (index) => {
   }
 }
 
-const resendCode = () => {
-  resendTimer.value = 30
+onMounted(() => {
+  // ✅ Correctly retrieve UID from query parameters
+  uid.value = route.query.uid;
+
+  if (!uid.value) {
+    console.error("❌ UID is missing from the route");
+  } else {
+    console.log("✅ UID from route:", uid.value);
+  }
+});
+
+// ✅ Handle Verification Request
+const handleVerification = async () => {
+  const code = verificationCode.value.join("");
+  if (code.length !== 6) {
+    alert("Please enter a complete verification code.");
+    return;
+  }
+  isLoading.value = true;
+  try {
+    const response = await api.post("/auth/verify-email", {
+      uid: uid.value, // ✅ Use the correct UID reference
+      code: code,
+    });
+
+    if (response.data.message === "Email successfully verified") {
+      alert("Your email has been verified!");
+      router.push("/login"); // Redirect to dashboard
+    }
+  } catch (error) {
+    alert("Invalid verification code. Please try again.");
+    console.error("Verification Error:", error.response?.data || error);
+    isLoading.value = false;
+  }
+};
+
+// ✅ Resend Code and Start Cooldown
+const resendCode = async () => {
+  if (resendTimer.value > 0) return;
+
+  if (!uid.value) {
+    console.error("❌ UID is missing. Cannot resend code.");
+    alert("An error occurred. Please try again.");
+    return;
+  }
+
+  try {
+    const response = await api.post("/auth/resend-code", { uid: uid.value });
+
+    if (response.data.message === "New verification code sent") {
+      alert("A new verification code has been sent to your email.");
+      startResendCooldown();
+    }
+  } catch (error) {
+    console.error("❌ Resend Error:", error.response?.data || error);
+    alert(error.response?.data?.detail || "Failed to resend the code. Try again later.");
+  }
+};
+
+
+// Start a 90-second cooldown for resending the code
+const startResendCooldown = () => {
+  resendTimer.value = 130;
   const interval = setInterval(() => {
     if (resendTimer.value > 0) {
-      resendTimer.value--
+      resendTimer.value--;
     } else {
-      clearInterval(interval)
+      clearInterval(interval);
     }
-  }, 1000)
-}
+  }, 1000);
+};
 
-const handleVerification = () => {
-  const code = verificationCode.value.join('')
-  if (code.length === 6) {
-    console.log('Verifying code:', code)
-    // Add your verification logic here
-    router.push('/dashboard')
-  } else {
-    alert('Please enter a complete verification code')
-  }
-}
+// Auto-focus first input on mount
+onMounted(() => {
+  codeInputs.value[0]?.focus();
+});
 
 const beforeLeave = (el) => {
   const { left } = el.getBoundingClientRect()
