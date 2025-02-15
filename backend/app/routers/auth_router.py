@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr  
-from datetime import datetime
-from app.services.firebase_service import auth, db, send_verification_email
+from datetime import datetime, timedelta
+from app.services.firebase_service import auth, db, send_verification_email, send_login_notification, firestore, forgot_password_verification_email
 import random
+import pytz
 
 router = APIRouter()
 
@@ -37,17 +38,21 @@ async def register_user(user: RegisterUserRequest):
         # Generate verification code (6-digit numeric)
         verification_code = generate_verification_code(6)
 
-        # Save user in Firestore using UID
+        # Set expiration time for the verification code (10 minutes from now)
+        expiration_time = datetime.utcnow() + timedelta(minutes=10)
+
+        # Save user in Firestore using UID, including verification code and expiration time
         user_data = {
             "firstName": user.firstName,
             "lastName": user.lastName,
             "email": user.email,
             "createdAt": datetime.utcnow().isoformat(),
             "verified": False,
-            "verificationCode": verification_code
+            "verificationCode": verification_code,
+            "verificationCodeExpiration": expiration_time.isoformat()  # Store expiration time
         }
 
-        db.collection("users").document(uid).set(user_data)  
+        db.collection("users").document(uid).set(user_data)
 
         # Send verification email
         send_verification_email(user.email, verification_code)
@@ -61,7 +66,7 @@ async def register_user(user: RegisterUserRequest):
     except Exception as e:
         print(f"❌ Unexpected Error: {str(e)}")  # Log error for debugging
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 
 class ResendCodeRequest(BaseModel):
     uid: str
@@ -84,16 +89,25 @@ async def resend_code(data: ResendCodeRequest):
     if user_info["verified"]:
         return {"message": "User is already verified"}
 
+    # Check if the code has expired (if expiration time is present)
+    expiration_time = user_info.get("verificationCodeExpiration")
+    if expiration_time:
+        expiration_time = datetime.fromisoformat(expiration_time)
+        if datetime.utcnow() > expiration_time:
+            raise HTTPException(status_code=400, detail="Verification code has expired. Request a new one.")
+
     # Generate a new code and update Firestore
     new_verification_code = generate_verification_code(6)
-    user_ref.update({"verificationCode": new_verification_code})
+    new_expiration_time = datetime.utcnow() + timedelta(minutes=10)  # 10 minutes expiration
+    user_ref.update({
+        "verificationCode": new_verification_code,
+        "verificationCodeExpiration": new_expiration_time.isoformat()  # Update expiration time
+    })
 
     # Resend the email
     send_verification_email(user_info["email"], new_verification_code)
     
-    # Your resend code logic...
     return {"message": "New verification code sent"}
-
     
 class VerifyEmailRequest(BaseModel):
     uid: str
@@ -118,8 +132,11 @@ async def verify_email(data: VerifyEmailRequest):
     if user_info["verificationCode"] != code:
         raise HTTPException(status_code=400, detail="Invalid verification code")
 
-    # Update user as verified
-    user_ref.update({"verified": True})
+    # Update user as verified and remove the verification code
+    user_ref.update({
+        "verified": True,
+        "verificationCode": firestore.DELETE_FIELD  # This removes the field
+    })
 
     return {"message": "Email successfully verified"}
 
@@ -155,11 +172,206 @@ async def login_user(data: LoginRequest):
         if "error" in res_data:
             raise HTTPException(status_code=400, detail=res_data["error"]["message"])
 
+        send_login_notification(data.email)
+
         return {
             "message": "Login successful",
             "token": res_data["idToken"],
             "userId": res_data["localId"]
         }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/google-register")
+async def google_register(request: Request):
+    try:
+        # Parse the JSON body of the request
+        body = await request.json()
+        idToken = body.get("idToken")
+
+        if not idToken:
+            raise HTTPException(status_code=422, detail="idToken is required")
+
+        # 🔹 Verify the Firebase ID Token
+        decoded_token = auth.verify_id_token(idToken)
+        uid = decoded_token.get("uid")
+        email = decoded_token.get("email")
+        name = decoded_token.get("name")
+
+        if not uid or not email:
+            raise HTTPException(status_code=400, detail="Invalid Google user data")
+
+        # 🔹 Check if user already exists
+        user_ref = firestore.client().collection("users").document(uid)
+        user_doc = user_ref.get()
+
+        if user_doc.exists:
+            return {"message": "User already registered", "userId": uid}
+
+        # 🔹 Register new user in Firestore
+        user_data = {
+            "uid": uid,
+            "name": name,
+            "email": email,
+            "createdAt": datetime.utcnow().isoformat(),
+            "verified": True  # Google users are automatically verified
+        }
+        user_ref.set(user_data)
+
+        send_login_notification(email)
+
+        return {"message": "User registered successfully", "userId": uid}
+
+    except Exception as e:
+        print(f"❌ Firebase Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Google registration failed")
+    
+
+@router.post("/google-login")
+async def google_login(request: Request):
+    try:
+        # Parse the JSON body of the request
+        body = await request.json()
+        idToken = body.get("idToken")
+
+        if not idToken:
+            raise HTTPException(status_code=422, detail="idToken is required")
+
+        # 🔹 Verify the Firebase ID Token
+        decoded_token = auth.verify_id_token(idToken)
+        uid = decoded_token.get("uid")
+        email = decoded_token.get("email")
+        name = decoded_token.get("name")
+
+        if not uid or not email:
+            raise HTTPException(status_code=400, detail="Invalid Google user data")
+
+        # 🔹 Check if user exists
+        user_ref = firestore.client().collection("users").document(uid)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists:
+            # If user doesn't exist in Firestore, register them
+            user_data = {
+                "uid": uid,
+                "name": name,
+                "email": email,
+                "createdAt": firestore.SERVER_TIMESTAMP,
+                "verified": True  # Google users are automatically verified
+            }
+            user_ref.set(user_data)
+
+        # 🔹 Send login notification email
+        send_login_notification(email)
+
+        return {"message": "Login successful", "userId": uid}
+
+    except Exception as e:
+        print(f"❌ Firebase Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Google login failed")
+    
+
+# Request model for forgot password
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    try:
+        # 🔹 Check if user exists
+        try:
+            user = auth.get_user_by_email(request.email)
+        except auth.UserNotFoundError:
+            raise HTTPException(status_code=400, detail="User not found")
+
+        # 🔹 Generate a random 6-digit verification code
+        verification_code = generate_verification_code(6)
+
+        # 🔹 Set explicit expiration time (10 minutes from now)
+        expiration_time = datetime.utcnow().replace(tzinfo=pytz.UTC) + timedelta(minutes=10)
+
+        # 🔹 Store the code in Firestore
+        db.collection("password_reset_codes").document(request.email).set({
+            "code": verification_code,
+            "expires_at": expiration_time.strftime("%Y-%m-%d %H:%M:%S.%f%z")  # Store as string to avoid Firestore timezone issues
+        })
+
+        # 🔹 Send the code via email
+        forgot_password_verification_email(request.email, verification_code)
+
+        return {"message": "Verification code sent to your email"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+class VerifyCodeRequest(BaseModel):
+    email: str
+    code: str
+# ✅ Step 2: Verify the 6-digit code
+@router.post("/verify-code")
+async def verify_code(request: VerifyCodeRequest):
+    try:
+        # Fetch the document from Firestore
+        doc_ref = db.collection("password_reset_codes").document(request.email)
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            raise HTTPException(status_code=400, detail="No verification code found. Request a new one.")
+
+        stored_data = doc.to_dict()
+        stored_code = stored_data.get("code")
+        expires_at = stored_data.get("expires_at")  # Get expiration timestamp
+
+        # Log the stored and entered codes for debugging
+        print(f"Stored code: {stored_code}")
+        print(f"Entered code: {request.code}")
+
+        # 🔹 Convert Firestore timestamp to Python datetime
+        if expires_at:
+            if isinstance(expires_at, str):  # If the value is a string, parse it as a datetime
+                expires_at_dt = datetime.fromisoformat(expires_at)
+            else:
+                expires_at_dt = expires_at.to_pydatetime()  # Convert Firestore timestamp to Python datetime
+            
+            current_time = datetime.utcnow().replace(tzinfo=pytz.UTC)  # Get current time with timezone info
+
+            # 🔹 Check if the code is expired
+            if current_time > expires_at_dt:
+                raise HTTPException(status_code=400, detail="Verification code expired. Request a new one.")
+
+        # 🔹 Validate code
+        if stored_code != request.code:
+            raise HTTPException(status_code=400, detail="Invalid verification code. Please check and try again.")
+
+        return {"message": "Verification successful"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+    new_password: str
+
+@router.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    try:
+        # Get the password reset code document
+        doc_ref = db.collection("password_reset_codes").document(request.email)
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            raise HTTPException(status_code=400, detail="No verification code found. Request a new one.")
+
+        # Update the password in Firebase Authentication
+        try:
+            user = auth.get_user_by_email(request.email)
+            auth.update_user(user.uid, password=request.new_password)
+        except auth.UserNotFoundError:
+            raise HTTPException(status_code=404, detail="User not found in Firebase Authentication.")
+
+        return {"message": "Password successfully updated."}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

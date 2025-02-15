@@ -134,7 +134,7 @@
                   type="submit" :disabled="isLoading"
                   class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
                 >
-                {{ isLoading ? "Signing In..." : "Sign In" }}
+                  {{ isLoading ? "Signing In..." : "Sign In" }}
                 </button>
 
                 <div class="relative my-4">
@@ -148,7 +148,7 @@
 
                 <div class="grid grid-cols-2 gap-3">
                   <button 
-                    type="button"
+                    type="button" @click="handleGoogleLogin"
                     class="flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-[#3a8a3a] hover:text-white hover:border-[#3a8a3a] hover:transform hover:-translate-y-1 transition-all duration-300"
                   >
                     <Chrome class="h-5 w-5 mr-2" />
@@ -188,6 +188,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Eye, EyeOff, Chrome, Facebook } from 'lucide-vue-next'
 import api from '../../api/index.js'
+import { auth, googleProvider, signInWithPopup } from "../../api/firebase.js";
 
 const router = useRouter()
 const email = ref('')
@@ -196,11 +197,8 @@ const showPassword = ref(false)
 const isMobile = ref(window.innerWidth < 640)
 const transitionKey = ref(0)
 const contentStyle = ref({})
-<<<<<<< HEAD
 const isLoading = ref(false);
-=======
 const rememberMe = ref(false)
->>>>>>> a64f96eddc8481d677c3ff16762f98dc180381d0
 
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640
@@ -245,7 +243,7 @@ const handleBackToWebsite = () => {
     left: '0px', 
     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' 
   }
-  
+
   setTimeout(() => {
     router.push('/')
   }, 500)
@@ -258,32 +256,16 @@ const handleRequestNow = () => {
     left: '0px', 
     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' 
   }
-  
+
   setTimeout(() => {
     router.push('/register')
   }, 500)
 }
 
-<<<<<<< HEAD
 const handleLogin = async () => {
   if (!email.value || !password.value) {
     alert("Please enter both email and password.");
     return;
-=======
-const handleLogin = () => {
-  if (email.value === 'staff@example.com' && password.value === 'password123') {
-    if (rememberMe.value) {
-      // Store login info in localStorage - in a real app, store a token instead
-      localStorage.setItem('rememberedEmail', email.value)
-    } else {
-      localStorage.removeItem('rememberedEmail')
-    }
-    console.log('Login successful')
-    router.push('/dashboard')
-  } else {
-    console.log('Login failed')
-    alert('Invalid email or password')
->>>>>>> a64f96eddc8481d677c3ff16762f98dc180381d0
   }
 
   isLoading.value = true;
@@ -293,14 +275,23 @@ const handleLogin = () => {
       email: email.value,
       password: password.value,
     });
-
     console.log("Login successful:", response.data);
     alert("Login successful!");
-    
-    // Save token to localStorage or Vuex/Pinia for authentication
-    localStorage.setItem("token", response.data.token);
-    localStorage.setItem("userId", response.data.userId);
 
+    // Check if 'Remember me' is selected
+    if (rememberMe.value) {
+      // Save token and user data to localStorage (persist for a long time)
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userId", response.data.userId);
+      // Optionally store email or other user info
+      localStorage.setItem("email", email.value);
+    } else {
+      // Save token and user data to sessionStorage (session expires when the browser is closed)
+      sessionStorage.setItem("token", response.data.token);
+      sessionStorage.setItem("userId", response.data.userId);
+    }
+
+    // Navigate to dashboard
     router.push("/dashboard");
   } catch (error) {
     console.error("Login failed:", error.response?.data || error);
@@ -308,7 +299,34 @@ const handleLogin = () => {
   } finally {
     isLoading.value = false;
   }
+}
+
+const handleGoogleLogin = async () => {
+  try {
+    // 🔹 Open Google Sign-In popup
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+
+    console.log("✅ Google User:", user);
+
+    // 🔹 Send the Firebase ID Token to the backend for verification
+    const idToken = await user.getIdToken();
+    const response = await api.post("/auth/google-login", {
+      idToken: idToken // Send the token in the request body
+    });
+
+    console.log("✅ Backend Response:", response.data);
+    alert("Login successful!");
+
+    // Redirect to dashboard after login
+    router.push("/dashboard");
+  } catch (error) {
+    console.error("❌ Google Login Error:", error);
+    alert("Google login failed. Try again.");
+  }
 };
+
+
 </script>
 
 <style scoped>

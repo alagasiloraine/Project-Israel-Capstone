@@ -185,7 +185,7 @@
 
                 <div class="mt-4 grid grid-cols-2 gap-3">
                   <button 
-                    type="button"
+                    type="button" @click="handleGoogleRegister"
                     class="flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-[#3a8a3a] hover:text-white hover:border-[#3a8a3a] hover:transform hover:-translate-y-1 transition-all duration-300"
                   >
                     <Chrome class="h-4 w-4 mr-1.5" />
@@ -224,6 +224,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ArrowLeft, Eye, EyeOff, Chrome, Facebook, LogIn } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import api from '../../api/index.js'
+import { auth, googleProvider, signInWithPopup } from "../../api/firebase.js";
 
 const router = useRouter()
 const transitionKey = ref(0)
@@ -341,6 +342,32 @@ const handleSubmit = async () => {
     isLoading.value = false;
   }
 };
+
+const handleGoogleRegister = async () => {
+  try {
+    // 🔹 Open Google Sign-In popup
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+
+    console.log("✅ Google User:", user);
+
+    // 🔹 Send the Firebase ID Token to the backend for verification
+    const idToken = await user.getIdToken();
+    const response = await api.post("/auth/google-register", {
+      idToken: idToken // Send the token in the request body
+    });
+
+    console.log("✅ Backend Response:", response.data);
+    alert("Registration successful!");
+
+    // Redirect to dashboard after registration
+    router.push("/dashboard");
+  } catch (error) {
+    console.error("❌ Google Registration Error:", error);
+    alert("Google registration failed. Try again.");
+  }
+};
+
 
 </script>
 
