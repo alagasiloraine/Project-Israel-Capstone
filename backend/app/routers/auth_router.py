@@ -1,16 +1,18 @@
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr  
 from datetime import datetime, timedelta
-from app.services.firebase_service import auth, db, send_verification_email, send_login_notification, firestore, forgot_password_verification_email
+from app.services.firebase_service import auth, db, send_verification_email, send_login_notification, firestore, forgot_password_verification_email, send_otp_to_phone
 import random
 import pytz
+import re
 
 router = APIRouter()
 
 class RegisterUserRequest(BaseModel):
     firstName: str
     lastName: str
-    email: EmailStr
+    email: str = None
+    phone: str = None
     password: str
     acceptTerms: bool
 
@@ -18,53 +20,105 @@ class RegisterUserRequest(BaseModel):
 def generate_verification_code(length=6):
     return "".join(str(random.randint(0, 9)) for _ in range(length))
 
-@router.post("/register")
+# @router.post("/register")
+# async def register_user(user: RegisterUserRequest):
+#     print("🚀 Incoming Request Data:", user.dict())  # Debugging
+
+#     # Check if Firestore is available
+#     if not db:
+#         raise HTTPException(status_code=500, detail="Firebase Firestore not initialized")
+
+#     try:
+#         # Ensure terms are accepted
+#         if not user.acceptTerms:
+#             raise HTTPException(status_code=400, detail="You must accept the terms and conditions.")
+
+#         # Create Firebase Auth user
+#         auth_user = auth.create_user(email=user.email, password=user.password)
+#         uid = auth_user.uid  # Get Firebase UID
+
+#         # Generate verification code (6-digit numeric)
+#         verification_code = generate_verification_code(6)
+
+#         # Set expiration time for the verification code (10 minutes from now)
+#         expiration_time = datetime.utcnow() + timedelta(minutes=10)
+
+#         # Save user in Firestore using UID, including verification code and expiration time
+#         user_data = {
+#             "firstName": user.firstName,
+#             "lastName": user.lastName,
+#             "email": user.email,
+#             "createdAt": datetime.utcnow().isoformat(),
+#             "verified": False,
+#             "verificationCode": verification_code,
+#             "verificationCodeExpiration": expiration_time.isoformat()  # Store expiration time
+#         }
+
+#         db.collection("users").document(uid).set(user_data)
+
+#         # Send verification email
+#         send_verification_email(user.email, verification_code)
+
+#         return {"message": "User registered successfully. Check your email for verification.", "userId": uid}
+
+#     except auth.EmailAlreadyExistsError:
+#         print("❌ Error: Email already exists")
+#         raise HTTPException(status_code=400, detail="Email already exists.")
+
+#     except Exception as e:
+#         print(f"❌ Unexpected Error: {str(e)}")  # Log error for debugging
+#         raise HTTPException(status_code=500, detail=str(e))
+
+    
+def is_valid_phone_number(phone_number: str) -> bool:
+    # Basic regex to check E.164 format: +<country_code><number>
+    return bool(re.match(r'^\+?[1-9]\d{1,14}$', phone_number))
+
+@router.post("/auth/register")
 async def register_user(user: RegisterUserRequest):
-    print("🚀 Incoming Request Data:", user.dict())  # Debugging
-
-    # Check if Firestore is available
-    if not db:
-        raise HTTPException(status_code=500, detail="Firebase Firestore not initialized")
-
+    """Handles user registration via email or phone number"""
     try:
-        # Ensure terms are accepted
         if not user.acceptTerms:
             raise HTTPException(status_code=400, detail="You must accept the terms and conditions.")
 
-        # Create Firebase Auth user
-        auth_user = auth.create_user(email=user.email, password=user.password)
-        uid = auth_user.uid  # Get Firebase UID
-
-        # Generate verification code (6-digit numeric)
-        verification_code = generate_verification_code(6)
-
-        # Set expiration time for the verification code (10 minutes from now)
+        verification_code = generate_verification_code()
         expiration_time = datetime.utcnow() + timedelta(minutes=10)
-
-        # Save user in Firestore using UID, including verification code and expiration time
         user_data = {
             "firstName": user.firstName,
             "lastName": user.lastName,
-            "email": user.email,
             "createdAt": datetime.utcnow().isoformat(),
             "verified": False,
             "verificationCode": verification_code,
-            "verificationCodeExpiration": expiration_time.isoformat()  # Store expiration time
+            "verificationCodeExpiration": expiration_time.isoformat()
         }
 
+        uid = None
+
+        if user.email:
+            auth_user = auth.create_user(email=user.email, password=user.password)
+            uid = auth_user.uid
+            user_data["email"] = user.email
+            send_verification_email(user.email, verification_code)
+
+        elif user.phone:
+            if not is_valid_phone_number(user.phone):
+                raise HTTPException(status_code=400, detail="Invalid phone number format. Use E.164 format.")
+            auth_user = auth.create_user(phone_number=user.phone)
+            uid = auth_user.uid
+            user_data["phone"] = user.phone
+
+            # ✅ Do NOT send OTP from the backend, let the frontend handle it
+
+        else:
+            raise HTTPException(status_code=400, detail="Either email or phone number is required.")
+
+        # Store user data in Firestore
         db.collection("users").document(uid).set(user_data)
 
-        # Send verification email
-        send_verification_email(user.email, verification_code)
-
-        return {"message": "User registered successfully. Check your email for verification.", "userId": uid}
-
-    except auth.EmailAlreadyExistsError:
-        print("❌ Error: Email already exists")
-        raise HTTPException(status_code=400, detail="Email already exists.")
+        return {"message": "User registered successfully. Complete verification on the frontend.", "userId": uid}
 
     except Exception as e:
-        print(f"❌ Unexpected Error: {str(e)}")  # Log error for debugging
+        print(f"❌ Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
