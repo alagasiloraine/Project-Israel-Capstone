@@ -1,6 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
 import os
+import requests
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -135,3 +136,19 @@ def send_login_notification(email: str):
 
     except Exception as e:
         print(f"Error sending email: {e}")
+
+def send_otp_to_phone(phone: str):
+    """Send OTP using Firebase Authentication"""
+    try:
+        # Create a temporary Firebase user with the phone number
+        user = auth.get_user_by_phone_number(phone)
+    except auth.UserNotFoundError:
+        user = auth.create_user(phone_number=phone)
+
+    # Generate a custom token (optional)
+    custom_token = auth.create_custom_token(user.uid)
+
+    # In Firebase Authentication, OTPs are sent from the frontend using signInWithPhoneNumber()
+    print(f"✅ Firebase OTP initiated for {phone}")
+    
+    return {"message": "OTP request initiated. Complete authentication on the frontend.", "customToken": custom_token}

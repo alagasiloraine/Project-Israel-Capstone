@@ -146,7 +146,7 @@
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 gap-3">
                   <button 
                     type="button" @click="handleGoogleLogin"
                     class="flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-[#3a8a3a] hover:text-white hover:border-[#3a8a3a] hover:transform hover:-translate-y-1 transition-all duration-300"
@@ -154,13 +154,13 @@
                     <Chrome class="h-5 w-5 mr-2" />
                     Google
                   </button>
-                  <button 
+                  <!-- <button 
                     type="button"
                     class="flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-[#3a8a3a] hover:text-white hover:border-[#3a8a3a] hover:transform hover:-translate-y-1 transition-all duration-300"
                   >
                     <Facebook class="h-5 w-5 mr-2" />
                     Facebook
-                  </button>
+                  </button> -->
                 </div>
 
                 <div class="text-center mt-8 mb-4">
