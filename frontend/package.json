@@ -11,6 +11,10 @@
   "dependencies": {
     "@dotlottie/player-component": "^2.7.12",
     "@lottiefiles/dotlottie-vue": "^0.5.4",
+    "aos": "^2.3.4",
+    "chart.js": "^4.4.7",
+    "leaflet": "^1.9.4",
+    "lottie-web": "^5.12.2",
     "axios": "^1.7.9",
     "chart.js": "^4.4.7",
     "firebase": "^11.3.1",
