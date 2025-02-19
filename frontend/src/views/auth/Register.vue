@@ -81,6 +81,22 @@
               <p class="text-xs text-gray-600 mb-4 text-center">Enter your personal data to create an account</p>
 
               <form @submit.prevent="handleSubmit" class="space-y-3">
+                <!-- <div class="flex space-x-4">
+                  <button
+                    type="button"
+                    @click="useEmail = true"
+                    :class="['px-4 py-2 border rounded-md', useEmail ? 'bg-[#2B5329] text-white' : 'bg-gray-200']"
+                  >
+                    Register with Email
+                  </button>
+                  <button
+                    type="button"
+                    @click="useEmail = false"
+                    :class="['px-4 py-2 border rounded-md', !useEmail ? 'bg-[#2B5329] text-white' : 'bg-gray-200']"
+                  >
+                    Register with Phone
+                  </button>
+                </div> -->
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">First name</label>
@@ -104,14 +120,27 @@
                   </div>
                 </div>
 
-                <div>
+                <!-- Email Input -->
+                <div v-if="useEmail">
                   <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input
                     id="email"
                     type="email"
                     v-model="form.email"
                     required
-                    class="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
+                    class="block w-full px-3 py-1 border rounded-md"
+                  />
+                </div>
+
+                <!-- Phone Number Input -->
+                <div v-else>
+                  <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    v-model="form.phone"
+                    required
+                    class="block w-full px-3 py-1 border rounded-md"
                   />
                 </div>
 
@@ -165,11 +194,13 @@
                   </label>
                 </div>
 
+                <div id="recaptcha-container"></div>
+
                 <button
-                  type="submit"
+                  type="submit" :disabled="isLoading"
                   class="w-full flex justify-center py-1 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
                 >
-                  Sign Up
+                  {{ isLoading ? "Signing Up..." : "Sign Up" }}
                 </button>
               </form>
 
@@ -183,21 +214,21 @@
                   </div>
                 </div>
 
-                <div class="mt-4 grid grid-cols-2 gap-3">
+                <div class="mt-4 grid grid-cols-1 gap-3">
                   <button 
-                    type="button"
+                    type="button" @click="handleGoogleRegister"
                     class="flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-[#3a8a3a] hover:text-white hover:border-[#3a8a3a] hover:transform hover:-translate-y-1 transition-all duration-300"
                   >
                     <Chrome class="h-4 w-4 mr-1.5" />
                     Google
                   </button>
-                  <button 
+                  <!-- <button 
                     type="button"
                     class="flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-[#3a8a3a] hover:text-white hover:border-[#3a8a3a] hover:transform hover:-translate-y-1 transition-all duration-300"
                   >
                     <Facebook class="h-4 w-4 mr-1.5" />
                     Facebook
-                  </button>
+                  </button> -->
                 </div>
 
                 <div class="mt-4 text-center">
@@ -222,6 +253,7 @@
       </div>
     </transition>
   </div>
+
 </template>
 
 <script setup>
@@ -229,19 +261,27 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ArrowLeft, Eye, EyeOff, Chrome, Facebook, LogIn } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import LoadingPage from '../layout/LoadingPage.vue'
+import api from '../../api/index.js'
+import { auth, googleProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from "../../api/firebase.js";
 
-const router = useRouter()
-const transitionKey = ref(0)
-const contentStyle = ref({})
+
+const router = useRouter();
+const transitionKey = ref(0);
+const contentStyle = ref({});
+const useEmail = ref(true);
+
 
 const form = ref({
-  firstName: '',
-  lastName: '',
-  email: '',
-  password: '',
-  acceptTerms: false
-})
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  password: "",
+  acceptTerms: false,
+});
 
+const isLoading = ref(false);
+const message = ref("");
 const showPassword = ref(false)
 const passwordStrength = ref(0)
 const isMobile = ref(window.innerWidth < 640)
@@ -343,6 +383,95 @@ const handleSubmit = async () => {
 const onLoadingComplete = () => {
   isLoading.value = false
 }
+  console.log("Form submitted:", form.value);
+
+  if (!form.value.acceptTerms) {
+    alert("You must accept the terms and conditions.");
+    return;
+  }
+
+  isLoading.value = true;
+
+  try {
+    if (useEmail.value) {
+      // Register with Email
+      const response = await api.post("/auth/register", form.value);
+      alert("Registration successful. Check your email for verification.");
+      router.push(`/login/verification?uid=${response.data.userId}`);
+    } else {
+      // Register with Phone
+      let phoneNumber = form.value.phone.trim();
+
+      // Log phone number for debugging
+      console.log("Phone number before validation:", phoneNumber);
+
+      // Ensure phone number starts with "+63" and is 12 digits long
+      if (/^09\d{9}$/.test(phoneNumber)) {
+        // Convert "09123456789" to "+639123456789"
+        phoneNumber = "+63" + phoneNumber.substring(1);
+      } else if (!/^\+639\d{9}$/.test(phoneNumber)) {
+        alert("Invalid phone number format. Enter a valid Philippine number (e.g., 09123456789)");
+        return;
+      }
+
+      // Log the phone number after formatting
+      console.log("Formatted phone number:", phoneNumber);
+
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+          size: "invisible",
+        });
+      }
+
+      try {
+        // Send OTP
+        const confirmation = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
+        window.confirmationResult = confirmation;
+        console.log("OTP sent successfully:", confirmation);
+        
+        alert("OTP sent to your phone. Verify your OTP to complete registration.");
+        router.push(`/otp-verification`);
+      } catch (otpError) {
+        console.error("OTP Error:", otpError);
+        alert(`OTP Error: ${otpError.message}`);
+      }
+    }
+  } catch (error) {
+    console.error("General Error:", error);
+    alert("Registration failed.");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+
+const handleGoogleRegister = async () => {
+  try {
+    // 🔹 Open Google Sign-In popup
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+
+    console.log("✅ Google User:", user);
+
+    // 🔹 Send the Firebase ID Token to the backend for verification
+    const idToken = await user.getIdToken();
+    const response = await api.post("/auth/google-register", {
+      idToken: idToken // Send the token in the request body
+    });
+
+    console.log("✅ Backend Response:", response.data);
+    alert("Registration successful!");
+
+    // Redirect to dashboard after registration
+    router.push("/dashboard");
+  } catch (error) {
+    console.error("❌ Google Registration Error:", error);
+    alert("Google registration failed. Try again.");
+  }
+};
+
+
+
 </script>
 
 <style scoped>
