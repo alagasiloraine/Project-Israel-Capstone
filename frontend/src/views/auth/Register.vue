@@ -3,43 +3,43 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 relative overflow-hidden">
-    <transition name="page-transition" mode="out-in" @before-leave="beforeLeave" @enter="enter" @after-enter="afterEnter">
-      <div :key="transitionKey" class="page-content" :style="contentStyle">
-        <!-- Falling Leaves Animation -->
-        <div class="absolute inset-0 pointer-events-none z-10 overflow-hidden">
-          <div v-for="i in (isMobile ? 12 : 20)" :key="`leaf1-${i}`" 
-               class="leaf absolute animate-fall"
-               :style="{
-                 left: `${Math.random() * 100}%`,
-                 top: `${Math.random() * -200}%`,
-                 animationDuration: `${15 + Math.random() * 15}s`,
-                 animationDelay: `${Math.random() * -30}s`,
-                 transform: `scale(${isMobile ? 0.7 : 0.95})`
-               }">
-            <img 
-              src="/public/images/leaves-plants/fall-leaf1.png"
-              alt="" 
-              class="w-20 sm:w-24 h-20 sm:h-24 opacity-50"
-            />
-          </div>
-          
-          <div v-for="i in (isMobile ? 12 : 20)" :key="`leaf2-${i}`" 
-               class="leaf absolute animate-fall"
-               :style="{
-                 left: `${Math.random() * 100}%`,
-                 top: `${Math.random() * -200}%`,
-                 animationDuration: `${15 + Math.random() * 15}s`,
-                 animationDelay: `${Math.random() * -30}s`,
-                 transform: `scale(${isMobile ? 0.7 : 0.95})`
-               }">
-            <img 
-              src="/public/images/leaves-plants/fall-leaf2.png"
-              alt="" 
-              class="w-24 sm:w-28 h-24 sm:h-28 opacity-50"
-            />
-          </div>
-        </div>
+    <!-- Falling Leaves Animation - Moved outside transition -->
+    <div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+      <div v-for="i in (isMobile ? 12 : 20)" :key="`leaf1-${i}`" 
+           class="leaf absolute animate-fall"
+           :style="{
+             left: `${Math.random() * 100}%`,
+             top: `${Math.random() * -200}%`,
+             animationDuration: `${15 + Math.random() * 15}s`,
+             animationDelay: `${Math.random() * -30}s`,
+             transform: `scale(${isMobile ? 0.7 : 0.95})`
+           }">
+        <img 
+          src="/public/images/leaves-plants/fall-leaf1.png"
+          alt="" 
+          class="w-20 sm:w-24 h-20 sm:h-24 opacity-50"
+        />
+      </div>
+      
+      <div v-for="i in (isMobile ? 12 : 20)" :key="`leaf2-${i}`" 
+           class="leaf absolute animate-fall"
+           :style="{
+             left: `${Math.random() * 100}%`,
+             top: `${Math.random() * -200}%`,
+             animationDuration: `${15 + Math.random() * 15}s`,
+             animationDelay: `${Math.random() * -30}s`,
+             transform: `scale(${isMobile ? 0.7 : 0.95})`
+           }">
+        <img 
+          src="/public/images/leaves-plants/fall-leaf2.png"
+          alt="" 
+          class="w-24 sm:w-28 h-24 sm:h-28 opacity-50"
+        />
+      </div>
+    </div>
 
+    <transition name="page-transition" mode="out-in" @before-leave="beforeLeave" @enter="enter" @after-enter="afterEnter">
+      <div :key="transitionKey" class="page-content relative z-10" :style="contentStyle">
         <div class="max-w-3xl w-[95%] sm:w-[90%] md:w-[85%] lg:w-full min-h-[500px] flex shadow-xl rounded-xl overflow-hidden relative z-20">
           <!-- Left Side - Image and Branding -->
           <div class="hidden md:flex md:w-1/2 bg-[#2B5329] text-white p-6 md:p-8 flex-col justify-between relative">
@@ -213,6 +213,12 @@
             </div>
           </div>
         </div>
+        <LoadingPage 
+          :is-visible="isLoading"
+          title="Creating your account..."
+          message="Please wait while we set up your new account"
+          @loading-complete="onLoadingComplete"
+        />
       </div>
     </transition>
   </div>
@@ -222,6 +228,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ArrowLeft, Eye, EyeOff, Chrome, Facebook, LogIn } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import LoadingPage from '../layout/LoadingPage.vue'
 
 const router = useRouter()
 const transitionKey = ref(0)
@@ -238,6 +245,7 @@ const form = ref({
 const showPassword = ref(false)
 const passwordStrength = ref(0)
 const isMobile = ref(window.innerWidth < 640)
+const isLoading = ref(false)
 
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640
@@ -314,12 +322,30 @@ const checkPasswordStrength = () => {
   passwordStrength.value = strength
 }
 
-const handleSubmit = () => {
-  console.log('Form submitted:', form.value)
+const handleSubmit = async () => {
+  isLoading.value = true
+  try {
+    // Simulate API call (replace with actual API call in production)
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    console.log('Registration successful:', form.value)
+    // The loading page will automatically close after completion
+    setTimeout(() => {
+      router.push('/dashboard')
+    }, 500) // Small delay to ensure loading animation completes
+  } catch (error) {
+    console.error('Registration error:', error)
+    alert(error.message || 'An error occurred during registration')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const onLoadingComplete = () => {
+  isLoading.value = false
 }
 </script>
 
-<style>
+<style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -350,11 +376,14 @@ h2, p, label, input, button, a, span {
 .animate-fall {
   animation: fall linear infinite;
   will-change: transform, opacity;
+  animation-play-state: running !important;
 }
 
 .leaf {
   pointer-events: none;
   z-index: 10;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* Page transition styles */
