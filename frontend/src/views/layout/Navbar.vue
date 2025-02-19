@@ -8,15 +8,21 @@
     <div class="container mx-auto">
       <div class="relative flex justify-between items-center">
         <!-- Logo -->
-        <img 
-          :class="[
-            'transition-all duration-500 ease-in-out relative z-[60]',
-            isScrolled ? 'scale-110' : ''
-          ]"
-          src="/public/images/logo/logo-wot-text.png"
-          alt="Project Israel Logo" 
-          class="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24"
-        />
+        <a 
+          href="#" 
+          @click.prevent="scrollToSection('home')" 
+          class="relative z-[60]"
+        >
+          <img 
+            :class="[
+              'transition-all duration-500 ease-in-out',
+              isScrolled ? 'scale-110' : ''
+            ]"
+            src="/public/images/logo/logo-wot-text.png"
+            alt="Project Israel Logo" 
+            class="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24"
+          />
+        </a>
         
         <!-- Mobile Menu Button -->
         <button 
@@ -27,27 +33,26 @@
           <Menu v-if="!isMenuOpen" class="h-6 w-6" />
           <X v-else class="h-6 w-6" />
         </button>
-
+  
         <!-- Mobile Menu Overlay -->
         <div 
           v-if="isMenuOpen"
           class="fixed inset-0 bg-white/95 backdrop-blur-sm z-[55] lg:hidden flex flex-col items-center justify-center"
         >
-          <!-- Mobile menu content -->
           <div class="flex flex-col items-center space-y-8">
             <a 
-              v-for="link in ['HOME', 'ABOUT', 'CROPS', 'CONTACT']" 
-              :key="link"
-              href="#" 
+              v-for="link in navLinks" 
+              :key="link.name"
+              href="#"
+              @click.prevent="scrollToSection(link.section)"
               class="nav-link group relative text-xl"
-              @click="closeMenu"
             >
-              <span :class="link === 'HOME' ? 'text-[#1B5E20]' : 'text-[#2E7D32] hover:text-[#1B5E20]'">
-                {{ link }}
+              <span :class="currentSection === link.section ? 'text-[#1B5E20]' : 'text-[#2E7D32] hover:text-[#1B5E20]'">
+                {{ link.name }}
               </span>
-              <span :class="['nav-dot', link === 'HOME' && 'active']"></span>
+              <span :class="['nav-dot', currentSection === link.section && 'active']"></span>
             </a>
-
+  
             <!-- Mobile Auth Buttons -->
             <div class="flex flex-col gap-4 mt-8">
               <button 
@@ -66,7 +71,7 @@
           </div>
         </div>
         
-        <!-- Desktop Navigation Links with edge-to-edge container -->
+        <!-- Desktop Navigation Links -->
         <div 
           :class="[
             'hidden lg:block transition-all duration-700 ease-out overflow-visible',
@@ -92,24 +97,20 @@
             
             <!-- Navigation Links -->
             <div :class="['flex items-center', isScrolled ? 'space-x-16' : 'space-x-12']">
-              <a href="#" class="nav-link group relative">
-                <span class="text-[#1B5E20] transition-colors duration-300">HOME</span>
-                <span class="nav-dot active"></span>
-              </a>
-              <a href="#" class="nav-link group relative">
-                <span class="text-[#2E7D32] hover:text-[#1B5E20] transition-colors duration-300">ABOUT</span>
-                <span class="nav-dot"></span>
-              </a>
-              <a href="#" class="nav-link group relative">
-                <span class="text-[#2E7D32] hover:text-[#1B5E20] transition-colors duration-300">CROPS</span>
-                <span class="nav-dot"></span>
-              </a>
-              <a href="#" class="nav-link group relative">
-                <span class="text-[#2E7D32] hover:text-[#1B5E20] transition-colors duration-300">CONTACT</span>
-                <span class="nav-dot"></span>
+              <a
+                v-for="link in navLinks"
+                :key="link.name"
+                href="#"
+                @click.prevent="scrollToSection(link.section)"
+                class="nav-link group relative"
+              >
+                <span :class="currentSection === link.section ? 'text-[#1B5E20]' : 'text-[#2E7D32] hover:text-[#1B5E20]'">
+                  {{ link.name }}
+                </span>
+                <span :class="['nav-dot', currentSection === link.section && 'active']"></span>
               </a>
             </div>
-
+  
             <!-- Auth Buttons clone for expanded state -->
             <div v-if="isScrolled" class="flex gap-4 items-center opacity-0 invisible">
               <button 
@@ -126,7 +127,7 @@
           </div>
         </div>
         
-        <!-- Desktop Auth Buttons - Fixed Right -->
+        <!-- Desktop Auth Buttons -->
         <div 
           :class="[
             'hidden lg:flex gap-4 items-center relative z-[60] transition-all duration-500',
@@ -149,81 +150,125 @@
       </div>
     </div>
   </nav>
-</template>
-
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { Menu, X } from 'lucide-vue-next'
-import { useRouter } from 'vue-router'
-
-const emit = defineEmits(['auth'])
-const router = useRouter()
-const isMenuOpen = ref(false)
-const isScrolled = ref(false)
-
-const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value
-}
-
-const closeMenu = () => {
-  isMenuOpen.value = false
-}
-
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 50
-}
-
-const handleResize = () => {
-  if (window.innerWidth >= 1024) {
+  </template>
+  
+  <script setup>
+  import { ref, onMounted, onUnmounted } from 'vue'
+  import { Menu, X } from 'lucide-vue-next'
+  
+  const emit = defineEmits(['auth'])
+  const isMenuOpen = ref(false)
+  const isScrolled = ref(false)
+  const currentSection = ref('home')
+  
+  const navLinks = [
+    { name: 'HOME', section: 'home' },
+    { name: 'ABOUT', section: 'about' },
+    { name: 'CROPS', section: 'crops' }
+  ]
+  
+  const scrollToSection = (sectionId) => {
+    const element = document.querySelector(`.${sectionId}-section`)
+    if (element) {
+      const navbarHeight = 80 // Adjust based on your navbar height
+      const elementPosition = element.getBoundingClientRect().top
+      const offsetPosition = elementPosition + window.pageYOffset - navbarHeight
+  
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
+  
+      // Update current section
+      currentSection.value = sectionId
+    }
+    closeMenu()
+  }
+  
+  const toggleMenu = () => {
+    isMenuOpen.value = !isMenuOpen.value
+  }
+  
+  const closeMenu = () => {
     isMenuOpen.value = false
   }
-}
-
-onMounted(() => {
-  window.addEventListener('resize', handleResize)
-  window.addEventListener('scroll', handleScroll)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
-  window.removeEventListener('scroll', handleScroll)
-})
-
-</script>
-
-<style scoped>
-/* Navigation Styles */
-.nav-link {
-  padding: 0.5rem 0;
-  font-weight: 500;
-  position: relative;
-}
-
-.nav-dot {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 6px;
-  height: 6px;
-  background-color: #2E7D32;
-  border-radius: 9999px;
-  transform: translateX(-50%) scale(0);
-  transition: transform 0.3s ease-out;
-}
-
-.nav-dot.active {
-  transform: translateX(-50%) scale(1);
-}
-
-/* Mobile Menu Styles */
-@media (max-width: 768px) {
+  
+  const handleScroll = () => {
+    isScrolled.value = window.scrollY > 50
+  
+    // Update active section based on scroll position
+    const sections = ['home', 'about', 'crops']
+    const navbarHeight = 80 // Adjust based on your navbar height
+    let closestSection = null
+    let minDistance = Infinity
+  
+    sections.forEach(section => {
+      const element = document.querySelector(`.${section}-section`)
+      if (element) {
+        const rect = element.getBoundingClientRect()
+        const distance = Math.abs(rect.top - navbarHeight)
+        
+        if (distance < minDistance) {
+          minDistance = distance
+          closestSection = section
+        }
+      }
+    })
+  
+    if (closestSection) {
+      currentSection.value = closestSection
+    }
+  }
+  
+  const handleResize = () => {
+    if (window.innerWidth >= 1024) {
+      isMenuOpen.value = false
+    }
+  }
+  
+  onMounted(() => {
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('scroll', handleScroll)
+    // Initial check for current section
+    handleScroll()
+  })
+  
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+    window.removeEventListener('scroll', handleScroll)
+  })
+  </script>
+  
+  <style scoped>
   .nav-link {
     padding: 0.5rem 0;
+    font-weight: 500;
+    position: relative;
   }
   
   .nav-dot {
+    position: absolute;
+    left: 50%;
     bottom: 0;
+    width: 6px;
+    height: 6px;
+    background-color: #2E7D32;
+    border-radius: 9999px;
+    transform: translateX(-50%) scale(0);
+    transition: transform 0.3s ease-out;
   }
-}
-</style>
-
+  
+  .nav-dot.active {
+    transform: translateX(-50%) scale(1);
+  }
+  
+  @media (max-width: 768px) {
+    .nav-link {
+      padding: 0.5rem 0;
+    }
+    
+    .nav-dot {
+      bottom: 0;
+    }
+  }
+  </style>
