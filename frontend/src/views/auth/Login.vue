@@ -180,7 +180,7 @@
         </div>
         <LoadingPage 
           :is-visible="isLoading"
-          title="Logging you in..."
+          title="Signing you in..."
           message="Please wait while we verify your credentials"
           @loading-complete="onLoadingComplete"
         />
@@ -196,6 +196,7 @@ import { ArrowLeft, Eye, EyeOff, Chrome, Facebook } from 'lucide-vue-next'
 import LoadingPage from '../layout/LoadingPage.vue'
 import api from '../../api/index.js'
 import { auth, googleProvider, signInWithPopup } from "../../api/firebase.js";
+import toastr from 'toastr'
 
 
 const router = useRouter()
@@ -205,7 +206,6 @@ const showPassword = ref(false)
 const isMobile = ref(window.innerWidth < 640)
 const transitionKey = ref(0)
 const contentStyle = ref({})
-const isLoading = ref(false);
 const rememberMe = ref(false)
 const isLoading = ref(false)
 
@@ -221,6 +221,14 @@ onMounted(() => {
     email.value = rememberedEmail
     rememberMe.value = true
   }
+  
+  localStorage.clear() //
+  sessionStorage.clear() //
+  
+  if(localStorage.clear()){
+    console.log('cleared local storage')
+  }
+
 })
 
 onUnmounted(() => {
@@ -258,6 +266,10 @@ const handleBackToWebsite = () => {
   }, 500)
 }
 
+const onLoadingComplete = () => {
+  isLoading.value = false
+}
+
 const handleRequestNow = () => {
   transitionKey.value++
   contentStyle.value = { 
@@ -272,106 +284,82 @@ const handleRequestNow = () => {
 }
 
 const handleLogin = async () => {
-
-  isLoading.value = true
-  
-  try {
-    // Simulate API call (replace with actual API call in production)
-    await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (email.value === 'staff@example.com' && password.value === 'password_123') {
-          resolve()
-        } else {
-          reject(new Error('Invalid credentials'))
-        }
-      }, 2000) // Reduced time for demonstration purposes
-    })
-    
-    if (rememberMe.value) {
-      localStorage.setItem('rememberedEmail', email.value)
+  isLoading.value = true;
 
   if (!email.value || !password.value) {
-    alert("Please enter both email and password.");
+    toastr.warning("Please enter both email and password.");
+    isLoading.value = false;
     return;
   }
-
-  isLoading.value = true;
 
   try {
     const response = await api.post("/auth/login", {
       email: email.value,
       password: password.value,
     });
-    console.log("Login successful:", response.data);
-    alert("Login successful!");
 
-    // Check if 'Remember me' is selected
-    if (rememberMe.value) {
-      // Save token and user data to localStorage (persist for a long time)
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("userId", response.data.userId);
-      // Optionally store email or other user info
-      localStorage.setItem("email", email.value);
+    toastr.success("Login successful!");
+    console.log("Login response:", response.data);
 
-    } else {
-      // Save token and user data to sessionStorage (session expires when the browser is closed)
-      sessionStorage.setItem("token", response.data.token);
-      sessionStorage.setItem("userId", response.data.userId);
-    }
+    const { token, user } = response.data;
 
-    
-    console.log('Login successful')
-    // The loading page will automatically close after completion
-    setTimeout(() => {
-      router.push('/dashboard')
-    }, 500) // Small delay to ensure loading animation completes
-  } catch (error) {
-    console.error('Login error:', error)
-    alert(error.message || 'An error occurred during login')
-    isLoading.value = false // Ensure loading is turned off on error
-  }
-}
+    // if (rememberMe.value) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+    // } else {
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user", JSON.stringify(user));
+    // }
 
-const onLoadingComplete = () => {
-  isLoading.value = false
-}
-
-
-    // Navigate to dashboard
     router.push("/dashboard");
   } catch (error) {
-    console.error("Login failed:", error.response?.data || error);
-    alert(error.response?.data?.detail || "Login failed. Please try again.");
+    console.error("Login error:", error);
+    toastr.error(error.response?.data?.detail || "An error occurred during login.");
   } finally {
     isLoading.value = false;
   }
-}
+};
 
 const handleGoogleLogin = async () => {
   try {
-    // 🔹 Open Google Sign-In popup
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
 
     console.log("✅ Google User:", user);
 
-    // 🔹 Send the Firebase ID Token to the backend for verification
     const idToken = await user.getIdToken();
     const response = await api.post("/auth/google-login", {
-      idToken: idToken // Send the token in the request body
+      idToken: idToken
     });
 
     console.log("✅ Backend Response:", response.data);
-    alert("Login successful!");
 
-    // Redirect to dashboard after login
+    const { user: userData } = response.data;
+
+    // ✅ Ensure a profile picture is set
+    if (!userData.profilePicture) {
+      userData.profilePicture = generateProfilePicture(userData.email);
+    }
+
+    // ✅ Save user info in localStorage/sessionStorage
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    // ✅ Display user info in UI
+    user.value = userData;  // If using Vue's ref()
+
+    toastr.success("Google login successful!");
     router.push("/dashboard");
   } catch (error) {
     console.error("❌ Google Login Error:", error);
-    alert("Google login failed. Try again.");
+    toastr.error(error.response?.data?.detail || "Google login failed.");
   }
 };
 
+// ✅ Helper function for default profile picture
+const generateProfilePicture = (email) => {
+  const initials = email[0].toUpperCase();
+  return `https://dummyimage.com/100x100/000/fff.png&text=${initials}`;
+};
 
 
 </script>

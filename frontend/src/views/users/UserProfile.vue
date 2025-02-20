@@ -23,7 +23,7 @@
               <div class="relative">
                 <div class="w-48 h-48 rounded-full overflow-hidden bg-gray-100">
                   <img 
-                    :src="profileImage || '/images/profile-example.jpg'" 
+                    :src="user?.profilePicture " 
                     alt="Profile"
                     class="w-full h-full object-cover"
                   />
@@ -69,6 +69,7 @@
                     v-model="profile.name"
                     :disabled="!editMode"
                     class="w-full p-2 border rounded-lg disabled:bg-gray-50"
+                    :value="user?.name || user?.firstName + ' ' + user?.lastName"
                   />
                 </div>
                 <div class="space-y-2">
@@ -113,6 +114,7 @@
                     v-model="profile.email"
                     :disabled="!editMode"
                     class="w-full p-2 border rounded-lg disabled:bg-gray-50"
+                    :value="user?.email"
                   />
                 </div>
                 <div class="space-y-2">
@@ -141,6 +143,7 @@
                     v-model="profile.joiningDate"
                     :disabled="!editMode"
                     class="w-full p-2 border rounded-lg disabled:bg-gray-50"
+                    :value="user?.createdAt"
                   />
                 </div>
                 <div class="space-y-2">
@@ -169,7 +172,7 @@
                     rows="3"
                     class="w-full p-2 border rounded-lg disabled:bg-gray-50 resize-none"
                     placeholder="Add your experience, certifications, and skills..."
-                  ></textarea>
+                  >{{user?.firstName}}</textarea>
                 </div>
                 <div class="col-span-2">
                   <label class="text-sm text-gray-600 block mb-2">Certifications</label>
@@ -503,8 +506,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import Notiflix from "notiflix";
 import { 
   Camera, 
   Pencil, 
@@ -539,8 +543,46 @@ const imageInput = ref(null)
 const profileImage = ref(null)
 const dropdownOpen = ref(null)
 
+const user = ref(null);
+
+const generateProfilePicture = (email) => {
+  if (!email) return null;
+
+  // 🔹 Extract the first letter of the email
+  const initial = email.charAt(0).toUpperCase();
+
+  // 🔹 Generate a random background color
+  const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A6", "#FFD700"];
+  const backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+  // 🔹 Create an SVG string for the avatar
+  const svg = `
+    <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" fill="${backgroundColor}" />
+      <text x="50%" y="55%" font-size="50" text-anchor="middle" fill="white" font-family="Arial" dy=".3em">
+        ${initial}
+      </text>
+    </svg>
+  `;
+
+  // 🔹 Convert SVG to Data URL
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
+};
+
+onMounted(() => {
+  const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
+  if (storedUser) {
+    user.value = JSON.parse(storedUser);
+
+    if (!user.value.profilePicture) {
+      user.value.profilePicture = generateProfilePicture(user.value.email);
+    }
+  }
+});
+
+
 const profile = reactive({
-  name: 'Jane Cooper',
+  name: "",
   position: 'System Administrator',
   status: 'active',
   department: 'crops',
@@ -649,11 +691,21 @@ const changePassword = () => {
   showPasswordModal.value = false
 }
 
-const logout = () => {
-  // Implement logout logic and redirect to landing page
-  router.push('/') // Assuming '/' is the route for the landing page
-}
 
+const logout = () => {
+  Notiflix.Confirm.show(
+    "Confirm Logout",
+    "Are you sure you want to log out?",
+    "Yes",
+    "Cancel",
+    () => {
+      localStorage.removeItem("user");
+      sessionStorage.removeItem("user");
+      router.push("/");
+      Notiflix.Notify.success("Logged out successfully!");
+    }
+  );
+};
 const currentView = ref('month')
 const currentMonth = ref('January')
 const currentYear = ref('2024')

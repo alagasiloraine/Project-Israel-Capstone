@@ -120,8 +120,7 @@
                   </div>
                 </div>
 
-                <!-- Email Input -->
-                <div v-if="useEmail">
+                <div>
                   <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input
                     id="email"
@@ -132,8 +131,20 @@
                   />
                 </div>
 
+                <!-- Email Input -->
+                <!-- <div v-if="useEmail">
+                  <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    id="email"
+                    type="email"
+                    v-model="form.email"
+                    required
+                    class="block w-full px-3 py-1 border rounded-md"
+                  />
+                </div> -->
+
                 <!-- Phone Number Input -->
-                <div v-else>
+                <!-- <div v-else>
                   <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                   <input
                     id="phone"
@@ -142,7 +153,7 @@
                     required
                     class="block w-full px-3 py-1 border rounded-md"
                   />
-                </div>
+                </div> -->
 
                 <div>
                   <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
@@ -263,6 +274,7 @@ import { useRouter } from 'vue-router'
 import LoadingPage from '../layout/LoadingPage.vue'
 import api from '../../api/index.js'
 import { auth, googleProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from "../../api/firebase.js";
+import toastr from "toastr";
 
 
 const router = useRouter();
@@ -280,7 +292,6 @@ const form = ref({
   acceptTerms: false,
 });
 
-const isLoading = ref(false);
 const message = ref("");
 const showPassword = ref(false)
 const passwordStrength = ref(0)
@@ -362,28 +373,25 @@ const checkPasswordStrength = () => {
   passwordStrength.value = strength
 }
 
-const handleSubmit = async () => {
-  isLoading.value = true
-  try {
-    // Simulate API call (replace with actual API call in production)
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    console.log('Registration successful:', form.value)
-    // The loading page will automatically close after completion
-    setTimeout(() => {
-      router.push('/dashboard')
-    }, 500) // Small delay to ensure loading animation completes
-  } catch (error) {
-    console.error('Registration error:', error)
-    alert(error.message || 'An error occurred during registration')
-  } finally {
-    isLoading.value = false
-  }
-}
+  // toastr.options = {
+  //   closeButton: true,
+  //   progressBar: true,
+  //   positionClass: "toast-top-right",
+  //   timeOut: "3000",
+  // };
 
-const onLoadingComplete = () => {
-  isLoading.value = false
-}
+const handleSubmit = async () => {
   console.log("Form submitted:", form.value);
+
+  if (!form.value.acceptTerms) {
+    toastr.warning("You must accept the terms and conditions.");
+    return;
+  }
+
+  if (!form.value.firstName.trim() || !form.value.lastName.trim() || !form.value.email.trim() || !form.value.password.trim()) {
+    toastr.warning("All fields are required.");
+    return;
+  }
 
   if (!form.value.acceptTerms) {
     alert("You must accept the terms and conditions.");
@@ -393,58 +401,86 @@ const onLoadingComplete = () => {
   isLoading.value = true;
 
   try {
-    if (useEmail.value) {
-      // Register with Email
-      const response = await api.post("/auth/register", form.value);
-      alert("Registration successful. Check your email for verification.");
-      router.push(`/login/verification?uid=${response.data.userId}`);
-    } else {
-      // Register with Phone
-      let phoneNumber = form.value.phone.trim();
+    // Register user with full details
+    const response = await api.post("/auth/register", form.value);
 
-      // Log phone number for debugging
-      console.log("Phone number before validation:", phoneNumber);
-
-      // Ensure phone number starts with "+63" and is 12 digits long
-      if (/^09\d{9}$/.test(phoneNumber)) {
-        // Convert "09123456789" to "+639123456789"
-        phoneNumber = "+63" + phoneNumber.substring(1);
-      } else if (!/^\+639\d{9}$/.test(phoneNumber)) {
-        alert("Invalid phone number format. Enter a valid Philippine number (e.g., 09123456789)");
-        return;
-      }
-
-      // Log the phone number after formatting
-      console.log("Formatted phone number:", phoneNumber);
-
-      if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-          size: "invisible",
-        });
-      }
-
-      try {
-        // Send OTP
-        const confirmation = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
-        window.confirmationResult = confirmation;
-        console.log("OTP sent successfully:", confirmation);
-        
-        alert("OTP sent to your phone. Verify your OTP to complete registration.");
-        router.push(`/otp-verification`);
-      } catch (otpError) {
-        console.error("OTP Error:", otpError);
-        alert(`OTP Error: ${otpError.message}`);
-      }
-    }
+    toastr.success(`Registration successful! Verify your account.`);
+    router.push(`/login/verification?uid=${response.data.userId}`);
   } catch (error) {
     console.error("General Error:", error);
-    alert("Registration failed.");
+    toastr.error(error.response?.data?.detail || "Registration failed. Please try again.");
   } finally {
     isLoading.value = false;
   }
 };
 
+// const handleSubmit = async () => {
+//   console.log("Form submitted:", form.value);
 
+//   if (!form.value.acceptTerms) {
+//     alert("You must accept the terms and conditions.");
+//     return;
+//   }
+
+//   isLoading.value = true;
+
+//   try {
+//     if (useEmail.value) {
+//       // Register with Email
+//       const response = await api.post("/auth/register", form.value);
+//       alert("Registration successful. Check your email for verification.");
+//       router.push(`/login/verification?uid=${response.data.userId}`);
+//     } 
+//     // else {
+//     //   // Register with Phone
+//     //   let phoneNumber = form.value.phone.trim();
+
+//     //   // Log phone number for debugging
+//     //   console.log("Phone number before validation:", phoneNumber);
+
+//     //   // Ensure phone number starts with "+63" and is 12 digits long
+//     //   if (/^09\d{9}$/.test(phoneNumber)) {
+//     //     // Convert "09123456789" to "+639123456789"
+//     //     phoneNumber = "+63" + phoneNumber.substring(1);
+//     //   } else if (!/^\+639\d{9}$/.test(phoneNumber)) {
+//     //     alert("Invalid phone number format. Enter a valid Philippine number (e.g., 09123456789)");
+//     //     return;
+//     //   }
+
+//     //   // Log the phone number after formatting
+//     //   console.log("Formatted phone number:", phoneNumber);
+
+//     //   if (!window.recaptchaVerifier) {
+//     //     window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+//     //       size: "invisible",
+//     //     });
+//     //   }
+
+//     //   try {
+//     //     // Send OTP
+//     //     const confirmation = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
+//     //     window.confirmationResult = confirmation;
+//     //     console.log("OTP sent successfully:", confirmation);
+        
+//     //     alert("OTP sent to your phone. Verify your OTP to complete registration.");
+//     //     router.push(`/otp-verification`);
+//     //   } catch (otpError) {
+//     //     console.error("OTP Error:", otpError);
+//     //     alert(`OTP Error: ${otpError.message}`);
+//     //   }
+//     // }
+//   } catch (error) {
+//     console.error("General Error:", error);
+//     alert("Registration failed.");
+//   } finally {
+//     isLoading.value = false;
+//   }
+// }
+
+const onLoadingComplete = () => {
+  isLoading.value = false
+}
+  
 const handleGoogleRegister = async () => {
   try {
     // 🔹 Open Google Sign-In popup
@@ -453,23 +489,38 @@ const handleGoogleRegister = async () => {
 
     console.log("✅ Google User:", user);
 
-    // 🔹 Send the Firebase ID Token to the backend for verification
+    // 🔹 Send the Firebase ID Token to the backend
     const idToken = await user.getIdToken();
-    const response = await api.post("/auth/google-register", {
-      idToken: idToken // Send the token in the request body
-    });
+    const response = await api.post("/auth/google-register", { idToken });
 
     console.log("✅ Backend Response:", response.data);
-    alert("Registration successful!");
 
-    // Redirect to dashboard after registration
+    const { user: userData } = response.data;
+
+    // ✅ Ensure profile picture exists
+    if (!userData.profilePicture) {
+      userData.profilePicture = generateProfilePicture(userData.email);
+    }
+
+    // ✅ Save user data to localStorage
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    // ✅ Display user info in UI
+    user.value = userData;  // If using Vue's ref()
+
+    toastr.success("Registration successful!");
     router.push("/dashboard");
   } catch (error) {
     console.error("❌ Google Registration Error:", error);
-    alert("Google registration failed. Try again.");
+    toastr.error(error.response?.data?.detail || "Google registration failed.");
   }
 };
 
+// ✅ Helper function for default profile picture
+const generateProfilePicture = (email) => {
+  const initials = email[0].toUpperCase();
+  return `https://dummyimage.com/100x100/000/fff.png&text=${initials}`;
+};
 
 
 </script>

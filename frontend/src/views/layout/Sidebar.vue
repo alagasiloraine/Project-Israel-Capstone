@@ -136,14 +136,14 @@
         <div class="flex items-center gap-3">
           <div class="flex-shrink-0">
             <img 
-              src="/images/profile-example.jpg" 
+              :src="user?.profilePicture"
               class="w-10 h-10 rounded-full object-cover border-2 border-[#1a4d4f]" 
               alt="Profile" 
             />
           </div>
           <div v-if="!isCollapsed" class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-white truncate">John Doe</p>
-            <p class="text-xs text-gray-400 truncate">Farmer</p>
+            <p class="text-sm font-medium text-white truncate">{{ user?.firstName }} {{ user?.lastName }} {{ user?.name }}</p>
+            <p class="text-xs text-gray-400 truncate">{{ user?.email }}</p>
           </div>
           <router-link 
             v-if="!isCollapsed"
@@ -159,7 +159,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { 
   LayoutDashboard,
@@ -176,6 +176,47 @@ import {
   Gauge,
   Power
 } from 'lucide-vue-next'
+
+const user = ref(null);
+
+const generateProfilePicture = (email) => {
+  if (!email) return null;
+
+  // 🔹 Extract the first letter of the email
+  const initial = email.charAt(0).toUpperCase();
+
+  // 🔹 Generate a random background color
+  const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A6", "#FFD700"];
+  const backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+  // 🔹 Create an SVG string for the avatar
+  const svg = `
+    <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" fill="${backgroundColor}" />
+      <text x="50%" y="55%" font-size="50" text-anchor="middle" fill="white" font-family="Arial" dy=".3em">
+        ${initial}
+      </text>
+    </svg>
+  `;
+
+  // 🔹 Convert SVG to Data URL
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
+};
+
+
+onMounted(() => {
+  const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
+  if (storedUser) {
+    user.value = JSON.parse(storedUser);
+
+    if (!user.value.profilePicture) {
+      user.value.profilePicture = generateProfilePicture(user.value.email);
+    }
+  }
+
+
+  console.log(storedUser);
+});
 
 const route = useRoute()
 const isCollapsed = ref(false)

@@ -207,6 +207,12 @@
             </button>
           </form>
         </div>
+        <LoadingPage 
+          :is-visible="isLoading"
+          title="Sending Verification Code..."
+          message="Please wait while we set up your new account"
+          @loading-complete="onLoadingComplete"
+        />
       </div>
     </div>
   </div>
@@ -217,6 +223,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-vue-next'
 import api from '../../api/index.js'
+import toastr from 'toastr'
+import LoadingPage from '../layout/LoadingPage.vue'
 
 const router = useRouter()
 const currentStep = ref(1)
@@ -308,12 +316,12 @@ const handleSendResetEmail = async () => {
   try {
     isLoading.value = true;
     const response = await api.post("/auth/forgot-password", { email: email.value });
-    alert(response.data.message);
+    toastr.success(response.data.message);
     currentStep.value = 2; // Move to verification step
   } catch (error) {
     isLoading.value = false
     console.error("Error sending reset email:", error.response?.data || error);
-    alert(error.response?.data?.detail || "Error sending reset email.");
+    toastr.error(error.response?.data?.detail || "Error sending reset email.");
   } finally {
     isLoading.value = false;
   }
@@ -329,13 +337,13 @@ const handleResendCode = async () => {
       email: email.value,
     });
 
-    alert(response.data.message); // Notify the user that the code has been resent
+    toastr.success(response.data.message); // Notify the user that the code has been resent
     startResendTimer(); // Start the resend timer (e.g., 30 seconds cooldown)
 
   } catch (error) {
     isLoading.value = false;
     console.error("Error resending code:", error.response?.data || error);
-    alert(error.response?.data?.detail || "Error resending code.");
+    toastr.error(error.response?.data?.detail || "Error resending code.");
   } finally {
     isLoading.value = false;
   }
@@ -353,12 +361,12 @@ const handleVerifyCode = async () => {
       code: verificationCodeString  // Send the joined code as a single string
     });
 
-    alert(response.data.message);
+    toastr.success(response.data.message);
     currentStep.value = 3; // Move to password reset step
   } catch (error) {
     isLoading.value = false;
     console.error("Error verifying code:", error.response?.data || error);
-    alert(error.response?.data?.detail || "Invalid verification code.");
+    toastr.error(error.response?.data?.detail || "Invalid verification code.");
   } finally {
     isLoading.value = false;
   }
@@ -369,13 +377,13 @@ const handleResetPassword = async () => {
   isLoading.value = false; // Show loading state
   // Check if the new password and confirm password match
   if (newPassword.value !== confirmPassword.value) {
-    alert('Passwords do not match!');
+    toastr.warning('Passwords do not match!');
     return;
   }
 
   // Check if password meets any required criteria (e.g., length, strength)
   if (newPassword.value.length < 6) {
-    alert('Password must be at least 6 characters long.');
+    toastr.warning('Password must be at least 6 characters long.');
     return;
   }
  // Show loading state
@@ -387,13 +395,13 @@ const handleResetPassword = async () => {
       new_password: newPassword.value, // New password
     });
 
-    alert(response.data.message); // Notify the user
+    toastr.success(response.data.message); // Notify the user
     router.push('/login'); // Redirect to login page after password is reset
 
   } catch (error) {
     isLoading.value = false; // Hide loading state
     console.error("Error resetting password:", error.response?.data || error);
-    alert(error.response?.data?.detail || "Error resetting password.");
+    toastr.error(error.response?.data?.detail || "Error resetting password.");
   } finally {
     isLoading.value = false; // Hide loading state
   }

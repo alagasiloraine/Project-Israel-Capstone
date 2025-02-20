@@ -5,8 +5,10 @@ from app.services.firebase_service import auth, db, send_verification_email, sen
 import random
 import pytz
 import re
+import requests
 
 router = APIRouter()
+
 
 class RegisterUserRequest(BaseModel):
     firstName: str
@@ -20,106 +22,106 @@ class RegisterUserRequest(BaseModel):
 def generate_verification_code(length=6):
     return "".join(str(random.randint(0, 9)) for _ in range(length))
 
-# @router.post("/register")
-# async def register_user(user: RegisterUserRequest):
-#     print("🚀 Incoming Request Data:", user.dict())  # Debugging
-
-#     # Check if Firestore is available
-#     if not db:
-#         raise HTTPException(status_code=500, detail="Firebase Firestore not initialized")
-
-#     try:
-#         # Ensure terms are accepted
-#         if not user.acceptTerms:
-#             raise HTTPException(status_code=400, detail="You must accept the terms and conditions.")
-
-#         # Create Firebase Auth user
-#         auth_user = auth.create_user(email=user.email, password=user.password)
-#         uid = auth_user.uid  # Get Firebase UID
-
-#         # Generate verification code (6-digit numeric)
-#         verification_code = generate_verification_code(6)
-
-#         # Set expiration time for the verification code (10 minutes from now)
-#         expiration_time = datetime.utcnow() + timedelta(minutes=10)
-
-#         # Save user in Firestore using UID, including verification code and expiration time
-#         user_data = {
-#             "firstName": user.firstName,
-#             "lastName": user.lastName,
-#             "email": user.email,
-#             "createdAt": datetime.utcnow().isoformat(),
-#             "verified": False,
-#             "verificationCode": verification_code,
-#             "verificationCodeExpiration": expiration_time.isoformat()  # Store expiration time
-#         }
-
-#         db.collection("users").document(uid).set(user_data)
-
-#         # Send verification email
-#         send_verification_email(user.email, verification_code)
-
-#         return {"message": "User registered successfully. Check your email for verification.", "userId": uid}
-
-#     except auth.EmailAlreadyExistsError:
-#         print("❌ Error: Email already exists")
-#         raise HTTPException(status_code=400, detail="Email already exists.")
-
-#     except Exception as e:
-#         print(f"❌ Unexpected Error: {str(e)}")  # Log error for debugging
-#         raise HTTPException(status_code=500, detail=str(e))
-
-    
-def is_valid_phone_number(phone_number: str) -> bool:
-    # Basic regex to check E.164 format: +<country_code><number>
-    return bool(re.match(r'^\+?[1-9]\d{1,14}$', phone_number))
-
-@router.post("/auth/register")
+@router.post("/register")
 async def register_user(user: RegisterUserRequest):
-    """Handles user registration via email or phone number"""
+    print("🚀 Incoming Request Data:", user.dict())  # Debugging
+
+    # Check if Firestore is available
+    if not db:
+        raise HTTPException(status_code=500, detail="Firebase Firestore not initialized")
+
     try:
+        # Ensure terms are accepted
         if not user.acceptTerms:
             raise HTTPException(status_code=400, detail="You must accept the terms and conditions.")
 
-        verification_code = generate_verification_code()
+        # Create Firebase Auth user
+        auth_user = auth.create_user(email=user.email, password=user.password)
+        uid = auth_user.uid  # Get Firebase UID
+
+        # Generate verification code (6-digit numeric)
+        verification_code = generate_verification_code(6)
+
+        # Set expiration time for the verification code (10 minutes from now)
         expiration_time = datetime.utcnow() + timedelta(minutes=10)
+
+        # Save user in Firestore using UID, including verification code and expiration time
         user_data = {
             "firstName": user.firstName,
             "lastName": user.lastName,
+            "email": user.email,
             "createdAt": datetime.utcnow().isoformat(),
             "verified": False,
             "verificationCode": verification_code,
-            "verificationCodeExpiration": expiration_time.isoformat()
+            "verificationCodeExpiration": expiration_time.isoformat()  # Store expiration time
         }
 
-        uid = None
-
-        if user.email:
-            auth_user = auth.create_user(email=user.email, password=user.password)
-            uid = auth_user.uid
-            user_data["email"] = user.email
-            send_verification_email(user.email, verification_code)
-
-        elif user.phone:
-            if not is_valid_phone_number(user.phone):
-                raise HTTPException(status_code=400, detail="Invalid phone number format. Use E.164 format.")
-            auth_user = auth.create_user(phone_number=user.phone)
-            uid = auth_user.uid
-            user_data["phone"] = user.phone
-
-            # ✅ Do NOT send OTP from the backend, let the frontend handle it
-
-        else:
-            raise HTTPException(status_code=400, detail="Either email or phone number is required.")
-
-        # Store user data in Firestore
         db.collection("users").document(uid).set(user_data)
 
-        return {"message": "User registered successfully. Complete verification on the frontend.", "userId": uid}
+        # Send verification email
+        send_verification_email(user.email, verification_code)
+
+        return {"message": "User registered successfully. Check your email for verification.", "userId": uid}
+
+    except auth.EmailAlreadyExistsError:
+        print("❌ Error: Email already exists")
+        raise HTTPException(status_code=400, detail="Email already exists.")
 
     except Exception as e:
-        print(f"❌ Error: {str(e)}")
+        print(f"❌ Unexpected Error: {str(e)}")  # Log error for debugging
         raise HTTPException(status_code=500, detail=str(e))
+
+    
+# def is_valid_phone_number(phone_number: str) -> bool:
+#     # Basic regex to check E.164 format: +<country_code><number>
+#     return bool(re.match(r'^\+?[1-9]\d{1,14}$', phone_number))
+
+# @router.post("/auth/register")
+# async def register_user(user: RegisterUserRequest):
+#     """Handles user registration via email or phone number"""
+#     try:
+#         if not user.acceptTerms:
+#             raise HTTPException(status_code=400, detail="You must accept the terms and conditions.")
+
+#         verification_code = generate_verification_code()
+#         expiration_time = datetime.utcnow() + timedelta(minutes=10)
+#         user_data = {
+#             "firstName": user.firstName,
+#             "lastName": user.lastName,
+#             "createdAt": datetime.utcnow().isoformat(),
+#             "verified": False,
+#             "verificationCode": verification_code,
+#             "verificationCodeExpiration": expiration_time.isoformat()
+#         }
+
+#         uid = None
+
+#         if user.email:
+#             auth_user = auth.create_user(email=user.email, password=user.password)
+#             uid = auth_user.uid
+#             user_data["email"] = user.email
+#             send_verification_email(user.email, verification_code)
+
+#         elif user.phone:
+#             if not is_valid_phone_number(user.phone):
+#                 raise HTTPException(status_code=400, detail="Invalid phone number format. Use E.164 format.")
+#             auth_user = auth.create_user(phone_number=user.phone)
+#             uid = auth_user.uid
+#             user_data["phone"] = user.phone
+
+#             # ✅ Do NOT send OTP from the backend, let the frontend handle it
+
+#         else:
+#             raise HTTPException(status_code=400, detail="Either email or phone number is required.")
+
+#         # Store user data in Firestore
+#         db.collection("users").document(uid).set(user_data)
+
+#         return {"message": "User registered successfully. Complete verification on the frontend.", "userId": uid}
+
+#     except Exception as e:
+#         print(f"❌ Error: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
 class ResendCodeRequest(BaseModel):
@@ -198,20 +200,70 @@ from dotenv import load_dotenv
 import os
 
 class LoginRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str
+
+# @router.post("/login")
+# async def login_user(data: LoginRequest):
+#     try:
+#         # Firebase REST API Endpoint for Authentication
+#         FIREBASE_API_KEY = os.getenv("API_KEY")
+#         url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+#         payload = {
+#             "email": data.email,
+#             "password": data.password,
+#             "returnSecureToken": True
+#         }
+#         headers = {"Content-Type": "application/json"}
+        
+#         response = requests.post(url, json=payload, headers=headers)
+#         res_data = response.json()
+
+#         if "error" in res_data:
+#             raise HTTPException(status_code=400, detail=res_data["error"]["message"])
+
+#         # ✅ Fetch User Details from Firestore
+#         user_id = res_data["localId"]
+#         user_ref = db.collection("users").document(user_id)
+#         user_doc = user_ref.get()
+
+#         user_data = {}
+#         if not user_doc.exists():
+#             user_data = {
+#                 "email": data.email,
+#                 "firstName": "",
+#                 "lastName": "",
+#                 "profilePicture": generate_profile_picture(data.email),
+#                 "createdAt": firestore.SERVER_TIMESTAMP,
+#             }
+#             user_ref.set(user_data)
+#         else:
+#             user_data = user_doc.to_dict()
+
+#         # 🔹 Send Login Notification
+#         send_login_notification(data.email)
+
+#         return {
+#             "message": "Login successful",
+#             "token": res_data["idToken"],
+#             "user": {
+#                 "userId": user_id,
+#                 "firstName": user_data.get("firstName"),
+#                 "lastName": user_data.get("lastName"),
+#                 "email": user_data.get("email"),
+#                 "profilePicture": user_data.get("profilePicture"),
+#             },
+#         }
+
+#     except Exception as e:
+#         print(f"❌ Email Login Error: {str(e)}")  # Logs error in backend
+#         raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
+
 
 @router.post("/login")
 async def login_user(data: LoginRequest):
     try:
-        # Authenticate the user with Firebase
-        user = auth.get_user_by_email(data.email)
-        if not user:
-            raise HTTPException(status_code=400, detail="Invalid email or password")
-
-        # Sign in the user using Firebase's REST API (since Firebase Admin SDK does not support password authentication)
-        import requests
-        FIREBASE_API_KEY = os.getenv("API_KEY")  # Replace with your Firebase API key
+        FIREBASE_API_KEY = os.getenv("API_KEY")
         url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
         payload = {
             "email": data.email,
@@ -226,21 +278,46 @@ async def login_user(data: LoginRequest):
         if "error" in res_data:
             raise HTTPException(status_code=400, detail=res_data["error"]["message"])
 
+        # ✅ Fetch User Details from Firestore
+        user_id = res_data["localId"]
+        user_ref = db.collection("users").document(user_id)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists:
+            # If the user is not in Firestore, return basic details
+            user_data = {
+                "firstName": user_doc.firstName,
+                "lastName": user_doc.lasttName,
+                "email": data.email,
+                "phone": "",
+                "profilePicture": None  # This will be handled in frontend
+            }
+        else:
+            user_data = user_doc.to_dict()
+
+        # 🔹 Send Login Notification
         send_login_notification(data.email)
 
         return {
             "message": "Login successful",
             "token": res_data["idToken"],
-            "userId": res_data["localId"]
+            "user": {
+                "userId": user_id,
+                "firstName": user_data.get("firstName", ""),
+                "lastName": user_data.get("lastName", ""),
+                "email": user_data.get("email", data.email),  # Ensure email is always set
+                "phone": user_data.get("phone", ""),
+                "profilePicture": user_data.get("profilePicture"),  # Will be handled in frontend
+            },
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
+        print(f"❌ Server Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
+
 @router.post("/google-register")
 async def google_register(request: Request):
     try:
-        # Parse the JSON body of the request
         body = await request.json()
         idToken = body.get("idToken")
 
@@ -252,79 +329,214 @@ async def google_register(request: Request):
         uid = decoded_token.get("uid")
         email = decoded_token.get("email")
         name = decoded_token.get("name")
+        picture = decoded_token.get("picture", None)  # Google profile picture
 
         if not uid or not email:
             raise HTTPException(status_code=400, detail="Invalid Google user data")
 
-        # 🔹 Check if user already exists
-        user_ref = firestore.client().collection("users").document(uid)
+        # 🔹 Firestore Reference
+        db_client = firestore.client()
+        user_ref = db_client.collection("users").document(uid)
         user_doc = user_ref.get()
 
         if user_doc.exists:
-            return {"message": "User already registered", "userId": uid}
+            # If user already exists, return user details
+            user_data = user_doc.to_dict()
+            return {
+                "message": "User already registered",
+                "user": {
+                    "userId": uid,
+                    "name": user_data.get("name"),
+                    "email": user_data.get("email"),
+                    "profilePicture": user_data.get("profilePicture"),
+                },
+            }
 
-        # 🔹 Register new user in Firestore
+        # 🔹 Register new user
         user_data = {
             "uid": uid,
             "name": name,
             "email": email,
+            "profilePicture": picture or generate_profile_picture(email),
             "createdAt": datetime.utcnow().isoformat(),
-            "verified": True  # Google users are automatically verified
+            "verified": True,  # Google users are automatically verified
         }
         user_ref.set(user_data)
 
         send_login_notification(email)
 
-        return {"message": "User registered successfully", "userId": uid}
+        return {
+            "message": "User registered successfully",
+            "user": {
+                "userId": uid,
+                "name": user_data["name"],
+                "email": user_data["email"],
+                "profilePicture": user_data["profilePicture"],
+                "createdAt": user_data["createdAt"],
+            },
+        }
 
     except Exception as e:
         print(f"❌ Firebase Error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Google registration failed")
+        raise HTTPException(status_code=500, detail=f"Google registration failed: {str(e)}")
+
+# ✅ Helper Function for Default Profile Picture
+def generate_profile_picture(email):
+    import hashlib
+    hashed_email = hashlib.md5(email.encode()).hexdigest()[:6]
+    initials = email[0].upper()
+    return f"https://dummyimage.com/100x100/000/fff.png&text={initials}"
+
+    
+# @router.post("/google-register")
+# async def google_register(request: Request):
+#     try:
+#         # Parse the JSON body of the request
+#         body = await request.json()
+#         idToken = body.get("idToken")
+
+#         if not idToken:
+#             raise HTTPException(status_code=422, detail="idToken is required")
+
+#         # 🔹 Verify the Firebase ID Token
+#         decoded_token = auth.verify_id_token(idToken)
+#         uid = decoded_token.get("uid")
+#         email = decoded_token.get("email")
+#         name = decoded_token.get("name")
+
+#         if not uid or not email:
+#             raise HTTPException(status_code=400, detail="Invalid Google user data")
+
+#         # 🔹 Check if user already exists
+#         user_ref = firestore.client().collection("users").document(uid)
+#         user_doc = user_ref.get()
+
+#         if user_doc.exists:
+#             return {"message": "User already registered", "userId": uid}
+
+#         # 🔹 Register new user in Firestore
+#         user_data = {
+#             "uid": uid,
+#             "name": name,
+#             "email": email,
+#             "createdAt": datetime.utcnow().isoformat(),
+#             "verified": True  # Google users are automatically verified
+#         }
+#         user_ref.set(user_data)
+
+#         send_login_notification(email)
+
+#         return {"message": "User registered successfully", "userId": uid}
+
+#     except Exception as e:
+#         print(f"❌ Firebase Error: {str(e)}")
+#         raise HTTPException(status_code=500, detail="Google registration failed")
     
 
+# @router.post("/google-login")
+# async def google_login(request: Request):
+#     try:
+#         # Parse the JSON body of the request
+#         body = await request.json()
+#         idToken = body.get("idToken")
+
+#         if not idToken:
+#             raise HTTPException(status_code=422, detail="idToken is required")
+
+#         # 🔹 Verify the Firebase ID Token
+#         decoded_token = auth.verify_id_token(idToken)
+#         uid = decoded_token.get("uid")
+#         email = decoded_token.get("email")
+#         name = decoded_token.get("name")
+
+#         if not uid or not email:
+#             raise HTTPException(status_code=400, detail="Invalid Google user data")
+
+#         # 🔹 Check if user exists
+#         user_ref = firestore.client().collection("users").document(uid)
+#         user_doc = user_ref.get()
+
+#         if not user_doc.exists:
+#             # If user doesn't exist in Firestore, register them
+#             user_data = {
+#                 "uid": uid,
+#                 "name": name,
+#                 "email": email,
+#                 "createdAt": firestore.SERVER_TIMESTAMP,
+#                 "verified": True  # Google users are automatically verified
+#             }
+#             user_ref.set(user_data)
+
+#         # 🔹 Send login notification email
+#         send_login_notification(email)
+
+#         return {"message": "Login successful", "userId": uid}
+
+#     except Exception as e:
+#         print(f"❌ Firebase Error: {str(e)}")
+#         raise HTTPException(status_code=500, detail="Google login failed")
+    
 @router.post("/google-login")
 async def google_login(request: Request):
     try:
-        # Parse the JSON body of the request
         body = await request.json()
         idToken = body.get("idToken")
 
         if not idToken:
             raise HTTPException(status_code=422, detail="idToken is required")
 
-        # 🔹 Verify the Firebase ID Token
+        # 🔹 Verify Firebase ID Token
         decoded_token = auth.verify_id_token(idToken)
         uid = decoded_token.get("uid")
         email = decoded_token.get("email")
         name = decoded_token.get("name")
+        picture = decoded_token.get("picture", None)  # Google profile picture
 
         if not uid or not email:
             raise HTTPException(status_code=400, detail="Invalid Google user data")
 
-        # 🔹 Check if user exists
-        user_ref = firestore.client().collection("users").document(uid)
+        # 🔹 Firestore Database Connection
+        db_client = firestore.client()
+        user_ref = db_client.collection("users").document(uid)
         user_doc = user_ref.get()
 
         if not user_doc.exists:
-            # If user doesn't exist in Firestore, register them
+            # If user is new, save to Firestore
             user_data = {
                 "uid": uid,
                 "name": name,
                 "email": email,
+                "profilePicture": picture or generate_profile_picture(email),  # Use default if missing
                 "createdAt": firestore.SERVER_TIMESTAMP,
-                "verified": True  # Google users are automatically verified
+                "verified": True,
             }
             user_ref.set(user_data)
+        else:
+            user_data = user_doc.to_dict()
 
-        # 🔹 Send login notification email
-        send_login_notification(email)
-
-        return {"message": "Login successful", "userId": uid}
+        # 🔹 Return full user details
+        return {
+            "message": "Login successful",
+            "user": {
+                "userId": uid,
+                "name": user_data.get("name"),
+                "email": user_data.get("email"),
+                "profilePicture": user_data.get("profilePicture"),
+            },
+        }
 
     except Exception as e:
-        print(f"❌ Firebase Error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Google login failed")
-    
+        print(f"❌ Google Login Error: {str(e)}")  # Debugging logs
+        raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
+
+# ✅ Helper Function to Generate Default Profile Picture (Initials)
+def generate_profile_picture(email):
+    import hashlib
+    hashed_email = hashlib.md5(email.encode()).hexdigest()[:6]  # Unique identifier
+    initials = email[0].upper()  # Use first letter as default profile
+    return f"https://dummyimage.com/100x100/000/fff.png&text={initials}"
+
+
 
 # Request model for forgot password
 class ForgotPasswordRequest(BaseModel):
