@@ -126,6 +126,12 @@
             </div>
           </div>
         </div>
+        <LoadingPage 
+          :is-visible="isLoading"
+          title="Verifying your account..."
+          message="Please wait while we set up your new account"
+          @loading-complete="onLoadingComplete"
+        />
       </div>
     </transition>
   </div>
@@ -136,6 +142,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft } from 'lucide-vue-next'
 import api from '../../api/index.js'
+import toastr from 'toastr'
+import LoadingPage from '../layout/LoadingPage.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -203,7 +211,7 @@ onMounted(() => {
 const handleVerification = async () => {
   const code = verificationCode.value.join("");
   if (code.length !== 6) {
-    alert("Please enter a complete verification code.");
+    toastr.warning("Please enter a complete verification code.");
     return;
   }
   isLoading.value = true;
@@ -214,11 +222,11 @@ const handleVerification = async () => {
     });
 
     if (response.data.message === "Email successfully verified") {
-      alert("Your email has been verified!");
+      toastr.success("Your email has been verified!");
       router.push("/login"); // Redirect to dashboard
     }
   } catch (error) {
-    alert("Invalid verification code. Please try again.");
+    toastr.error("Invalid verification code. Please try again.");
     console.error("Verification Error:", error.response?.data || error);
     isLoading.value = false;
   }
@@ -246,7 +254,6 @@ const resendCode = async () => {
     alert(error.response?.data?.detail || "Failed to resend the code. Try again later.");
   }
 };
-
 
 // Start a 90-second cooldown for resending the code
 const startResendCooldown = () => {

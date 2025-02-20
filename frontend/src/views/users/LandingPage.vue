@@ -55,17 +55,17 @@
                 <img 
                   src="/public/images/leaves-plants/plant-decoration.png" 
                   alt=""
-                  class="absolute top-0 left-[1%] w-4 xs:w-5 sm:w-6 md:w-8 h-4 xs:h-5 sm:h-6 md:h-8 -mt-4 hidden sm:block"
+                  class="absolute top-0 left-[8%] w-4 xs:w-5 sm:w-6 md:w-8 h-4 xs:h-5 sm:h-6 md:h-8 -mt-4 hidden sm:block"
                 />
                 <img 
                   src="/public/images/leaves-plants/plant-decoration.png" 
                   alt=""
-                  class="absolute top-0 left-[38%] w-4 xs:w-5 sm:w-6 md:w-8 h-4 xs:h-5 sm:h-6 md:h-8 -mt-4 hidden sm:block"
+                  class="absolute top-0 left-[36%] w-4 xs:w-5 sm:w-6 md:w-8 h-4 xs:h-5 sm:h-6 md:h-8 -mt-4 hidden sm:block"
                 />
                 <img 
                   src="/public/images/leaves-plants/plant-decoration.png" 
                   alt=""
-                  class="absolute top-0 left-[81%] w-4 xs:w-5 sm:w-6 md:w-8 h-4 xs:h-5 sm:h-6 md:h-8 -mt-4 hidden sm:block"
+                  class="absolute top-0 left-[82%] w-4 xs:w-5 sm:w-6 md:w-8 h-4 xs:h-5 sm:h-6 md:h-8 -mt-4 hidden sm:block"
                 />
               </h1>
               
