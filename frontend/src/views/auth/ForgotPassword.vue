@@ -209,7 +209,7 @@
         </div>
         <LoadingPage 
           :is-visible="isLoading"
-          title="Loading..."
+          title="Sending Verification Code..."
           message="Please wait while we set up your new account"
           @loading-complete="onLoadingComplete"
         />
