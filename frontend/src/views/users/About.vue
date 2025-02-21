@@ -38,7 +38,7 @@
     <div class="relative bg-white pt-32 sm:pt-40 pb-8 px-4">
       <div class="container mx-auto max-w-7xl">
         <!-- Three Column Layout -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8 max-w-6xl mx-auto -mt-16">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8 max-w-6xl mx-auto">
           <!-- Mission -->
           <div class="bg-white rounded-xl p-4 sm:p-6 relative border-2 border-[#4CAF50] mt-12 sm:mt-0">
             <div class="absolute -top-8 left-1/2 transform -translate-x-1/2">
@@ -105,7 +105,7 @@
             <div class="w-16 sm:w-20 h-16 sm:h-20 bg-[#E8F5E9] rounded-lg flex items-center justify-center">
               <MessageSquare class="w-8 sm:w-12 h-8 sm:h-12 text-green-600" />
             </div>
-            <div class="text-left sm:text-left">
+            <div class="text-center sm:text-left">
               <h3 class="font-bold text-base sm:text-lg uppercase mb-2 text-black">CONTACT</h3>
               <p class="text-sm sm:text-base text-black">09292664302</p>
               <p class="text-sm sm:text-base text-black break-words">maryhelpofChristiansSchool@gmail.com</p>
@@ -117,7 +117,7 @@
             <div class="w-16 sm:w-20 h-16 sm:h-20 bg-[#E8F5E9] rounded-lg flex items-center justify-center">
               <School class="w-8 sm:w-12 h-8 sm:h-12 text-green-600" />
             </div>
-            <div class="text-left sm:text-left">
+            <div class="text-center sm:text-left">
               <h3 class="font-bold text-base sm:text-lg uppercase mb-2 text-black">OWNER</h3>
               <p class="text-sm sm:text-base text-black">Mary Help of Christians School (INC),</p>
               <p class="text-sm sm:text-base text-black">Don Bosco</p>
@@ -143,7 +143,7 @@
                 </button>
               </div>
             </div>
-            <div class="text-left sm:text-left">
+            <div class="text-center sm:text-left">
               <h3 class="font-bold text-base sm:text-lg uppercase mb-2 text-black">LOCATION</h3>
               <p class="text-sm sm:text-base text-black">Parang, Calapan City,</p>
               <p class="text-sm sm:text-base text-black">Oriental Mindoro</p>

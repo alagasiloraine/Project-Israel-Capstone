@@ -30,7 +30,7 @@
     <!-- Main Content with improved responsive spacing -->
     <div class="container mx-auto max-w-7xl px-4 relative z-10 -mt-4 md:-mt-10">
       <div class="text-center mb-8 md:mb-16">
-        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 mt-10 md:mb-8 bg-gradient-to-r from-green-500 to-orange-500 text-transparent bg-clip-text font-poppins">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-8 bg-gradient-to-r from-green-500 to-orange-500 text-transparent bg-clip-text font-poppins">
           ORGANIC CROPS
         </h2>
         <div class="inline-block mt-4 md:mt-8 px-4 md:px-6 py-2 bg-orange-100 rounded-lg">
@@ -41,7 +41,7 @@
       </div>
 
       <!-- Carousel Container with improved responsive handling -->
-      <div class="relative pt-8 pb-12 px-2 sm:px-4 md:px-8 -mt-2 md:-mt-4">
+      <div class="relative px-2 sm:px-4 md:px-8 -mt-2 md:-mt-4">
         <div class="overflow-hidden">
           <div class="flex transition-transform duration-500 ease-in-out"
                :style="{ transform: `translateX(-${currentSlide * (100 / itemsPerView)}%)` }">
