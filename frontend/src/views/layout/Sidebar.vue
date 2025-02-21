@@ -21,7 +21,7 @@
       </router-link>
 
       <!-- Toggle Button -->
-      <button 
+      <button   
         @click="toggleSidebar"
         class="absolute -right-12 top-12 px-4 py-3 rounded-lg bg-[#002B1D] hover:bg-[#1a4d4f] text-gray-300 hover:text-[#8FE3CF] transition-colors shadow-lg z-50"
       >
