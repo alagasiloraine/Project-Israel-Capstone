@@ -1,12 +1,12 @@
 <template>
   <nav 
     :class="[
-      'fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-out w-full'
+      'fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-out'
     ]"
     class="px-6 sm:px-12 md:px-16 lg:px-24"
   >
-    <div class="container mx-auto w-full">
-      <div class="relative flex justify-between items-center w-full">
+    <div class="container mx-auto">
+      <div class="relative flex justify-between items-center">
         <!-- Logo -->
         <a 
           href="#" 
