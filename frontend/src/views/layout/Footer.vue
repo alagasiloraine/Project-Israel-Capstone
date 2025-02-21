@@ -72,7 +72,7 @@
         </a>
       </div>
 
-      <!-- Newsletter with responsive width -->
+      <!-- Newsletter with responsive width
       <div class="max-w-md mx-auto mb-4 px-4 sm:px-0">
         <h5 class="text-white text-center text-sm font-semibold mb-2">Stay Updated with Our Newsletter</h5>
         <form @submit.prevent class="flex">
@@ -88,7 +88,7 @@
             Subscribe
           </button>
         </form>
-      </div>
+      </div> -->
 
       <!-- Copyright -->
       <div class="border-t border-green-700 pt-4">
