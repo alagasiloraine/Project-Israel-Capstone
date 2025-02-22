@@ -5,7 +5,7 @@
     ]"
     class="px-6 sm:px-12 md:px-16 lg:px-24"
   >
-    <div class="container mx-auto">
+    <div class="max-w-[1920px] w-full mx-auto">
       <div class="relative flex justify-between items-center">
         <!-- Logo -->
         <a 
@@ -76,7 +76,7 @@
           :class="[
             'hidden lg:block transition-all duration-700 ease-out overflow-visible',
             isScrolled 
-              ? 'w-screen absolute top-0 left-0 right-0 -mx-6 sm:-mx-12 md:-mx-16 lg:-mx-24 bg-white/95 backdrop-blur-sm shadow-lg py-2' 
+              ? 'fixed top-0 left-0 right-0 w-screen bg-white/95 backdrop-blur-sm shadow-lg py-2' 
               : 'w-auto bg-gray-200/40 backdrop-blur-sm hover:bg-gray-300/60 rounded-2xl'
           ]"
           class="px-12 py-2"
@@ -84,7 +84,7 @@
           <div 
             :class="[
               'flex items-center transition-all duration-700 ease-out relative z-[52]',
-              isScrolled ? 'justify-between container mx-auto px-6 sm:px-12 md:px-16 lg:px-24 py-1' : 'justify-center space-x-12'
+              isScrolled ? 'justify-between w-full px-6 sm:px-12 md:px-16 lg:px-24 py-1 max-w-[2560px] mx-auto' : 'justify-center space-x-12'
             ]"
           >
             <!-- Logo clone for expanded state -->
@@ -150,125 +150,122 @@
       </div>
     </div>
   </nav>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted, onUnmounted } from 'vue'
-  import { Menu, X } from 'lucide-vue-next'
-  
-  const emit = defineEmits(['auth'])
-  const isMenuOpen = ref(false)
-  const isScrolled = ref(false)
-  const currentSection = ref('home')
-  
-  const navLinks = [
-    { name: 'HOME', section: 'home' },
-    { name: 'ABOUT', section: 'about' },
-    { name: 'CROPS', section: 'crops' }
-  ]
-  
-  const scrollToSection = (sectionId) => {
-    const element = document.querySelector(`.${sectionId}-section`)
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { Menu, X } from 'lucide-vue-next'
+
+const emit = defineEmits(['auth'])
+const isMenuOpen = ref(false)
+const isScrolled = ref(false)
+const currentSection = ref('home')
+
+const navLinks = [
+  { name: 'HOME', section: 'home' },
+  { name: 'ABOUT', section: 'about' },
+  { name: 'CROPS', section: 'crops' }
+]
+
+const scrollToSection = (sectionId) => {
+  const element = document.querySelector(`.${sectionId}-section`)
+  if (element) {
+    const navbarHeight = 80
+    const elementPosition = element.getBoundingClientRect().top
+    const offsetPosition = elementPosition + window.pageYOffset - navbarHeight
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth'
+    })
+
+    currentSection.value = sectionId
+  }
+  closeMenu()
+}
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value
+}
+
+const closeMenu = () => {
+  isMenuOpen.value = false
+}
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 50
+
+  const sections = ['home', 'about', 'crops']
+  const navbarHeight = 80
+  let closestSection = null
+  let minDistance = Infinity
+
+  sections.forEach(section => {
+    const element = document.querySelector(`.${section}-section`)
     if (element) {
-      const navbarHeight = 80 // Adjust based on your navbar height
-      const elementPosition = element.getBoundingClientRect().top
-      const offsetPosition = elementPosition + window.pageYOffset - navbarHeight
-  
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      })
-  
-      // Update current section
-      currentSection.value = sectionId
+      const rect = element.getBoundingClientRect()
+      const distance = Math.abs(rect.top - navbarHeight)
+      
+      if (distance < minDistance) {
+        minDistance = distance
+        closestSection = section
+      }
     }
-    closeMenu()
+  })
+
+  if (closestSection) {
+    currentSection.value = closestSection
   }
-  
-  const toggleMenu = () => {
-    isMenuOpen.value = !isMenuOpen.value
-  }
-  
-  const closeMenu = () => {
+}
+
+const handleResize = () => {
+  if (window.innerWidth >= 1024) {
     isMenuOpen.value = false
   }
-  
-  const handleScroll = () => {
-    isScrolled.value = window.scrollY > 50
-  
-    // Update active section based on scroll position
-    const sections = ['home', 'about', 'crops']
-    const navbarHeight = 80 // Adjust based on your navbar height
-    let closestSection = null
-    let minDistance = Infinity
-  
-    sections.forEach(section => {
-      const element = document.querySelector(`.${section}-section`)
-      if (element) {
-        const rect = element.getBoundingClientRect()
-        const distance = Math.abs(rect.top - navbarHeight)
-        
-        if (distance < minDistance) {
-          minDistance = distance
-          closestSection = section
-        }
-      }
-    })
-  
-    if (closestSection) {
-      currentSection.value = closestSection
-    }
-  }
-  
-  const handleResize = () => {
-    if (window.innerWidth >= 1024) {
-      isMenuOpen.value = false
-    }
-  }
-  
-  onMounted(() => {
-    window.addEventListener('resize', handleResize)
-    window.addEventListener('scroll', handleScroll)
-    // Initial check for current section
-    handleScroll()
-  })
-  
-  onUnmounted(() => {
-    window.removeEventListener('resize', handleResize)
-    window.removeEventListener('scroll', handleScroll)
-  })
-  </script>
-  
-  <style scoped>
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+  window.addEventListener('scroll', handleScroll)
+  handleScroll()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('scroll', handleScroll)
+})
+</script>
+
+<style scoped>
+.nav-link {
+  padding: 0.5rem 0;
+  font-weight: 500;
+  position: relative;
+}
+
+.nav-dot {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 6px;
+  height: 6px;
+  background-color: #2E7D32;
+  border-radius: 9999px;
+  transform: translateX(-50%) scale(0);
+  transition: transform 0.3s ease-out;
+}
+
+.nav-dot.active {
+  transform: translateX(-50%) scale(1);
+}
+
+@media (max-width: 768px) {
   .nav-link {
     padding: 0.5rem 0;
-    font-weight: 500;
-    position: relative;
   }
   
   .nav-dot {
-    position: absolute;
-    left: 50%;
     bottom: 0;
-    width: 6px;
-    height: 6px;
-    background-color: #2E7D32;
-    border-radius: 9999px;
-    transform: translateX(-50%) scale(0);
-    transition: transform 0.3s ease-out;
   }
-  
-  .nav-dot.active {
-    transform: translateX(-50%) scale(1);
-  }
-  
-  @media (max-width: 768px) {
-    .nav-link {
-      padding: 0.5rem 0;
-    }
-    
-    .nav-dot {
-      bottom: 0;
-    }
-  }
-  </style>
+}
+</style>
