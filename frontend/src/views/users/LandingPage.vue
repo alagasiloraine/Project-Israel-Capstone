@@ -48,32 +48,32 @@
         <div class="container mx-auto px-4 sm:px-6 md:px-12 lg:px-24 min-h-screen relative z-20 flex items-center">
           <div class="flex flex-col lg:flex-row items-center justify-between w-full pt-20 sm:pt-24 lg:pt-0">
             <!-- Left Content -->
-            <div class="lg:w-1/2 text-center lg:text-left mb-8 lg:mb-0 px-4 sm:px-0">
+            <div class="lg:w-1/2 text-left lg:text-left mb-8 lg:mb-0 px-4 sm:px-0">
               <h1 class="text-[#2E7D32] text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-4 font-poppins tracking-wide relative">
                 PROJECT ISRAEL
                 <!-- Plant decorations with improved responsive visibility -->
                 <img 
                   src="/public/images/leaves-plants/plant-decoration.png" 
                   alt=""
-                  class="absolute top-0 left-[8%] w-4 xs:w-5 sm:w-6 md:w-8 h-4 xs:h-5 sm:h-6 md:h-8 -mt-4 hidden sm:block"
+                  class="absolute top-0 left-[1%] w-4 xs:w-5 sm:w-6 md:w-8 h-4 xs:h-5 sm:h-6 md:h-8 -mt-4 hidden sm:block"
                 />
                 <img 
                   src="/public/images/leaves-plants/plant-decoration.png" 
                   alt=""
-                  class="absolute top-0 left-[36%] w-4 xs:w-5 sm:w-6 md:w-8 h-4 xs:h-5 sm:h-6 md:h-8 -mt-4 hidden sm:block"
+                  class="absolute top-0 left-[35%] w-4 xs:w-5 sm:w-6 md:w-8 h-4 xs:h-5 sm:h-6 md:h-8 -mt-4 hidden sm:block"
                 />
                 <img 
                   src="/public/images/leaves-plants/plant-decoration.png" 
                   alt=""
-                  class="absolute top-0 left-[82%] w-4 xs:w-5 sm:w-6 md:w-8 h-4 xs:h-5 sm:h-6 md:h-8 -mt-4 hidden sm:block"
+                  class="absolute top-0 left-[75%] w-4 xs:w-5 sm:w-6 md:w-8 h-4 xs:h-5 sm:h-6 md:h-8 -mt-4 hidden sm:block"
                 />
               </h1>
               
-              <h2 class="text-[#FFA000] text-lg xs:text-xl sm:text-2xl md:text-3xl font-extrabold mb-4 font-poppins tracking-wide">
+              <h2 class="text-[#FFA000] text-lg text-left xs:text-xl sm:text-2xl md:text-3xl font-extrabold mb-4 font-poppins tracking-wide">
                 GROW SMART & WATER WISELY
               </h2>
               
-              <p class="text-gray-700 text-xs xs:text-sm sm:text-base font-medium mb-8 font-poppins max-w-md mx-auto lg:mx-0 px-4 sm:px-0">
+              <p class="text-gray-700 text-left text-xs xs:text-sm sm:text-base font-medium mb-8 font-poppins max-w-full mx-auto lg:mx-0 px-4 sm:px-0">
                 Your Guide to Precision Agriculture and Sustainability
               </p>
 

@@ -1,165 +1,102 @@
 <template>
-  <div class="hidden md:flex md:flex-shrink-0 relative z-50">
-    <div :class="[
-      'flex flex-col bg-[#002B1D] transition-all duration-300 ease-in-out rounded-tr-3xl rounded-br-3xl relative h-screen',
-      isCollapsed ? 'w-20' : 'w-[280px]'
-    ]">
-      <!-- Logo Section -->
-      <router-link to="/profile" class="block">
-        <div class="flex flex-col items-center px-6 py-4 border-b border-[#1a4d4f]">
-          <div :class="['flex items-center justify-center transition-all duration-300', isCollapsed ? 'w-12 h-12' : 'w-20 h-20']">
-            <img 
-              src="/public/images/logo/logo-wot-text.png" 
-              alt="Project Israel" 
-              class="w-full h-full object-contain"
-            />
-          </div>
-          <span class="text-white text-xl font-semibold mt-2" :class="[isCollapsed ? 'hidden' : 'block']">
-            Project Israel
-          </span>
-        </div>
-      </router-link>
+  <!-- Main navigation container with floating effect -->
+  <nav class="fixed top-4 mx-6 left-0 right-0 bg-[#00A572] shadow-lg z-50 rounded-2xl border-t-4 border-t-orange-300">
+    <!-- Circular logo container - Keeping original size -->
+    <div class="absolute left-1/2 -top-4 transform -translate-x-1/2">
+      <div class="bg-white rounded-full shadow-lg flex items-center justify-center overflow-hidden" style="width: 4rem; height: 4rem;">
+        <img 
+          src="/public/images/logo/logo-wot-text.png"
+          alt="Project Israel"
+          class="w-full h-full object-cover transform scale-[1.5] hover:scale-[2.2] transition-transform duration-300"
+          style="transform-origin: center;"
+        />
+      </div>
+    </div>
 
-      <!-- Toggle Button -->
-      <button   
-        @click="toggleSidebar"
-        class="absolute -right-12 top-12 px-4 py-3 rounded-lg bg-[#002B1D] hover:bg-[#1a4d4f] text-gray-300 hover:text-[#8FE3CF] transition-colors shadow-lg z-50"
-      >
-        <Menu v-if="isCollapsed" class="h-5 w-5" />
-        <PanelLeftClose v-else class="h-5 w-5" />
-      </button>
-
-      <!-- Navigation -->
-      <nav class="flex-1 px-4 py-6 flex flex-col justify-between">
-        <div>
-          <div v-show="!isCollapsed" class="mb-6">
-            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider px-2">
-              MENU
-            </h3>
-          </div>
-          
-          <div class="space-y-2">
-            <!-- Main Menu Items with Tooltips -->
-            <div v-for="item in menuItems" 
-                 :key="item.name" 
-                 class="relative group"
-            >
-              <router-link 
-                :to="item.href"
-                :class="[
-                  'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150',
-                  isCollapsed ? 'justify-center' : '',
-                  isCurrentRoute(item.href) ? 'bg-[#1a4d4f] text-white' : 'text-gray-300 hover:bg-[#1a4d4f] hover:text-white'
-                ]"
-              >
-                <component 
-                  :is="item.icon" 
-                  :class="[
-                    'flex-shrink-0 h-5 w-5',
-                    isCurrentRoute(item.href) ? 'text-[#8FE3CF]' : 'text-gray-400 group-hover:text-[#8FE3CF]'
-                  ]"
-                />
-                <span 
-                  :class="['ml-4 transition-opacity duration-300', isCollapsed ? 'hidden' : 'block']"
-                >
-                  {{ item.name }}
-                </span>
-              </router-link>
-              <!-- Tooltip -->
-              <div
-                v-if="isCollapsed"
-                class="absolute left-full ml-2 px-3 py-2 bg-[#1a4d4f] text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50"
-                style="top: 50%; transform: translateY(-50%);"
-              >
-                {{ item.name }}
-              </div>
-            </div>
-
-            <!-- Sensor Data Section -->
-            <div class="relative group">
-              <button 
-                @click="toggleSensorDropdown"
-                :class="[
-                  'w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150',
-                  isSensorDropdownOpen || isInSensorRoutes ? 'bg-[#1a4d4f] text-white' : 'text-gray-300 hover:bg-[#1a4d4f] hover:text-white'
-                ]"
-              >
-                <Database class="flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-[#8FE3CF]" />
-                <span :class="['ml-4', isCollapsed ? 'hidden' : 'block']">Sensor Data</span>
-                <ChevronDown 
-                  v-if="!isCollapsed"
-                  :class="['ml-auto h-5 w-5 transition-transform', isSensorDropdownOpen || isInSensorRoutes ? 'transform rotate-180' : '']"
-                />
-              </button>
-              <!-- Tooltip for Sensor Data -->
-              <div
-                v-if="isCollapsed"
-                class="absolute left-full ml-2 px-3 py-2 bg-[#1a4d4f] text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50"
-                style="top: 50%; transform: translateY(-50%);"
-              >
-                Sensor Data
-              </div>
-
-              <!-- Dropdown Content -->
-              <div 
-                v-show="!isCollapsed && (isSensorDropdownOpen || isInSensorRoutes)"
-                class="mt-2 ml-4 space-y-1"
-              >
-                <router-link 
-                  v-for="sensor in sensorTypes" 
-                  :key="sensor.name"
-                  :to="sensor.href"
-                  :class="[
-                    'flex items-center px-4 py-2 text-sm rounded-lg transition-colors duration-150',
-                    isCurrentRoute(sensor.href) 
-                      ? 'bg-[#1a4d4f] text-white' 
-                      : 'text-gray-300 hover:bg-[#1a4d4f] hover:text-white'
-                  ]"
-                >
-                  <component 
-                    :is="sensor.icon" 
-                    :class="[
-                      'flex-shrink-0 h-4 w-4 mr-3',
-                      isCurrentRoute(sensor.href) ? 'text-[#8FE3CF]' : 'text-gray-400'
-                    ]"
-                  />
-                  {{ sensor.name }}
-                </router-link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <!-- Profile Section -->
-      <div class="border-t border-[#1a4d4f] p-4">
-        <div class="flex items-center gap-3">
-          <div class="flex-shrink-0">
-            <img 
-              :src="user?.profilePicture"
-              class="w-10 h-10 rounded-full object-cover border-2 border-[#1a4d4f]" 
-              alt="Profile" 
-            />
-          </div>
-          <div v-if="!isCollapsed" class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-white truncate">{{ user?.firstName }} {{ user?.lastName }} {{ user?.name }}</p>
-            <p class="text-xs text-gray-400 truncate">{{ user?.email }}</p>
-          </div>
+    <div class="max-w-[1920px] mx-auto px-10 pt-10 pb-3.5">
+      <div class="flex items-center justify-between mt-5.3">
+        <!-- Left Navigation -->
+        <div class="flex items-center space-x-4 flex-wrap gap-y-2.6 pt-3.5">
           <router-link 
-            v-if="!isCollapsed"
-            to="/profile" 
-            class="p-2 rounded-lg hover:bg-[#1a4d4f] text-gray-300 hover:text-[#8FE3CF] transition-colors"
+            v-for="item in menuItems" 
+            :key="item.name"
+            :to="item.href"
+            :class="[
+              'flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors hover:bg-opacity-90',
+              isCurrentRoute(item.href) 
+                ? 'bg-[#008F61] text-white shadow-sm' 
+                : 'text-white/90 hover:bg-[#008F61] hover:text-white'
+            ]"
           >
-            <Settings class="h-5 w-5" />
+            <component 
+              :is="item.icon" 
+              class="h-5 w-5 mr-2.5"
+            />
+            {{ item.name }}
           </router-link>
+
+          <!-- Sensor Data Dropdown -->
+          <div class="relative">
+            <button 
+              @click="toggleSensorDropdown"
+              :class="[
+                'flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors hover:bg-opacity-90', 
+                isSensorDropdownOpen || isInSensorRoutes 
+                  ? 'bg-[#008F61] text-white shadow-sm' 
+                  : 'text-white/90 hover:bg-[#008F61] hover:text-white'
+              ]"
+            >
+              <Database class="h-5 w-5 mr-2.5" />
+              Sensor Data
+              <ChevronDown 
+                :class="['ml-2.5 h-4 w-4 transition-transform duration-200',
+                  isSensorDropdownOpen ? 'transform rotate-180' : ''
+                ]"
+              />
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div 
+              v-show="isSensorDropdownOpen"
+              class="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2.5 z-50" 
+            >
+              <router-link
+                v-for="sensor in sensorTypes"
+                :key="sensor.name"
+                :to="sensor.href"
+                :class="[
+                  'flex items-center px-4 py-2.5 text-sm transition-colors hover:bg-opacity-90',
+                  isCurrentRoute(sensor.href)
+                    ? 'bg-[#E8F5E9] text-[#00A572] font-medium'
+                    : 'text-gray-700 hover:bg-[#E8F5E9] hover:text-[#00A572]'
+                ]"
+              >
+                <component :is="sensor.icon" class="h-4 w-4 mr-3" />
+                {{ sensor.name }}
+              </router-link>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Section - User Profile -->
+        <div class="flex items-center pt-3.5">
+          <span class="text-sm text-white mr-3 hidden sm:block">{{ user?.email }}</span>
+          <img 
+            :src="user?.profilePicture || '/public/images/default-avatar.png'"
+            class="w-10 h-10 rounded-full border-2 border-white/20 hover:border-white/40 transition-colors duration-200"
+            alt="Profile"
+          />
         </div>
       </div>
     </div>
-  </div>
+  </nav>
+
+  <!-- Adjusted spacer height -->
+  <div class="h-26"></div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { 
   LayoutDashboard,
@@ -167,68 +104,28 @@ import {
   Cpu,
   Database,
   Sprout,
-  Menu,
-  PanelLeftClose,
   ChevronDown,
-  Settings,
   Droplets,
   Thermometer,
   Gauge,
-  Power
+  Power,
+  Cloud
 } from 'lucide-vue-next'
 
-const user = ref(null);
-
-const generateProfilePicture = (email) => {
-  if (!email) return null;
-
-  // 🔹 Extract the first letter of the email
-  const initial = email.charAt(0).toUpperCase();
-
-  // 🔹 Generate a random background color
-  const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A6", "#FFD700"];
-  const backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-
-  // 🔹 Create an SVG string for the avatar
-  const svg = `
-    <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100" height="100" fill="${backgroundColor}" />
-      <text x="50%" y="55%" font-size="50" text-anchor="middle" fill="white" font-family="Arial" dy=".3em">
-        ${initial}
-      </text>
-    </svg>
-  `;
-
-  // 🔹 Convert SVG to Data URL
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
-};
-
-
-onMounted(() => {
-  const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
-  if (storedUser) {
-    user.value = JSON.parse(storedUser);
-
-    if (!user.value.profilePicture) {
-      user.value.profilePicture = generateProfilePicture(user.value.email);
-    }
-  }
-
-
-  console.log(storedUser);
-});
-
+// Route and state management
 const route = useRoute()
-const isCollapsed = ref(false)
+const user = ref(null)
 const isSensorDropdownOpen = ref(false)
 
+// Navigation menu items
 const menuItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Crop Prediction', href: '/prediction', icon: Brain },
-  { name: 'Device Control', href: '/control', icon: Cpu },
   { name: 'Soil Analysis', href: '/soil', icon: Sprout },
+  { name: 'Weather', href: '/weather', icon: Cloud }
 ]
 
+// Sensor types for dropdown
 const sensorTypes = [
   { name: 'Soil Moisture', href: '/soil-moisture', icon: Droplets },
   { name: 'Water Level', href: '/water-level', icon: Gauge },
@@ -237,13 +134,7 @@ const sensorTypes = [
   { name: 'Motor Control', href: '/motor-control', icon: Power },
 ]
 
-const toggleSidebar = () => {
-  isCollapsed.value = !isCollapsed.value
-  if (isCollapsed.value) {
-    isSensorDropdownOpen.value = false
-  }
-}
-
+// Methods
 const toggleSensorDropdown = () => {
   isSensorDropdownOpen.value = !isSensorDropdownOpen.value
 }
@@ -256,16 +147,51 @@ const isInSensorRoutes = computed(() => {
   return sensorTypes.some(sensor => route.path === sensor.href)
 })
 
-// Keep dropdown open when navigating to sensor routes
-watch(() => route.path, (newPath) => {
-  if (sensorTypes.some(sensor => sensor.href === newPath)) {
-    isSensorDropdownOpen.value = true
+// Click outside handler
+const closeDropdown = (e) => {
+  if (!e.target.closest('.relative')) {
+    isSensorDropdownOpen.value = false
   }
+}
+
+// Lifecycle hooks
+onMounted(() => {
+  // Load user data
+  const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user")
+  if (storedUser) {
+    user.value = JSON.parse(storedUser)
+  }
+  
+  // Add click outside listener
+  document.addEventListener('click', closeDropdown)
+  
+  // Add resize listener for responsive handling
+  window.addEventListener('resize', handleResize)
 })
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', closeDropdown)
+  window.removeEventListener('resize', handleResize)
+})
+
+// Watch route changes
+watch(() => route.path, () => {
+  isSensorDropdownOpen.value = false
+})
+
+// Responsive handling
+const handleResize = () => {
+  if (window.innerWidth < 640) { // sm breakpoint
+    isSensorDropdownOpen.value = false
+  }
+}
+
+// Initialize responsive state
+handleResize()
 </script>
 
 <style scoped>
-/* Smooth transitions */
+/* Active link styling */
 .router-link-active {
   position: relative;
 }
@@ -275,14 +201,96 @@ watch(() => route.path, (newPath) => {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: -2px;
   height: 2px;
-  background-color: #8FE3CF;
+  background-color: white;
   transform: scaleX(0);
   transition: transform 0.2s ease;
 }
 
 .router-link-active:hover::after {
   transform: scaleX(1);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  nav {
+    top: 3px;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  
+  .nav-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  nav {
+    top: 2px;
+    margin-left: 0.75rem;
+    margin-right: 0.75rem;
+  }
+  
+  .nav-links {
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .nav-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .profile-section {
+    margin-top: 1rem;
+    justify-content: center;
+  }
+}
+
+/* Transitions */
+nav {
+  transition: all 0.3s ease;
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Cross-browser compatibility */
+@supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+  nav {
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* Ensure smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Fix for Safari */
+@supports (-webkit-touch-callout: none) {
+  nav {
+    /* Specific fixes for Safari if needed */
+    transform: translateZ(0);
+  }
+}
+
+/* Fix for Firefox */
+@-moz-document url-prefix() {
+  nav {
+    /* Specific fixes for Firefox if needed */
+    will-change: transform;
+  }
 }
 </style>
