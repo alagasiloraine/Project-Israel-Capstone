@@ -178,16 +178,16 @@ sample_test_data = {
     # 'Rainfall (mm/month)': 100, 'Wind Speed (m/s)': 2.0,
     # 'Pressure (hPa)': 1013, 'Cloud Cover (%)': 50
 
-    'N (ppm)': 10,   # Very low nitrogen
-    'P (ppm)': 50,   # High phosphorus
-    'K (ppm)': 5,    # Very low potassium
-    'Temp (°C)': 45,  # Very hot temperature
-    'Humidity (%)': 95,  # Extremely high humidity
-    'pH': 4.5,  # Highly acidic soil
-    'Rainfall (mm/month)': 0,  # No rainfall (drought conditions)
-    'Wind Speed (m/s)': 0.5,  # Almost no wind
-    'Pressure (hPa)': 1030,  # High atmospheric pressure
-    'Cloud Cover (%)': 0  # Completely clear sky
+    # 'N (ppm)': 10,   # Very low nitrogen
+    # 'P (ppm)': 50,   # High phosphorus
+    # 'K (ppm)': 5,    # Very low potassium
+    # 'Temp (°C)': 45,  # Very hot temperature
+    # 'Humidity (%)': 95,  # Extremely high humidity
+    # 'pH': 4.5,  # Highly acidic soil
+    # 'Rainfall (mm/month)': 0,  # No rainfall (drought conditions)
+    # 'Wind Speed (m/s)': 0.5,  # Almost no wind
+    # 'Pressure (hPa)': 1030,  # High atmospheric pressure
+    # 'Cloud Cover (%)': 0  # Completely clear sky
 
 }
 
