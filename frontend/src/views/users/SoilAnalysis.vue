@@ -1,108 +1,119 @@
 <template>
-  <div class="flex h-screen bg-gray-50">
+  <div class="min-h-screen bg-green-100 font-poppins">
     <Sidebar />
-    
     <!-- Main Content -->
-    <div class="flex-1 overflow-auto bg-gradient-to-br from-green-50 to-emerald-50 p-8">
-      <!-- Search Filter Bar -->
-      <div class="mb-6">
-        <SearchFilterBar />
-      </div>
+    <main class="min-h-screen bg-green-100">
+      <!-- Fixed Navbar Space - matches navbar height -->
+      <div class="h-[100px]"></div>
+      
+      <!-- Container Wrapper with increased spacing and animations -->
+      <div class="w-full px-6 pt-14">
+        <!-- Main Container with enhanced styling -->
+        <div class="bg-white rounded-[12px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-200 h-[calc(100vh-180px)] overflow-y-auto transition-all duration-300 ease-in-out hover:shadow-[0_8px_40px_rgb(0,0,0,0.06)]">
+          <!-- Content Wrapper with improved padding -->
+          <div class="p-8">
+            <!-- Header Section -->
+            <div class="mb-6">
+              <h1 class="text-2xl font-bold text-gray-900 mb-2">Soil Analysis Measurements</h1>
+              <div class="flex items-center text-sm text-gray-500">
+                <span class="text-green-600">Soil Analysis</span>
+                <ChevronRight class="h-4 w-4 mx-1" />
+                <span>Data Table</span>
+              </div>
+            </div>
 
-      <!-- Header Section -->
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">Soil Analysis Measurements</h1>
-        <div class="flex items-center text-sm text-gray-500">
-          <span class="text-green-600">Soil Analysis</span>
-          <ChevronRight class="h-4 w-4 mx-1" />
-          <span>Data Table</span>
+            <!-- Search Filter Bar -->
+            <div class="mb-6">
+              <SearchFilterBar />
+            </div>
+
+            <!-- Table Container -->
+            <div class="bg-white rounded-xl overflow-hidden border border-gray-200">
+              <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                  <thead>
+                    <tr>
+                      <th 
+                        v-for="header in headers" 
+                        :key="header.key"
+                        class="px-6 py-3 text-left text-xs text-gray-500 uppercase tracking-wider border-b border-r border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors duration-150 cursor-pointer"
+                        @click="toggleSort(header.key)"
+                      >
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <span :class="header.color">{{ header.label }}</span>
+                            <span v-if="header.unit" class="text-gray-500 ml-1">({{ header.unit }})</span>
+                          </div>
+                          <div class="flex flex-col ml-2">
+                            <ChevronUp 
+                              class="h-4 w-4 -mb-1" 
+                              :class="[
+                                sortKey === header.key && sortDirection === 'asc' 
+                                  ? header.color 
+                                  : 'text-gray-400'
+                              ]"
+                            />
+                            <ChevronDown 
+                              class="h-4 w-4" 
+                              :class="[
+                                sortKey === header.key && sortDirection === 'desc' 
+                                  ? header.color 
+                                  : 'text-gray-400'
+                              ]"
+                            />
+                          </div>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    <tr 
+                      v-for="(row, index) in sortedData" 
+                      :key="index"
+                      class="hover:bg-gray-50 transition-colors duration-150"
+                    >
+                      <td class="px-6 py-3 text-sm text-gray-500 border-r border-gray-200">
+                        {{ row.date }}
+                      </td>
+                      <td class="px-6 py-3 text-sm text-green-600 border-r border-gray-200">
+                        {{ row.nitrogen.toFixed(2) }}
+                      </td>
+                      <td class="px-6 py-3 text-sm text-blue-600 border-r border-gray-200">
+                        {{ row.phosphorus.toFixed(2) }}
+                      </td>
+                      <td class="px-6 py-3 text-sm text-purple-600 border-r border-gray-200">
+                        {{ row.potassium.toFixed(2) }}
+                      </td>
+                      <td class="px-6 py-3 text-sm text-orange-600 border-r border-gray-200">
+                        {{ row.ph.toFixed(2) }}
+                      </td>
+                      <td class="px-6 py-3 text-sm text-red-600 border-r border-gray-200">
+                        {{ row.temperature.toFixed(2) }}
+                      </td>
+                      <td class="px-6 py-3 text-sm text-gray-900 border-r border-gray-200">
+                        {{ row.humidity.toFixed(2) }}
+                      </td>
+                      <td class="px-6 py-3 text-sm text-gray-900 border-r border-gray-200">
+                        {{ row.predictedCrop }}
+                        <span v-if="row.successRate" class="text-gray-500 text-xs ml-1">({{ row.successRate }})</span>
+                      </td>
+                      <td class="px-6 py-3 text-sm text-gray-500">
+                        {{ row.datePredicted || '-' }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Pagination -->
+              <div class="p-4 border-t border-gray-200">
+                <Pagination />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <!-- Table Container -->
-      <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-        <div class="overflow-x-auto">
-          <table class="w-full border-collapse">
-            <thead>
-              <tr>
-                <th 
-                  v-for="header in headers" 
-                  :key="header.key"
-                  class="px-6 py-3 text-left text-xs text-gray-500 uppercase tracking-wider border-b border-r border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors duration-150 cursor-pointer"
-                  @click="toggleSort(header.key)"
-                >
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <span :class="header.color">{{ header.label }}</span>
-                      <span v-if="header.unit" class="text-gray-500 ml-1">({{ header.unit }})</span>
-                    </div>
-                    <div class="flex flex-col ml-2">
-                      <ChevronUp 
-                        class="h-4 w-4 -mb-1" 
-                        :class="[
-                          sortKey === header.key && sortDirection === 'asc' 
-                            ? header.color 
-                            : 'text-gray-400'
-                        ]"
-                      />
-                      <ChevronDown 
-                        class="h-4 w-4" 
-                        :class="[
-                          sortKey === header.key && sortDirection === 'desc' 
-                            ? header.color 
-                            : 'text-gray-400'
-                        ]"
-                      />
-                    </div>
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-              <tr 
-                v-for="(row, index) in sortedData" 
-                :key="index"
-                class="hover:bg-gray-50 transition-colors duration-150"
-              >
-                <td class="px-6 py-3 text-sm text-gray-500 border-r border-gray-200">
-                  {{ row.date }}
-                </td>
-                <td class="px-6 py-3 text-sm text-green-600 border-r border-gray-200">
-                  {{ row.nitrogen.toFixed(2) }}
-                </td>
-                <td class="px-6 py-3 text-sm text-blue-600 border-r border-gray-200">
-                  {{ row.phosphorus.toFixed(2) }}
-                </td>
-                <td class="px-6 py-3 text-sm text-purple-600 border-r border-gray-200">
-                  {{ row.potassium.toFixed(2) }}
-                </td>
-                <td class="px-6 py-3 text-sm text-orange-600 border-r border-gray-200">
-                  {{ row.ph.toFixed(2) }}
-                </td>
-                <td class="px-6 py-3 text-sm text-red-600 border-r border-gray-200">
-                  {{ row.temperature.toFixed(2) }}
-                </td>
-                <td class="px-6 py-3 text-sm text-gray-900 border-r border-gray-200">
-                  {{ row.humidity.toFixed(2) }}
-                </td>
-                <td class="px-6 py-3 text-sm text-gray-900 border-r border-gray-200">
-                  {{ row.predictedCrop }}
-                  <span v-if="row.successRate" class="text-gray-500 text-xs ml-1">({{ row.successRate }})</span>
-                </td>
-                <td class="px-6 py-3 text-sm text-gray-500 border-r border-gray-200">
-                  {{ row.datePredicted || '-' }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="mb-6">
-          <Pagination />
-        </div>
-      </div>
-    </div>
+    </main>
   </div>
 </template>
 
@@ -209,6 +220,8 @@ const sortedData = computed(() => {
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 .overflow-x-auto {
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
@@ -225,5 +238,34 @@ const sortedData = computed(() => {
 .overflow-x-auto::-webkit-scrollbar-thumb {
   background-color: rgba(156, 163, 175, 0.5);
   border-radius: 3px;
+}
+
+/* Enhanced scrollbar styling with dark green color */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(20, 83, 45, 0.5) transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgb(20, 83, 45, 0.5);
+  border-radius: 9999px;
+  transition: background-color 200ms;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(20, 83, 45, 0.7);
+}
+
+/* Add smooth transitions for all elements */
+* {
+  transition: color 200ms, background-color 200ms;
 }
 </style>
