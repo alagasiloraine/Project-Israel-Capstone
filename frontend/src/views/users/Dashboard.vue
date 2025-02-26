@@ -498,114 +498,94 @@
 
               <!-- Fourth Row - Overall Performance -->
               <div class="bg-white rounded-2xl p-6 shadow-lg border border-green-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-  <!-- Enhanced Header section with adjusted text sizes and spacing -->
-  <div class="flex flex-col items-start space-y-2 mb-6">
-    <div class="flex items-center justify-between w-full">
-      <div class="bg-green-50 rounded-full px-2.5 py-1 flex items-center space-x-1.5 shadow-inner">
-        <FlaskConical class="w-4 h-4 text-green-500" />
-        <h3 class="text-sm font-semibold text-green-700 tracking-wide">NPK Levels</h3>
-      </div>
-      <div class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
-        WEEKLY
-      </div>
-    </div>
-    <div class="w-full">
-      <p class="text-xs text-green-600 font-medium bg-green-100 px-3 py-1 rounded-full shadow-sm inline-block">
-        Weekly Performance Overview
-      </p>
-    </div>
-  </div>
+                <!-- Enhanced Header section with adjusted text sizes and spacing -->
+                <div class="flex flex-col items-start space-y-2 mb-6">
+                  <div class="flex items-center justify-between w-full">
+                    <div class="bg-green-50 rounded-full px-2.5 py-1 flex items-center space-x-1.5 shadow-inner">
+                      <FlaskConical class="w-4 h-4 text-green-500" />
+                      <h3 class="text-sm font-semibold text-green-700 tracking-wide">NPK Levels</h3>
+                    </div>
+                    <div class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
+                      WEEKLY
+                    </div>
+                  </div>
+                  <div class="w-full">
+                    <p class="text-xs text-green-600 font-medium bg-green-100 px-3 py-1 rounded-full shadow-sm inline-block">
+                      Weekly Performance Overview
+                    </p>
+                  </div>
+                </div>
 
-  <!-- Enhanced Legend Section -->
-  <div class="flex flex-wrap gap-3 mb-6">
-    <div v-for="(npk, index) in npkLevels" :key="index" 
-         class="flex items-center px-3 py-1.5 rounded-lg transition-all duration-300"
-         :class="`bg-${npk.color}-50 hover:bg-${npk.color}-100`">
-      <div :class="`w-2.5 h-2.5 rounded-full bg-${npk.color}-400 mr-2 ring-2 ring-${npk.color}-400/30`"></div>
-      <span :class="`text-sm font-medium text-${npk.color}-700`">{{ npk.title }}</span>
-    </div>
-  </div>
+                <!-- Enhanced Legend Section -->
+                <div class="flex flex-wrap gap-3 mb-6">
+                  <div v-for="(npk, index) in npkLevels" :key="index" 
+                      class="flex items-center px-3 py-1.5 rounded-lg transition-all duration-300"
+                      :class="`bg-${npk.color}-50 hover:bg-${npk.color}-100`">
+                    <div :class="`w-2.5 h-2.5 rounded-full bg-${npk.color}-400 mr-2 ring-2 ring-${npk.color}-400/30`"></div>
+                    <span :class="`text-sm font-medium text-${npk.color}-700`">{{ npk.title }}</span>
+                  </div>
+                </div>
 
-  <!-- Enhanced Circular Progress Section -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div v-for="(npk, index) in npkLevels" :key="index" 
-         :class="`p-4 rounded-xl border border-${npk.color}-100 bg-${npk.color}-50/30 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:scale-105`">
-      <div class="text-center">
-        <div class="relative inline-flex items-center justify-center">
-          <svg class="w-32 h-32 transform -rotate-90">
-            <!-- Background circle with enhanced styling -->
-            <circle
-              :class="`text-${npk.color}-100`"
-              stroke-width="12"
-              stroke="currentColor"
-              fill="transparent"
-              r="56"
-              cx="64"
-              cy="64"
-            />
-            <!-- Progress circle with enhanced styling -->
-            <circle
-              :class="`text-${npk.color}-500`"
-              stroke-width="12"
-              :stroke-dasharray="circumference"
-              :stroke-dashoffset="getDashOffset(npk.value)"
-              stroke-linecap="round"
-              stroke="currentColor"
-              fill="transparent"
-              r="56"
-              cx="64"
-              cy="64"
-            >
-              <!-- Add subtle animation -->
-              <animate
-                attributeName="stroke-dashoffset"
-                :from="circumference"
-                :to="getDashOffset(npk.value)"
-                dur="1.5s"
-                fill="freeze"
-                calcMode="spline"
-                keySplines="0.4 0 0.2 1"
-              />
-            </circle>
-          </svg>
-          <!-- Enhanced value display -->
-          <div class="absolute inset-0 flex flex-col items-center justify-center">
-            <span :class="`text-3xl font-bold text-${npk.color}-700`">{{ npk.value }}%</span>
-            <span :class="`text-sm font-medium text-${npk.color}-600 mt-1`">{{ npk.title }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+                <!-- Enhanced Circular Progress Section -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div v-for="(npk, index) in npkLevels" :key="index" 
+                      :class="`p-4 rounded-xl border border-${npk.color}-100 bg-${npk.color}-50/30 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:scale-105`">
+                    <div class="text-center">
+                      <div class="relative inline-flex items-center justify-center">
+                        <svg class="w-32 h-32 transform -rotate-90">
+                          <!-- Background circle with enhanced styling -->
+                          <circle
+                            :class="`text-${npk.color}-100`"
+                            stroke-width="12"
+                            :stroke="npk.title === 'Nitrogen' ? '#4ADE80' : npk.title === 'Phosphorus' ? '#60A5FA' : '#A78BFA'"
+                            fill="transparent"
+                            r="56"
+                            cx="64"
+                            cy="64"
+                            opacity="0.2"
+                          />
+                          <!-- Progress circle with enhanced styling -->
+                          <circle
+                            :class="`text-${npk.color}-500`"
+                            stroke-width="12"
+                            :stroke-dasharray="circumference"
+                            :stroke-dashoffset="getDashOffset(npk.value)"
+                            stroke-linecap="round"
+                            stroke="currentColor"
+                            fill="transparent"
+                            r="56"
+                            cx="64"
+                            cy="64"
+                          >
+                            <!-- Add subtle animation -->
+                            <animate
+                              attributeName="stroke-dashoffset"
+                              :from="circumference"
+                              :to="getDashOffset(npk.value)"
+                              dur="1.5s"
+                              fill="freeze"
+                              calcMode="spline"
+                              keySplines="0.4 0 0.2 1"
+                            />
+                          </circle>
+                        </svg>
+                        <!-- Enhanced value display -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                          <span :class="`text-3xl font-bold text-${npk.color}-700`">{{ npk.value }}%</span>
+                          <span :class="`text-sm font-medium text-${npk.color}-600 mt-1`">{{ npk.title }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-  <!-- Enhanced Chart Container -->
-  <div class="bg-white rounded-xl p-4 border border-green-100 transition-all duration-300 hover:shadow-md">
-    <div class="h-[300px]">
-      <canvas ref="performanceChartRef"></canvas>
-    </div>
-  </div>
-
-  <!-- Enhanced Bottom Stats -->
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-    <div v-for="(npk, index) in npkLevels" :key="index" 
-         :class="`flex items-center p-3 rounded-lg border border-${npk.color}-100 bg-${npk.color}-50/30 transition-all duration-300 hover:shadow-md`">
-      <div :class="`p-2 rounded-lg bg-${npk.color}-100/50 mr-3`">
-        <FlaskConical :class="`w-5 h-5 text-${npk.color}-500`" />
-      </div>
-      <div class="flex flex-col">
-        <span :class="`text-sm font-medium text-${npk.color}-600`">{{ npk.title }}</span>
-        <div class="flex items-center gap-1">
-          <span :class="`text-lg font-bold text-${npk.color}-700`">{{ npk.value }}%</span>
-          <span :class="`text-xs text-${npk.color}-500`">
-            <ArrowUp v-if="npk.value > 50" class="w-3 h-3 inline" />
-            <ArrowDown v-else class="w-3 h-3 inline" />
-            {{ Math.abs(npk.value - 50) }}%
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+                <!-- Enhanced Chart Container -->
+                <div class="bg-white rounded-xl p-4 border border-green-100 transition-all duration-300 hover:shadow-md">
+                  <div class="h-[300px]">
+                    <canvas ref="performanceChartRef"></canvas>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
