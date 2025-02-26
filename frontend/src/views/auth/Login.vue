@@ -128,12 +128,17 @@ const password = ref('')
 const showPassword = ref(false)
 
 const handleLogin = () => {
-  // Static login check
-  if (email.value === 'staff@example.com' && password.value === 'password123') {
-    // Successful login
-    console.log('Login successful')
+  // Check for admin login
+  if (email.value === 'admin@example.com' && password.value === 'admin123') {
+    console.log('Admin login successful')
+    router.push('/overview')
+  }
+  // Check for staff login
+  else if (email.value === 'staff@example.com' && password.value === 'password123') {
+    console.log('Staff login successful')
     router.push('/dashboard')
-  } else {
+  }
+  else {
     // Failed login
     console.log('Login failed')
     alert('Invalid email or password')
