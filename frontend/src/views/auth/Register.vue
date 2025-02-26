@@ -63,10 +63,10 @@
             </div>
 
             <!-- Back to Website - Centered -->
-            <div class="relative flex justify-center">
+            <div class="relative flex justify-center z-10">
               <button 
                 @click="handleBackToWebsite" 
-                class="text-white hover:text-[#FFA500] flex items-center gap-1.5 transition-colors duration-300 border border-white/50 rounded-lg px-3 py-1.5 hover:bg-white/20 text-sm"
+                class="text-white hover:text-[#FFA500] flex items-center gap-2 transition-colors duration-300 border border-white/50 rounded-lg px-4 py-2 hover:bg-white/20"
               >
                 <ArrowLeft class="h-4 w-4" />
                 <span class="text-sm">Back to website</span>

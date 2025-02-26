@@ -17,7 +17,7 @@
             />
             <h3 class="text-white font-bold text-lg sm:text-xl">Project Israel</h3>
           </div>
-          <p class="text-gray-300 text-xs leading-relaxed max-w-lg mx-auto sm:mx-0">
+          <p class="text-gray-300 text-sm sm:text-base leading-relaxed max-w-lg mx-auto sm:mx-0">
             Your trusted partner in precision agriculture and smart irrigation solutions. Grow smarter, conserve water, and maximize your yield with our cutting-edge technology.
           </p>
         </div>
@@ -26,10 +26,14 @@
         <div class="text-center sm:text-left">
           <h4 class="text-green-300 font-semibold text-base mb-2 pb-1 border-b border-green-700">Quick Links</h4>
           <ul class="space-y-1">
-            <li v-for="link in ['Home', 'About Us', 'Crops', 'Contact']" :key="link">
-              <a href="#" class="text-gray-300 hover:text-green-200 transition-colors duration-300 flex items-center text-sm group justify-center sm:justify-start">
+            <li v-for="link in quickLinks" :key="link.name">
+              <a 
+                href="#" 
+                @click.prevent="scrollToSection(link.section)"
+                class="text-gray-300 hover:text-green-200 transition-colors duration-300 flex items-center text-sm group justify-center sm:justify-start"
+              >
                 <ChevronRightIcon class="w-3 h-3 mr-1 text-green-500 group-hover:translate-x-1 transition-transform duration-300" />
-                {{ link }}
+                {{ link.name }}
               </a>
             </li>
           </ul>
@@ -72,24 +76,6 @@
         </a>
       </div>
 
-      <!-- Newsletter with responsive width
-      <div class="max-w-md mx-auto mb-4 px-4 sm:px-0">
-        <h5 class="text-white text-center text-sm font-semibold mb-2">Stay Updated with Our Newsletter</h5>
-        <form @submit.prevent class="flex">
-          <input 
-            type="email" 
-            placeholder="Enter your email" 
-            class="flex-grow px-3 py-1.5 text-sm rounded-l-md focus:outline-none focus:ring-2 focus:ring-green-500" 
-          />
-          <button 
-            type="submit" 
-            class="bg-green-500 text-white px-4 py-1.5 text-sm rounded-r-md hover:bg-green-600 transition-colors duration-300 whitespace-nowrap"
-          >
-            Subscribe
-          </button>
-        </form>
-      </div> -->
-
       <!-- Copyright -->
       <div class="border-t border-green-700 pt-4">
         <p class="text-center text-gray-400 text-xs">
@@ -113,13 +99,33 @@ import {
   CheckCircleIcon
 } from 'lucide-vue-next'
 
+const quickLinks = [
+  { name: 'Home', section: 'home' },
+  { name: 'About Us', section: 'about' },
+  { name: 'Crops', section: 'crops' }
+]
+
 const contactInfo = {
-  '+1 234 567 890': PhoneIcon,
-  'info@projectisrael.com': MailIcon,
-  'Tel Aviv, Israel': MapPinIcon
+  '09292664302': PhoneIcon,
+  'maryhelpofChristiansSchool@gmail.com': MailIcon,
+  'Mary Help of Christians School (INC), Don Bosco': MapPinIcon
 }
 
 const socialIcons = [FacebookIcon, TwitterIcon, InstagramIcon, LinkedinIcon]
+
+const scrollToSection = (sectionId) => {
+  const element = document.querySelector(`.${sectionId}-section`)
+  if (element) {
+    const navbarHeight = 80 // Adjust based on your navbar height
+    const elementPosition = element.getBoundingClientRect().top
+    const offsetPosition = elementPosition + window.pageYOffset - navbarHeight
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth'
+    })
+  }
+}
 </script>
 
 <style scoped>
