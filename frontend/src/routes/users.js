@@ -9,12 +9,24 @@ import Temperature from '../views/users/Temperature.vue'
 import MotorControl from '../views/users/MotorControl.vue'
 import SoilAnalysis from '../views/users/SoilAnalysis.vue'
 import UserProfile from '../views/users/UserProfile.vue'
+import About from '../views/users/About.vue'
+import OrganicSection from '../views/users/OrganicSection.vue'
 
 export const userRoutes = [
   {
     path: '/',
     name: 'Landing',
     component: LandingPage
+  },
+  {
+    path: '/about',
+    name: 'About',
+    component: About
+  },
+  {
+    path: '/organicsection',
+    name: 'OrganicSection',
+    component: OrganicSection
   },
   {
     path: '/dashboard',
@@ -65,5 +77,5 @@ export const userRoutes = [
     path: '/profile',
     name: 'UserProfile',
     component: UserProfile
-  },
+  }
 ]
