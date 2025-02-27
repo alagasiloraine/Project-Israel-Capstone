@@ -3,43 +3,43 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <div class="min-h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden">
-    <transition name="page-transition" mode="out-in" @before-leave="beforeLeave" @enter="enter" @after-enter="afterEnter">
-      <div :key="transitionKey" class="page-content" :style="contentStyle">
-        <!-- Falling Leaves Animation -->
-        <div class="absolute inset-0 pointer-events-none z-10 overflow-hidden">
-          <div v-for="i in (isMobile ? 12 : 20)" :key="`leaf1-${i}`" 
-               class="leaf absolute animate-fall"
-               :style="{
-                 left: `${Math.random() * 100}%`,
-                 top: `${Math.random() * -200}%`,
-                 animationDuration: `${15 + Math.random() * 15}s`,
-                 animationDelay: `${Math.random() * -30}s`,
-                 transform: `scale(${isMobile ? 0.7 : 0.95})`
-               }">
-            <img 
-              src="/public/images/leaves-plants/fall-leaf1.png"
-              alt="" 
-              class="w-20 sm:w-24 h-20 sm:h-24 opacity-50"
-            />
-          </div>
-          
-          <div v-for="i in (isMobile ? 12 : 20)" :key="`leaf2-${i}`" 
-               class="leaf absolute animate-fall"
-               :style="{
-                 left: `${Math.random() * 100}%`,
-                 top: `${Math.random() * -200}%`,
-                 animationDuration: `${15 + Math.random() * 15}s`,
-                 animationDelay: `${Math.random() * -30}s`,
-                 transform: `scale(${isMobile ? 0.7 : 0.95})`
-               }">
-            <img 
-              src="/public/images/leaves-plants/fall-leaf2.png"
-              alt="" 
-              class="w-24 sm:w-28 h-24 sm:h-28 opacity-50"
-            />
-          </div>
-        </div>
+    <!-- Falling Leaves Animation - Moved outside transition -->
+    <div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+      <div v-for="i in (isMobile ? 12 : 20)" :key="`leaf1-${i}`" 
+           class="leaf absolute animate-fall"
+           :style="{
+             left: `${Math.random() * 100}%`,
+             top: `${Math.random() * -200}%`,
+             animationDuration: `${15 + Math.random() * 15}s`,
+             animationDelay: `${Math.random() * -30}s`,
+             transform: `scale(${isMobile ? 0.7 : 0.95})`
+           }">
+        <img 
+          src="/public/images/leaves-plants/fall-leaf1.png"
+          alt="" 
+          class="w-20 sm:w-24 h-20 sm:h-24 opacity-50"
+        />
+      </div>
+      
+      <div v-for="i in (isMobile ? 12 : 20)" :key="`leaf2-${i}`" 
+           class="leaf absolute animate-fall"
+           :style="{
+             left: `${Math.random() * 100}%`,
+             top: `${Math.random() * -200}%`,
+             animationDuration: `${15 + Math.random() * 15}s`,
+             animationDelay: `${Math.random() * -30}s`,
+             transform: `scale(${isMobile ? 0.7 : 0.95})`
+           }">
+        <img 
+          src="/public/images/leaves-plants/fall-leaf2.png"
+          alt="" 
+          class="w-24 sm:w-28 h-24 sm:h-28 opacity-50"
+        />
+      </div>
+    </div>
 
+    <transition name="page-transition" mode="out-in" @before-leave="beforeLeave" @enter="enter" @after-enter="afterEnter">
+      <div :key="transitionKey" class="page-content relative z-10" :style="contentStyle">
         <div class="max-w-3xl w-[95%] sm:w-[90%] md:w-[85%] lg:w-full min-h-[500px] flex shadow-xl rounded-xl overflow-hidden relative z-20">
           <!-- Left Side - Image and Branding -->
           <div class="hidden md:flex md:w-1/2 bg-[#2B5329] text-white p-6 md:p-8 flex-col justify-end relative">
@@ -113,17 +113,28 @@
                   </div>
                 </div>
 
-                <div>
+                <div class="flex items-center justify-between mt-2">
+                  <div class="flex items-center">
+                    <input
+                      id="remember-me"
+                      type="checkbox"
+                      v-model="rememberMe"
+                      class="h-4 w-4 rounded border-gray-300 cursor-pointer text-[#2B5329] focus:ring-[#2B5329] focus:ring-offset-0 checked:bg-[#2B5329] checked:border-[#2B5329] hover:border-[#2B5329]"
+                    />
+                    <label for="remember-me" class="ml-2 block text-sm text-gray-700 cursor-pointer">
+                      Remember me
+                    </label>
+                  </div>
                   <router-link to="/forgotpassword" class="text-xs text-[#2B5329] hover:text-[#FFA500] transition-colors">
                     Forgot password?
                   </router-link>
                 </div>
 
                 <button 
-                  type="submit" 
+                  type="submit" :disabled="isLoading"
                   class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
                 >
-                  Get Started
+                  {{ isLoading ? "Signing In..." : "Sign In" }}
                 </button>
 
                 <div class="relative my-4">
@@ -135,21 +146,21 @@
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 gap-3">
                   <button 
-                    type="button"
+                    type="button" @click="handleGoogleLogin"
                     class="flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-[#3a8a3a] hover:text-white hover:border-[#3a8a3a] hover:transform hover:-translate-y-1 transition-all duration-300"
                   >
                     <Chrome class="h-5 w-5 mr-2" />
                     Google
                   </button>
-                  <button 
+                  <!-- <button 
                     type="button"
                     class="flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-[#3a8a3a] hover:text-white hover:border-[#3a8a3a] hover:transform hover:-translate-y-1 transition-all duration-300"
                   >
                     <Facebook class="h-5 w-5 mr-2" />
                     Facebook
-                  </button>
+                  </button> -->
                 </div>
 
                 <div class="text-center mt-8 mb-4">
@@ -167,6 +178,12 @@
             </div>
           </div>
         </div>
+        <LoadingPage 
+          :is-visible="isLoading"
+          title="Signing you in..."
+          message="Please wait while we verify your credentials"
+          @loading-complete="onLoadingComplete"
+        />
       </div>
     </transition>
   </div>
@@ -176,6 +193,11 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Eye, EyeOff, Chrome, Facebook } from 'lucide-vue-next'
+import LoadingPage from '../layout/LoadingPage.vue'
+import api from '../../api/index.js'
+import { auth, googleProvider, signInWithPopup } from "../../api/firebase.js";
+import toastr from 'toastr'
+
 
 const router = useRouter()
 const email = ref('')
@@ -184,6 +206,8 @@ const showPassword = ref(false)
 const isMobile = ref(window.innerWidth < 640)
 const transitionKey = ref(0)
 const contentStyle = ref({})
+const rememberMe = ref(false)
+const isLoading = ref(false)
 
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640
@@ -191,6 +215,20 @@ const handleResize = () => {
 
 onMounted(() => {
   window.addEventListener('resize', handleResize)
+  // Check for remembered email
+  const rememberedEmail = localStorage.getItem('rememberedEmail')
+  if (rememberedEmail) {
+    email.value = rememberedEmail
+    rememberMe.value = true
+  }
+  
+  localStorage.clear() //
+  sessionStorage.clear() //
+  
+  if(localStorage.clear()){
+    console.log('cleared local storage')
+  }
+
 })
 
 onUnmounted(() => {
@@ -222,10 +260,14 @@ const handleBackToWebsite = () => {
     left: '0px', 
     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' 
   }
-  
+
   setTimeout(() => {
     router.push('/')
   }, 500)
+}
+
+const onLoadingComplete = () => {
+  isLoading.value = false
 }
 
 const handleRequestNow = () => {
@@ -235,21 +277,91 @@ const handleRequestNow = () => {
     left: '0px', 
     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' 
   }
-  
+
   setTimeout(() => {
     router.push('/register')
   }, 500)
 }
 
-const handleLogin = () => {
-  if (email.value === 'staff@example.com' && password.value === 'password123') {
-    console.log('Login successful')
-    router.push('/dashboard')
-  } else {
-    console.log('Login failed')
-    alert('Invalid email or password')
+const handleLogin = async () => {
+  isLoading.value = true;
+
+  if (!email.value || !password.value) {
+    toastr.warning("Please enter both email and password.");
+    isLoading.value = false;
+    return;
   }
-}
+
+  try {
+    const response = await api.post("/auth/login", {
+      email: email.value,
+      password: password.value,
+    });
+
+    toastr.success("Login successful!");
+    console.log("Login response:", response.data);
+
+    const { token, user } = response.data;
+
+    // if (rememberMe.value) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+    // } else {
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user", JSON.stringify(user));
+    // }
+
+    router.push("/dashboard");
+  } catch (error) {
+    console.error("Login error:", error);
+    toastr.error(error.response?.data?.detail || "An error occurred during login.");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handleGoogleLogin = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+
+    console.log("✅ Google User:", user);
+
+    const idToken = await user.getIdToken();
+    const response = await api.post("/auth/google-login", {
+      idToken: idToken
+    });
+
+    console.log("✅ Backend Response:", response.data);
+
+    const { user: userData } = response.data;
+
+    // ✅ Ensure a profile picture is set
+    if (!userData.profilePicture) {
+      userData.profilePicture = generateProfilePicture(userData.email);
+    }
+
+    // ✅ Save user info in localStorage/sessionStorage
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    // ✅ Display user info in UI
+    user.value = userData;  // If using Vue's ref()
+
+    toastr.success("Google login successful!");
+    router.push("/dashboard");
+  } catch (error) {
+    console.error("❌ Google Login Error:", error);
+    toastr.error(error.response?.data?.detail || "Google login failed.");
+  }
+};
+
+// ✅ Helper function for default profile picture
+const generateProfilePicture = (email) => {
+  const initials = email[0].toUpperCase();
+  return `https://dummyimage.com/100x100/000/fff.png&text=${initials}`;
+};
+
+
 </script>
 
 <style scoped>
@@ -273,11 +385,14 @@ const handleLogin = () => {
 .animate-fall {
   animation: fall linear infinite;
   will-change: transform, opacity;
+  animation-play-state: running !important;
 }
 
 .leaf {
   pointer-events: none;
   z-index: 10;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 * {
@@ -322,5 +437,15 @@ button, input, label {
   .page-content {
     padding: 2rem;
   }
+}
+
+input[type="checkbox"]:checked {
+  background-color: #2B5329;
+  border-color: #2B5329;
+}
+
+input[type="checkbox"]:focus {
+  --tw-ring-color: #2B5329;
+  --tw-ring-offset-width: 0px;
 }
 </style>

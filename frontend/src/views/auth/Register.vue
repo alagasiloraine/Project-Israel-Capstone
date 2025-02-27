@@ -3,43 +3,43 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 relative overflow-hidden">
-    <transition name="page-transition" mode="out-in" @before-leave="beforeLeave" @enter="enter" @after-enter="afterEnter">
-      <div :key="transitionKey" class="page-content" :style="contentStyle">
-        <!-- Falling Leaves Animation -->
-        <div class="absolute inset-0 pointer-events-none z-10 overflow-hidden">
-          <div v-for="i in (isMobile ? 12 : 20)" :key="`leaf1-${i}`" 
-               class="leaf absolute animate-fall"
-               :style="{
-                 left: `${Math.random() * 100}%`,
-                 top: `${Math.random() * -200}%`,
-                 animationDuration: `${15 + Math.random() * 15}s`,
-                 animationDelay: `${Math.random() * -30}s`,
-                 transform: `scale(${isMobile ? 0.7 : 0.95})`
-               }">
-            <img 
-              src="/public/images/leaves-plants/fall-leaf1.png"
-              alt="" 
-              class="w-20 sm:w-24 h-20 sm:h-24 opacity-50"
-            />
-          </div>
-          
-          <div v-for="i in (isMobile ? 12 : 20)" :key="`leaf2-${i}`" 
-               class="leaf absolute animate-fall"
-               :style="{
-                 left: `${Math.random() * 100}%`,
-                 top: `${Math.random() * -200}%`,
-                 animationDuration: `${15 + Math.random() * 15}s`,
-                 animationDelay: `${Math.random() * -30}s`,
-                 transform: `scale(${isMobile ? 0.7 : 0.95})`
-               }">
-            <img 
-              src="/public/images/leaves-plants/fall-leaf2.png"
-              alt="" 
-              class="w-24 sm:w-28 h-24 sm:h-28 opacity-50"
-            />
-          </div>
-        </div>
+    <!-- Falling Leaves Animation - Moved outside transition -->
+    <div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+      <div v-for="i in (isMobile ? 12 : 20)" :key="`leaf1-${i}`" 
+           class="leaf absolute animate-fall"
+           :style="{
+             left: `${Math.random() * 100}%`,
+             top: `${Math.random() * -200}%`,
+             animationDuration: `${15 + Math.random() * 15}s`,
+             animationDelay: `${Math.random() * -30}s`,
+             transform: `scale(${isMobile ? 0.7 : 0.95})`
+           }">
+        <img 
+          src="/public/images/leaves-plants/fall-leaf1.png"
+          alt="" 
+          class="w-20 sm:w-24 h-20 sm:h-24 opacity-50"
+        />
+      </div>
+      
+      <div v-for="i in (isMobile ? 12 : 20)" :key="`leaf2-${i}`" 
+           class="leaf absolute animate-fall"
+           :style="{
+             left: `${Math.random() * 100}%`,
+             top: `${Math.random() * -200}%`,
+             animationDuration: `${15 + Math.random() * 15}s`,
+             animationDelay: `${Math.random() * -30}s`,
+             transform: `scale(${isMobile ? 0.7 : 0.95})`
+           }">
+        <img 
+          src="/public/images/leaves-plants/fall-leaf2.png"
+          alt="" 
+          class="w-24 sm:w-28 h-24 sm:h-28 opacity-50"
+        />
+      </div>
+    </div>
 
+    <transition name="page-transition" mode="out-in" @before-leave="beforeLeave" @enter="enter" @after-enter="afterEnter">
+      <div :key="transitionKey" class="page-content relative z-10" :style="contentStyle">
         <div class="max-w-3xl w-[95%] sm:w-[90%] md:w-[85%] lg:w-full min-h-[500px] flex shadow-xl rounded-xl overflow-hidden relative z-20">
           <!-- Left Side - Image and Branding -->
           <div class="hidden md:flex md:w-1/2 bg-[#2B5329] text-white p-6 md:p-8 flex-col justify-between relative">
@@ -63,10 +63,10 @@
             </div>
 
             <!-- Back to Website - Centered -->
-            <div class="relative flex justify-center">
+            <div class="relative flex justify-center z-10">
               <button 
                 @click="handleBackToWebsite" 
-                class="text-white hover:text-[#FFA500] flex items-center gap-1.5 transition-colors duration-300 border border-white/50 rounded-lg px-3 py-1.5 hover:bg-white/20 text-sm"
+                class="text-white hover:text-[#FFA500] flex items-center gap-2 transition-colors duration-300 border border-white/50 rounded-lg px-4 py-2 hover:bg-white/20"
               >
                 <ArrowLeft class="h-4 w-4" />
                 <span class="text-sm">Back to website</span>
@@ -81,6 +81,22 @@
               <p class="text-xs text-gray-600 mb-4 text-center">Enter your personal data to create an account</p>
 
               <form @submit.prevent="handleSubmit" class="space-y-3">
+                <!-- <div class="flex space-x-4">
+                  <button
+                    type="button"
+                    @click="useEmail = true"
+                    :class="['px-4 py-2 border rounded-md', useEmail ? 'bg-[#2B5329] text-white' : 'bg-gray-200']"
+                  >
+                    Register with Email
+                  </button>
+                  <button
+                    type="button"
+                    @click="useEmail = false"
+                    :class="['px-4 py-2 border rounded-md', !useEmail ? 'bg-[#2B5329] text-white' : 'bg-gray-200']"
+                  >
+                    Register with Phone
+                  </button>
+                </div> -->
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">First name</label>
@@ -111,9 +127,33 @@
                     type="email"
                     v-model="form.email"
                     required
-                    class="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
+                    class="block w-full px-3 py-1 border rounded-md"
                   />
                 </div>
+
+                <!-- Email Input -->
+                <!-- <div v-if="useEmail">
+                  <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    id="email"
+                    type="email"
+                    v-model="form.email"
+                    required
+                    class="block w-full px-3 py-1 border rounded-md"
+                  />
+                </div> -->
+
+                <!-- Phone Number Input -->
+                <!-- <div v-else>
+                  <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    v-model="form.phone"
+                    required
+                    class="block w-full px-3 py-1 border rounded-md"
+                  />
+                </div> -->
 
                 <div>
                   <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
@@ -165,11 +205,13 @@
                   </label>
                 </div>
 
+                <div id="recaptcha-container"></div>
+
                 <button
-                  type="submit"
+                  type="submit" :disabled="isLoading"
                   class="w-full flex justify-center py-1 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
                 >
-                  Sign Up
+                  {{ isLoading ? "Signing Up..." : "Sign Up" }}
                 </button>
               </form>
 
@@ -183,21 +225,21 @@
                   </div>
                 </div>
 
-                <div class="mt-4 grid grid-cols-2 gap-3">
+                <div class="mt-4 grid grid-cols-1 gap-3">
                   <button 
-                    type="button"
+                    type="button" @click="handleGoogleRegister"
                     class="flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-[#3a8a3a] hover:text-white hover:border-[#3a8a3a] hover:transform hover:-translate-y-1 transition-all duration-300"
                   >
                     <Chrome class="h-4 w-4 mr-1.5" />
                     Google
                   </button>
-                  <button 
+                  <!-- <button 
                     type="button"
                     class="flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-[#3a8a3a] hover:text-white hover:border-[#3a8a3a] hover:transform hover:-translate-y-1 transition-all duration-300"
                   >
                     <Facebook class="h-4 w-4 mr-1.5" />
                     Facebook
-                  </button>
+                  </button> -->
                 </div>
 
                 <div class="mt-4 text-center">
@@ -213,31 +255,48 @@
             </div>
           </div>
         </div>
+        <LoadingPage 
+          :is-visible="isLoading"
+          title="Creating your account..."
+          message="Please wait while we set up your new account"
+          @loading-complete="onLoadingComplete"
+        />
       </div>
     </transition>
   </div>
+
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ArrowLeft, Eye, EyeOff, Chrome, Facebook, LogIn } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import LoadingPage from '../layout/LoadingPage.vue'
+import api from '../../api/index.js'
+import { auth, googleProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from "../../api/firebase.js";
+import toastr from "toastr";
 
-const router = useRouter()
-const transitionKey = ref(0)
-const contentStyle = ref({})
+
+const router = useRouter();
+const transitionKey = ref(0);
+const contentStyle = ref({});
+const useEmail = ref(true);
+
 
 const form = ref({
-  firstName: '',
-  lastName: '',
-  email: '',
-  password: '',
-  acceptTerms: false
-})
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  password: "",
+  acceptTerms: false,
+});
 
+const message = ref("");
 const showPassword = ref(false)
 const passwordStrength = ref(0)
 const isMobile = ref(window.innerWidth < 640)
+const isLoading = ref(false)
 
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640
@@ -314,12 +373,159 @@ const checkPasswordStrength = () => {
   passwordStrength.value = strength
 }
 
-const handleSubmit = () => {
-  console.log('Form submitted:', form.value)
+  // toastr.options = {
+  //   closeButton: true,
+  //   progressBar: true,
+  //   positionClass: "toast-top-right",
+  //   timeOut: "3000",
+  // };
+
+const handleSubmit = async () => {
+  console.log("Form submitted:", form.value);
+
+  if (!form.value.acceptTerms) {
+    toastr.warning("You must accept the terms and conditions.");
+    return;
+  }
+
+  if (!form.value.firstName.trim() || !form.value.lastName.trim() || !form.value.email.trim() || !form.value.password.trim()) {
+    toastr.warning("All fields are required.");
+    return;
+  }
+
+  if (!form.value.acceptTerms) {
+    alert("You must accept the terms and conditions.");
+    return;
+  }
+
+  isLoading.value = true;
+
+  try {
+    // Register user with full details
+    const response = await api.post("/auth/register", form.value);
+
+    toastr.success(`Registration successful! Verify your account.`);
+    router.push(`/login/verification?uid=${response.data.userId}`);
+  } catch (error) {
+    console.error("General Error:", error);
+    toastr.error(error.response?.data?.detail || "Registration failed. Please try again.");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// const handleSubmit = async () => {
+//   console.log("Form submitted:", form.value);
+
+//   if (!form.value.acceptTerms) {
+//     alert("You must accept the terms and conditions.");
+//     return;
+//   }
+
+//   isLoading.value = true;
+
+//   try {
+//     if (useEmail.value) {
+//       // Register with Email
+//       const response = await api.post("/auth/register", form.value);
+//       alert("Registration successful. Check your email for verification.");
+//       router.push(`/login/verification?uid=${response.data.userId}`);
+//     } 
+//     // else {
+//     //   // Register with Phone
+//     //   let phoneNumber = form.value.phone.trim();
+
+//     //   // Log phone number for debugging
+//     //   console.log("Phone number before validation:", phoneNumber);
+
+//     //   // Ensure phone number starts with "+63" and is 12 digits long
+//     //   if (/^09\d{9}$/.test(phoneNumber)) {
+//     //     // Convert "09123456789" to "+639123456789"
+//     //     phoneNumber = "+63" + phoneNumber.substring(1);
+//     //   } else if (!/^\+639\d{9}$/.test(phoneNumber)) {
+//     //     alert("Invalid phone number format. Enter a valid Philippine number (e.g., 09123456789)");
+//     //     return;
+//     //   }
+
+//     //   // Log the phone number after formatting
+//     //   console.log("Formatted phone number:", phoneNumber);
+
+//     //   if (!window.recaptchaVerifier) {
+//     //     window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+//     //       size: "invisible",
+//     //     });
+//     //   }
+
+//     //   try {
+//     //     // Send OTP
+//     //     const confirmation = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
+//     //     window.confirmationResult = confirmation;
+//     //     console.log("OTP sent successfully:", confirmation);
+        
+//     //     alert("OTP sent to your phone. Verify your OTP to complete registration.");
+//     //     router.push(`/otp-verification`);
+//     //   } catch (otpError) {
+//     //     console.error("OTP Error:", otpError);
+//     //     alert(`OTP Error: ${otpError.message}`);
+//     //   }
+//     // }
+//   } catch (error) {
+//     console.error("General Error:", error);
+//     alert("Registration failed.");
+//   } finally {
+//     isLoading.value = false;
+//   }
+// }
+
+const onLoadingComplete = () => {
+  isLoading.value = false
 }
+  
+const handleGoogleRegister = async () => {
+  try {
+    // 🔹 Open Google Sign-In popup
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+
+    console.log("✅ Google User:", user);
+
+    // 🔹 Send the Firebase ID Token to the backend
+    const idToken = await user.getIdToken();
+    const response = await api.post("/auth/google-register", { idToken });
+
+    console.log("✅ Backend Response:", response.data);
+
+    const { user: userData } = response.data;
+
+    // ✅ Ensure profile picture exists
+    if (!userData.profilePicture) {
+      userData.profilePicture = generateProfilePicture(userData.email);
+    }
+
+    // ✅ Save user data to localStorage
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    // ✅ Display user info in UI
+    user.value = userData;  // If using Vue's ref()
+
+    toastr.success("Registration successful!");
+    router.push("/dashboard");
+  } catch (error) {
+    console.error("❌ Google Registration Error:", error);
+    toastr.error(error.response?.data?.detail || "Google registration failed.");
+  }
+};
+
+// ✅ Helper function for default profile picture
+const generateProfilePicture = (email) => {
+  const initials = email[0].toUpperCase();
+  return `https://dummyimage.com/100x100/000/fff.png&text=${initials}`;
+};
+
+
 </script>
 
-<style>
+<style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -350,11 +556,14 @@ h2, p, label, input, button, a, span {
 .animate-fall {
   animation: fall linear infinite;
   will-change: transform, opacity;
+  animation-play-state: running !important;
 }
 
 .leaf {
   pointer-events: none;
   z-index: 10;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* Page transition styles */
