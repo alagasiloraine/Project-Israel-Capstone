@@ -1,5 +1,8 @@
 import Login from '../views/auth/Login.vue'
 import Register from '../views/auth/Register.vue'
+import Verification from '../views/auth/Verification.vue'
+import ForgotPassword from '../views/auth/ForgotPassword.vue'
+import LoadingPage from '../views/layout/LoadingPage.vue'
 
 export const authRoutes = [
   {
@@ -11,5 +14,16 @@ export const authRoutes = [
     path: '/register',
     name: 'Register',
     component: Register
-  }
+  },
+  {
+    path: '/login/verification',
+    name: 'Verification',
+    component: Verification
+  },
+  {
+    path: '/forgotpassword',
+    name: 'ForgotPassword',
+    component: ForgotPassword
+  },
 ]
+

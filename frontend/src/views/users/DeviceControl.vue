@@ -299,7 +299,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Thermometer, Droplets, Waves, Droplet, Cloud, MapPin, Sun, Moon } from 'lucide-vue-next'
+<<<<<<< HEAD
 import Sidebar from './Sidebar.vue'
+=======
+import Sidebar from '../layout/Sidebar.vue'
+>>>>>>> origin/loreng
 
 const temperature = ref(25)
 const humidity = ref(50)
