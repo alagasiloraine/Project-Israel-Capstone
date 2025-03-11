@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100 max-w-[2000px] mx-auto">
+  <div class="min-h-screen bg-gray-100 max-w-[2000px] mx-auto font-poppins">
     <AdminHeader />
     <!-- Main container with fixed width to match navbar -->
     <div class="w-full px-4 py-4">
@@ -44,24 +44,6 @@
                     <BellIcon class="w-5 h-5" />
                     <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">3</span>
                   </button>
-                  <!-- <div class="relative">
-                    <button 
-                      @click="showSettingsDropdown = !showSettingsDropdown"
-                      class="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                    >
-                      <Settings2Icon class="w-5 h-5" />
-                    </button>
-                    <div v-if="showSettingsDropdown" 
-                         class="absolute right-0 mt-2 w-48 bg-[#00A76F] rounded-lg shadow-lg p-2 z-50">
-                      <a href="/profile" class="block px-4 py-2 text-sm hover:bg-white/10 rounded-lg transition-colors">
-                        Edit Profile
-                      </a>
-                      <button @click="handleLogout" 
-                              class="block w-full text-left px-4 py-2 text-sm hover:bg-white/10 rounded-lg text-red-400 transition-colors">
-                        Logout
-                      </button>
-                    </div>
-                  </div> -->
                 </div>
               </div>
             </div>
@@ -470,7 +452,7 @@
               </label>
               <select 
                 v-model="newEvent.startHour"
-                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A76F] focus:border-transparent bg-white"
+                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A76F] focus:border-transparent bg-white"
               >
                 <option v-for="hour in timeSlots" :key="hour" :value="hour">
                   {{ formatHour(hour) }}
@@ -484,7 +466,7 @@
               </label>
               <select 
                 v-model="newEvent.duration"
-                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A76F] focus:border-transparent bg-white"
+                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A76F] focus:border-transparent bg-white"
               >
                 <option v-for="n in 8" :key="n" :value="n">
                   {{ n }} {{ n === 1 ? 'hour' : 'hours' }}
@@ -748,7 +730,9 @@ const weekDays = ref([
   { name: 'Monday', date: '17' },
   { name: 'Tuesday', date: '18' },
   { name: 'Wednesday', date: '19' },
-  
+  { name: 'Thursday', date: '20' },
+  { name: 'Friday', date: '21' },
+  { name: 'Saturday', date: '22' }
 ])
 
 const timeSlots = ref(Array.from({ length: 13 }, (_, i) => i + 5)) // 5 AM to 5 PM
@@ -1186,11 +1170,19 @@ button {
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 /* Apply Poppins font to everything */
+/*
 * {
+  font-family: 'Poppins', sans-serif;
+}
+*/
+
+/* Add this new rule */
+.font-poppins {
   font-family: 'Poppins', sans-serif;
 }
 
 /* Fix modal styling */
+/*
 .modal-input {
   @apply w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A76F] focus:border-transparent;
 }
@@ -1202,8 +1194,10 @@ button {
 .modal-select {
   @apply w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A76F] focus:border-transparent bg-white;
 }
+*/
 
 /* Add these styles to the <style> section */
+/*
 .modal-input,
 .modal-select,
 input[type="text"],
@@ -1217,6 +1211,7 @@ textarea {
   @apply block text-sm font-medium text-gray-700 mb-2;
   font-family: 'Poppins', sans-serif;
 }
+*/
 
 /* Ensure modals are always on top */
 .fixed {
