@@ -1,85 +1,4 @@
 <template>
-<<<<<<< HEAD
-  <div class="flex h-screen bg-gray-50">
-    <Sidebar />
-    
-    <!-- Main Content -->
-    <div class="flex-1 overflow-auto bg-gradient-to-br from-green-50 to-emerald-50 p-8">
-      <!-- Search Filter Bar -->
-      <div class="mb-6">
-        <SearchFilterBar />
-      </div>
-
-      <!-- Header Section -->
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">Humidity Data Table</h1>
-        <div class="flex items-center text-sm text-gray-500">
-          <span class="text-blue-600">Humidity</span>
-          <ChevronRight class="h-4 w-4 mx-1" />
-          <span>Data Table</span>
-        </div>
-      </div>
-
-      <!-- Table Container with floating effect -->
-      <div class="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-200">
-        <table class="w-full border-collapse">
-          <thead>
-            <tr class="bg-gray-300 border-b border-gray-200">
-              <th 
-                v-for="header in headers" 
-                :key="header.key"
-                class="px-6 py-3 text-left text-sm font-medium text-gray-800 border-b border-r border-gray-300 bg-gray-100 hover:bg-gray-200/90 transition-colors duration-150 cursor-pointer"
-                @click="toggleSort(header.key)"
-              >
-                <div class="flex items-center justify-between">
-                  <span class="uppercase">{{ header.label }}</span>
-                  <div class="flex flex-col ml-2">
-                    <ChevronUp 
-                      class="h-4 w-4 -mb-1" 
-                      :class="sortConfig.key === header.key && !sortConfig.asc ? 'text-blue-700' : 'text-gray-500'"
-                    />
-                    <ChevronDown 
-                      class="h-4 w-4" 
-                      :class="sortConfig.key === header.key && sortConfig.asc ? 'text-blue-700' : 'text-gray-500'"
-                    />
-                  </div>
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200">
-            <tr 
-              v-for="(row, index) in paginatedData" 
-              :key="row.id"
-              class="hover:bg-gray-50 transition-colors duration-150"
-            >
-              <td class="px-6 py-3 text-sm font-medium text-gray-900 border-r border-gray-200">
-                {{ (currentPage - 1) * itemsPerPage + index + 1 }}
-              </td>
-              <td class="px-6 py-3 text-sm font-medium border-r border-gray-200">
-                <span 
-                  :class="getHumidityClass(row.humidity)"
-                  class="px-2 py-1 rounded-full text-sm font-medium"
-                >
-                  {{ row.humidity }}%
-                </span>
-              </td>
-              <td class="px-6 py-3 text-sm font-medium text-gray-900 border-r border-gray-200">
-                {{ row.date }}
-              </td>
-              <td class="px-6 py-3 text-sm font-medium text-gray-900 border-r border-gray-200">
-                {{ row.time }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="mb-6">
-          <Pagination />
-        </div>
-      </div>
-    </div>
-=======
   <div class="min-h-screen bg-green-100 font-poppins">
     <Sidebar />
     <!-- Main Content -->
@@ -170,22 +89,15 @@
         </div>
       </div>
     </main>
->>>>>>> origin/loreng
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { ChevronRight, ChevronUp, ChevronDown } from 'lucide-vue-next'
-<<<<<<< HEAD
-import Sidebar from './Sidebar.vue'
-import SearchFilterBar from './SearchFilterBar.vue'
-import Pagination from './Pagination.vue'
-=======
 import Sidebar from '../layout/Sidebar.vue'
 import SearchFilterBar from './SearchFilterBar.vue'
 import Pagination from '../layout/Pagination.vue'
->>>>>>> origin/loreng
 
 const headers = [
   { key: 'id', label: 'ID', sortable: true },
@@ -247,9 +159,6 @@ const paginatedData = computed(() => {
   const end = start + itemsPerPage.value
   return sortedData.value.slice(start, end)
 })
-<<<<<<< HEAD
-</script>
-=======
 </script>
 
 <style>
@@ -284,4 +193,3 @@ const paginatedData = computed(() => {
   transition: color 200ms, background-color 200ms;
 }
 </style>
->>>>>>> origin/loreng

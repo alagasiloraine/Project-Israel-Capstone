@@ -1,31 +1,22 @@
 <template>
-  <div class="w-full bg-white rounded-lg overflow-hidden">
+  <!-- Main content with more subtle blur effect -->
+  <div class="w-full bg-white rounded-lg overflow-hidden" :class="{ 'blur-sm brightness-[0.98]': showModal || showDeleteModal }">
     <AdminHeader />
-    <div class="p-[40px]">
-      <div class="w-[1750px] mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+    <div class="p-[30px] px-[20px]">
+      <!-- Full width container to match navbar width -->
+      <div class="w-full bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
         <!-- Breadcrumb Header -->
-        <div class="p-6 border-b border-gray-100">
+        <!-- <div class="p-6 border-b border-gray-100">
           <h1 class="text-2xl font-semibold text-gray-900 mb-2">Manage Staff</h1>
-          <!-- <div class="flex items-center text-sm text-blue-500">
-            <span>Staff Management</span>
-            <span class="mx-2">›</span>
-            <span class="text-gray-500">Data Table</span>
-          </div> -->
-        </div>
+        </div> -->
 
         <div class="mb-6 px-8 mt-2">
           <AdminSearchPage />
         </div>
         
-        <div class="px-6">
+        <div class="px-2">
           <!-- Updated Buttons -->
           <div class="flex justify-end mb-4 gap-2">
-            <button 
-              class="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Printer class="h-4 w-4" />
-              <span class="font-medium">Print</span>
-            </button>
             <button 
               @click="showArchivePanel = true"
               class="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -43,106 +34,108 @@
           </div>
 
           <div class="border border-gray-200 rounded-lg overflow-hidden">
-            <table class="w-full">
-              <!-- Table Header -->
-              <thead class="bg-gray-100">
-                <tr>
-                  <th class="w-16 px-4 py-4 border-b border-r border-gray-200 rounded-tl-lg">
-                    <input 
-                      type="checkbox" 
-                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      v-model="selectAll"
-                      @change="toggleSelectAll"
-                      aria-label="Select all"
+            <div class="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-green-100">
+              <table class="w-full">
+                <!-- Table Header -->
+                <thead class="bg-gray-100 sticky top-0 z-10">
+                  <tr>
+                    <th class="w-16 px-4 py-4 border-b border-r border-gray-200 rounded-tl-lg">
+                      <input 
+                        type="checkbox" 
+                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        v-model="selectAll"
+                        @change="toggleSelectAll"
+                        aria-label="Select all"
+                      >
+                    </th>
+                    <th 
+                      v-for="(header, index) in headers" 
+                      :key="header"
+                      :class="[
+                        'px-4 py-3 text-left font-bold text-gray-900 uppercase tracking-wider font-poppins border-b border-r border-gray-200 text-sm bg-gray-100',
+                        index === headers.length - 1 ? 'rounded-tr-lg' : ''
+                      ]"
                     >
-                  </th>
-                  <th 
-                    v-for="(header, index) in headers" 
-                    :key="header"
-                    :class="[
-                      'px-4 py-3 text-left font-bold text-gray-900 uppercase tracking-wider font-poppins border-b border-r border-gray-200 text-sm',
-                      index === headers.length - 1 ? 'rounded-tr-lg' : ''
-                    ]"
-                  >
-                    <div class="flex items-center gap-2">
-                      {{ header }}
-                      <div v-if="header !== 'Actions'" class="flex flex-col">
-                        <ChevronUp class="h-3 w-3 text-gray-400" />
-                        <ChevronDown class="h-3 w-3 text-gray-400 -mt-1" />
+                      <div class="flex items-center gap-2">
+                        {{ header }}
+                        <div v-if="header !== 'Actions'" class="flex flex-col">
+                          <ChevronUp class="h-3 w-3 text-gray-400" />
+                          <ChevronDown class="h-3 w-3 text-gray-400 -mt-1" />
+                        </div>
                       </div>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
+                    </th>
+                  </tr>
+                </thead>
 
-              <!-- Table Body -->
-              <tbody class="divide-y divide-gray-200">
-                <tr 
-                  v-for="(employee, index) in employees" 
-                  :key="employee.id"
-                  class="hover:bg-gray-100 transition-colors"
-                >
-                  <td class="px-4 py-3 border-r border-gray-200">
-                    <input 
-                      type="checkbox" 
-                      v-model="employee.selected"
-                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    >
-                  </td>
-                  <td class="px-4 py-3 border-r border-gray-200">
-                    <div class="flex items-center gap-3">
-                      <img 
-                        :src="employee.avatar" 
-                        :alt="employee.name"
-                        class="w-8 h-8 rounded-full object-cover border border-gray-200"
+                <!-- Table Body -->
+                <tbody class="divide-y divide-gray-200">
+                  <tr 
+                    v-for="(employee, index) in employees" 
+                    :key="employee.id"
+                    class="hover:bg-gray-100 transition-colors"
+                  >
+                    <td class="px-4 py-3 border-r border-gray-200">
+                      <input 
+                        type="checkbox" 
+                        v-model="employee.selected"
+                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       >
-                      <span class="font-medium text-sm text-gray-900 font-poppins">{{ employee.name }}</span>
-                    </div>
-                  </td>
-                  <td class="px-4 py-3 border-r border-gray-200">
-                    <span class="text-sm text-gray-600 font-poppins">{{ employee.position }}</span>
-                  </td>
-                  <td class="px-4 py-3 border-r border-gray-200">
-                    <span class="text-sm font-medium text-blue-600 font-poppins">{{ employee.plotAssign }}</span>
-                  </td>
-                  <td class="px-4 py-3 border-r border-gray-200">
-                    <span class="text-sm text-gray-600 font-poppins">{{ employee.department }}</span>
-                  </td>
-                  <td class="px-4 py-3 border-r border-gray-200">
-                    <span 
-                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium font-poppins"
-                      :class="getStatusClass(employee.status)"
-                    >
-                      <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="getStatusDotClass(employee.status)"></span>
-                      {{ employee.status }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center justify-between w-32">
-                      <button 
-                        class="p-2 text-gray-500 hover:text-blue-600 transition-colors"
-                        title="View"
+                    </td>
+                    <td class="px-4 py-3 border-r border-gray-200">
+                      <div class="flex items-center gap-3">
+                        <img 
+                          :src="employee.avatar" 
+                          :alt="employee.name"
+                          class="w-8 h-8 rounded-full object-cover border border-gray-200"
+                        >
+                        <span class="font-medium text-sm text-gray-900 font-poppins">{{ employee.name }}</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 border-r border-gray-200">
+                      <span class="text-sm text-gray-600 font-poppins">{{ employee.position }}</span>
+                    </td>
+                    <td class="px-4 py-3 border-r border-gray-200">
+                      <span class="text-sm font-medium text-blue-600 font-poppins">{{ employee.plotAssign }}</span>
+                    </td>
+                    <td class="px-4 py-3 border-r border-gray-200">
+                      <span class="text-sm text-gray-600 font-poppins">{{ employee.department }}</span>
+                    </td>
+                    <td class="px-4 py-3 border-r border-gray-200">
+                      <span 
+                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium font-poppins"
+                        :class="getStatusClass(employee.status)"
                       >
-                        <Eye class="h-5 w-5" />
-                      </button>
-                      <button 
-                        class="p-2 text-gray-500 hover:text-green-600 transition-colors"
-                        title="Edit"
-                      >
-                        <Edit class="h-5 w-5" />
-                      </button>
-                      <button 
-                        @click="archiveStaff(employee)"
-                        class="p-2 text-gray-500 hover:text-red-600 transition-colors"
-                        title="Archive"
-                      >
-                        <Archive class="h-5 w-5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                        <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="getStatusDotClass(employee.status)"></span>
+                        {{ employee.status }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center justify-between w-32">
+                        <button 
+                          class="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                          title="View"
+                        >
+                          <Eye class="h-5 w-5" />
+                        </button>
+                        <button 
+                          class="p-2 text-gray-500 hover:text-green-600 transition-colors"
+                          title="Edit"
+                        >
+                          <Edit class="h-5 w-5" />
+                        </button>
+                        <button 
+                          @click="archiveStaff(employee)"
+                          class="p-2 text-gray-500 hover:text-red-600 transition-colors"
+                          title="Archive"
+                        >
+                          <Archive class="h-5 w-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -150,98 +143,6 @@
         <div class="mt-6 mb-6">
           <AdminPagination />
         </div>
-      </div>
-    </div>
-
-    <!-- Simple Add New Staff Modal -->
-    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 class="text-lg font-medium leading-6 text-gray-900 mb-4">Add New Staff</h2>
-        <form @submit.prevent="handleSubmit" class="space-y-4">
-          <!-- Name Input -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input
-              type="text"
-              v-model="newStaff.name"
-              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <!-- Position Dropdown -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Position</label>
-            <select
-              v-model="newStaff.position"
-              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select Position</option>
-              <option value="staff">Staff</option>
-            </select>
-          </div>
-
-          <!-- Plot Assign Dropdown -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Plot Assign</label>
-            <select
-              v-model="newStaff.plotAssign"
-              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select Plot</option>
-              <option value="greenhouse1">Greenhouse 1</option>
-              <option value="greenhouse2">Greenhouse 2</option>
-            </select>
-          </div>
-
-          <!-- Department Dropdown -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
-            <select
-              v-model="newStaff.department"
-              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select Department</option>
-              <option value="farming">Farming</option>
-              <option value="poultry">Poultry</option>
-              <option value="livestock">Livestock</option>
-            </select>
-          </div>
-
-          <!-- Status Dropdown -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              v-model="newStaff.status"
-              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select Status</option>
-              <option value="active">Active</option>
-              <option value="not_active">Not Active</option>
-            </select>
-          </div>
-
-          <!-- Form Actions -->
-          <div class="mt-6 flex justify-end gap-3">
-            <button
-              type="button"
-              @click="showModal = false"
-              class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg border border-gray-300"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg"
-            >
-              Add Staff
-            </button>
-          </div>
-        </form>
       </div>
     </div>
 
@@ -302,25 +203,146 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Delete Confirmation Modal -->
+  <!-- Redesigned Add New Staff Modal -->
+  <div v-if="showModal" class="fixed inset-0 flex items-center justify-center z-50">
+    <!-- Modal Content -->
     <div 
-      v-if="showDeleteModal" 
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      class="bg-white rounded-2xl w-full max-w-md mx-4 shadow-lg transform transition-all duration-300 ease-out"
+      :class="showModal ? 'scale-100 opacity-100' : 'scale-95 opacity-0'"
     >
-      <div class="bg-white rounded-lg p-6 w-full max-w-sm">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Deletion</h3>
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-semibold text-gray-900">Add New Staff</h2>
+          <button 
+            @click="showModal = false"
+            class="text-gray-400 hover:text-gray-500 transition-colors"
+          >
+            <X class="h-5 w-5" />
+          </button>
+        </div>
+
+        <form @submit.prevent="handleSubmit" class="space-y-5">
+          <!-- Name Input -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input
+              type="text"
+              v-model="newStaff.name"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              placeholder="Enter staff name"
+              required
+            />
+          </div>
+
+          <!-- Position Dropdown -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Position</label>
+            <select
+              v-model="newStaff.position"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              required
+            >
+              <option value="">Select Position</option>
+              <option value="Staff">Staff</option>
+            </select>
+          </div>
+
+          <!-- Plot Assign Dropdown -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Plot Assign</label>
+            <select
+              v-model="newStaff.plotAssign"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              required
+            >
+              <option value="">Select Plot</option>
+              <option value="Greenhouse 1">Greenhouse 1</option>
+              <option value="Greenhouse 2">Greenhouse 2</option>
+            </select>
+          </div>
+
+          <!-- Department Dropdown -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+            <select
+              v-model="newStaff.department"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              required
+            >
+              <option value="">Select Department</option>
+              <option value="Farming">Farming</option>
+              <option value="Poultry">Poultry</option>
+              <option value="Livestock">Livestock</option>
+            </select>
+          </div>
+
+          <!-- Status Dropdown -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select
+              v-model="newStaff.status"
+              class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              required
+            >
+              <option value="">Select Status</option>
+              <option value="Active">Active</option>
+              <option value="Invited">Invited</option>
+            </select>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex justify-end gap-3 mt-6 pt-2">
+            <button
+              type="button"
+              @click="showModal = false"
+              class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-700 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors"
+            >
+              Add Staff
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Redesigned Delete Confirmation Modal -->
+  <div v-if="showDeleteModal" class="fixed inset-0 flex items-center justify-center z-50">
+    <!-- Modal Content -->
+    <div 
+      class="bg-white rounded-2xl w-full max-w-sm mx-4 shadow-lg transform transition-all duration-300 ease-out"
+      :class="showDeleteModal ? 'scale-100 opacity-100' : 'scale-95 opacity-0'"
+    >
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Confirm Deletion</h3>
+          <button 
+            @click="showDeleteModal = false"
+            class="text-gray-400 hover:text-gray-500 transition-colors"
+          >
+            <X class="h-5 w-5" />
+          </button>
+        </div>
+        
         <p class="text-gray-600 mb-6">Are you sure you want to delete this account? This action cannot be undone.</p>
+        
         <div class="flex justify-end gap-3">
           <button
             @click="showDeleteModal = false"
-            class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg border border-gray-300"
+            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-700 transition-colors"
           >
             Cancel
           </button>
           <button
             @click="deleteStaff"
-            class="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg"
+            class="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
           >
             Yes, Delete
           </button>
@@ -334,7 +356,7 @@
 import { ref } from 'vue'
 import { 
   ChevronDown, 
-  ChevronUp, // Add ChevronUp import
+  ChevronUp, 
   Plus, 
   Printer, 
   Archive,
@@ -524,4 +546,33 @@ const getStatusDotClass = (status) => {
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+/* Custom Scrollbar Styles */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #e5e7eb;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #22c55e;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: #16a34a;
+}
+
+/* Blur effect for modal backdrop */
+.blur-l {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.brightness-\[0\.98\] {
+  filter: brightness(0.98);
+}
 </style>

@@ -1,64 +1,4 @@
 <template>
-<<<<<<< HEAD
-  <div class="min-h-screen bg-white relative overflow-hidden">
-    <!-- Decorative elements -->
-    <div class="absolute -left-4 top-20">
-      <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-01-10%20222641-c2lJTr5U07lKYFT46CXk3p1esF1bbf.png" alt="Decorative leaf" class="w-24 h-24 opacity-20" />
-    </div>
-    <div class="absolute right-10 top-10">
-      <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-01-10%20222641-c2lJTr5U07lKYFT46CXk3p1esF1bbf.png" alt="Decorative leaf" class="w-16 h-16 opacity-20 rotate-90" />
-    </div>
-    
-    <div class="absolute top-6 right-6 flex items-center gap-4">
-    <router-link 
-      to="/login" 
-      class="px-6 py-2 rounded-full bg-white text-[#2B5329] border border-[#2B5329] hover:bg-[#2B5329] hover:text-white transition-colors duration-300"
-    >
-      Login
-    </router-link>
-    <router-link 
-      to="/register" 
-      class="px-6 py-2 rounded-full bg-[#2B5329] text-white hover:bg-[#1F3D1F] transition-colors duration-300"
-    >
-      Sign up
-    </router-link>
-  </div>
-
-    <!-- Main content -->
-    <div class="container mx-auto px-6 py-12 flex items-center min-h-screen">
-      <div class="grid md:grid-cols-2 gap-12 items-center w-full">
-        <!-- Left content -->
-        <div class="space-y-6">
-          <div>
-            <p class="text-sm mb-1 flex items-center">
-              <span class="text-gray-700">Exclusive offer</span>
-              <span class="text-red-500 ml-2 font-medium">30% Off</span>
-            </p>
-            <h1 class="text-5xl font-bold text-gray-900 leading-tight">
-              STAY HOME &
-              <br />
-              DELIVERED YOUR
-              <br />
-              <span class="text-emerald-500">DAILY NEEDS</span>
-            </h1>
-          </div>
-          
-          <p class="text-gray-600 text-lg">
-            Vegetables contain many vitamins and minerals that are good for your health.
-          </p>
-          
-          <button class="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-lg text-lg font-medium transition-all duration-300 flex items-center group">
-            Shop Now
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              class="h-5 w-5 ml-2 transform group-hover:translate-x-1 transition-transform" 
-              viewBox="0 0 20 20" 
-              fill="currentColor"
-            >
-              <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-            </svg>
-          </button>
-=======
   <div class="min-h-screen bg-white relative overflow-hidden font-poppins home-section">
     <transition name="page-transition" mode="out-in" @before-leave="beforeLeave" @enter="enter" @after-enter="afterEnter">
       <div :key="transitionKey" class="page-content" :style="contentStyle">
@@ -67,7 +7,6 @@
         <div class="absolute bottom-0 left-0 right-0 w-full h-[200px] sm:h-[300px] z-0 overflow-hidden px-6 sm:px-12 md:px-16 lg:px-24">
           <div class="wave wave-orange"></div>
           <div class="wave wave-green"></div>
->>>>>>> origin/loreng
         </div>
 
         <!-- Falling Leaves Animation -->
