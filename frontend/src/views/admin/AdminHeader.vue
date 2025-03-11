@@ -4,7 +4,7 @@
     <div class="absolute left-1/2 -top-2.5 transform -translate-x-1/2">
       <div class="bg-white rounded-full shadow-lg flex items-center justify-center overflow-hidden border-2 border-white/30 hover:border-white/50 transition-all duration-300" style="width: 3.5rem; height: 3.5rem;">
         <img 
-          src="/public/images/logo-wo-text.png"
+          src="../../../public/images/logo/logo-wo-text.png"
           alt="Project Israel"
           class="w-full h-full object-cover transform scale-[1.3] hover:scale-[1.8] transition-all duration-500 ease-out"
           style="transform-origin: center;"

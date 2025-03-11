@@ -23,11 +23,7 @@
               <div class="relative">
                 <div class="w-48 h-48 rounded-full overflow-hidden bg-gray-100">
                   <img 
-<<<<<<< HEAD
-                    :src="profileImage || '/images/profile-example.jpg'" 
-=======
                     :src="user?.profilePicture " 
->>>>>>> origin/loreng
                     alt="Profile"
                     class="w-full h-full object-cover"
                   />
@@ -73,10 +69,7 @@
                     v-model="profile.name"
                     :disabled="!editMode"
                     class="w-full p-2 border rounded-lg disabled:bg-gray-50"
-<<<<<<< HEAD
-=======
                     :value="user?.name || user?.firstName + ' ' + user?.lastName"
->>>>>>> origin/loreng
                   />
                 </div>
                 <div class="space-y-2">
@@ -121,10 +114,7 @@
                     v-model="profile.email"
                     :disabled="!editMode"
                     class="w-full p-2 border rounded-lg disabled:bg-gray-50"
-<<<<<<< HEAD
-=======
                     :value="user?.email"
->>>>>>> origin/loreng
                   />
                 </div>
                 <div class="space-y-2">
@@ -153,10 +143,7 @@
                     v-model="profile.joiningDate"
                     :disabled="!editMode"
                     class="w-full p-2 border rounded-lg disabled:bg-gray-50"
-<<<<<<< HEAD
-=======
                     :value="user?.createdAt"
->>>>>>> origin/loreng
                   />
                 </div>
                 <div class="space-y-2">
@@ -185,11 +172,7 @@
                     rows="3"
                     class="w-full p-2 border rounded-lg disabled:bg-gray-50 resize-none"
                     placeholder="Add your experience, certifications, and skills..."
-<<<<<<< HEAD
-                  ></textarea>
-=======
                   >{{user?.firstName}}</textarea>
->>>>>>> origin/loreng
                 </div>
                 <div class="col-span-2">
                   <label class="text-sm text-gray-600 block mb-2">Certifications</label>
@@ -523,14 +506,9 @@
 </template>
 
 <script setup>
-<<<<<<< HEAD
-import { ref, reactive, computed } from 'vue'
-import { useRouter } from 'vue-router'
-=======
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Notiflix from "notiflix";
->>>>>>> origin/loreng
 import { 
   Camera, 
   Pencil, 
@@ -556,11 +534,7 @@ import {
   Briefcase,
   MapPin
 } from 'lucide-vue-next'
-<<<<<<< HEAD
-import Sidebar from './Sidebar.vue'
-=======
 import Sidebar from '../layout/Sidebar.vue'
->>>>>>> origin/loreng
 
 const router = useRouter()
 const editMode = ref(false)
@@ -569,10 +543,6 @@ const imageInput = ref(null)
 const profileImage = ref(null)
 const dropdownOpen = ref(null)
 
-<<<<<<< HEAD
-const profile = reactive({
-  name: 'Jane Cooper',
-=======
 const user = ref(null);
 
 const generateProfilePicture = (email) => {
@@ -613,7 +583,6 @@ onMounted(() => {
 
 const profile = reactive({
   name: "",
->>>>>>> origin/loreng
   position: 'System Administrator',
   status: 'active',
   department: 'crops',
@@ -722,13 +691,6 @@ const changePassword = () => {
   showPasswordModal.value = false
 }
 
-<<<<<<< HEAD
-const logout = () => {
-  // Implement logout logic and redirect to landing page
-  router.push('/') // Assuming '/' is the route for the landing page
-}
-
-=======
 
 const logout = () => {
   Notiflix.Confirm.show(
@@ -744,7 +706,6 @@ const logout = () => {
     }
   );
 };
->>>>>>> origin/loreng
 const currentView = ref('month')
 const currentMonth = ref('January')
 const currentYear = ref('2024')
