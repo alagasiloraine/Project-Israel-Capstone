@@ -44,7 +44,7 @@
                     <BellIcon class="w-5 h-5" />
                     <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">3</span>
                   </button>
-                  <div class="relative">
+                  <!-- <div class="relative">
                     <button 
                       @click="showSettingsDropdown = !showSettingsDropdown"
                       class="p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -61,7 +61,7 @@
                         Logout
                       </button>
                     </div>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>
@@ -366,7 +366,7 @@
                 </div>
               </div>
               <button 
-                @click="showStaffSelector = true"
+                @click="showStaffModal = true"
                 class="text-sm text-[#00A76F] hover:text-[#00A76F]/80"
               >
                 + Add Staff
@@ -445,7 +445,7 @@
       <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-xl">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-xl font-semibold text-gray-800">Add New Task</h2>
-          <button @click="showAddEventModal = false" class="hover:bg-gray-100 p-2 rounded-lg transition-colors">
+          <button @click="closeAddEventModal" class="hover:bg-gray-100 p-2 rounded-lg transition-colors">
             <XIcon class="w-5 h-5" />
           </button>
         </div>
@@ -493,24 +493,21 @@
             </div>
           </div>
 
-          <div>
+          <!-- Staff Members Selection -->
+          <div class="relative">
             <label class="block text-sm font-medium text-gray-700 mb-2">
               Staff Members
             </label>
-            <div class="relative">
-              <input
-                type="text"
-                readonly
-                :value="selectedStaff.map(staff => staff.name).join(', ')"
-                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A76F] focus:border-transparent bg-white cursor-default"
-                placeholder="Select staff members"
-              />
-              <button 
-                @click="showStaffSelector = true"
-                class="absolute right-0 bottom-0 text-sm text-[#00A76F] hover:text-[#00A76F]/80 px-4 py-2.5"
-              >
+            <div 
+              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg flex items-center justify-between cursor-pointer hover:border-[#00A76F]"
+              @click="openStaffModal"
+            >
+              <span class="text-gray-500">
+                {{ selectedStaffDisplay || 'Select staff members' }}
+              </span>
+              <span class="text-[#00A76F] font-medium hover:text-[#00A76F]/80 transition-colors">
                 + Add Staff
-              </button>
+              </span>
             </div>
           </div>
 
@@ -531,8 +528,6 @@
                   opacity: newEvent.color === color.value ? 1 : 0.5
                 }"
                 @click="newEvent.color = color.value"
-                @mouseover="hoverColor = color.value"
-                @mouseleave="hoverColor = null"
               />
             </div>
           </div>
@@ -551,7 +546,7 @@
 
           <div class="flex justify-end gap-3 pt-2">
             <button 
-              @click="showAddEventModal = false"
+              @click="closeAddEventModal"
               class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               Cancel
@@ -567,36 +562,51 @@
       </div>
     </div>
 
-    <!-- Staff Selector Modal -->
-    <div 
-      v-if="showStaffSelector"
-      class="fixed inset-0 flex items-center justify-center z-[200]"
-    >
-      <div 
-        class="fixed inset-0 bg-transparent"
-        @click="showStaffSelector = false"
-      />
-      <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
+    <!-- Staff Selection Modal -->
+    <div v-if="showStaffModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[200]">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6" @click.stop>
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold">Select Staff</h2>
-          <button @click="showStaffSelector = false">
-            <XIcon class="w-6 h-6" />
+          <h3 class="text-lg font-medium">Select Staff</h3>
+          <button @click="showStaffModal = false" class="text-gray-500 hover:text-gray-700">
+            <XIcon class="w-5 h-5" />
           </button>
         </div>
         
-        <div class="space-y-2">
-          <button
-            v-for="staff in availableStaff"
+        <div class="mb-4">
+          <input 
+            type="text"
+            v-model="staffSearchQuery"
+            placeholder="Search staff..."
+            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A76F] focus:border-transparent"
+          />
+        </div>
+        
+        <div class="max-h-60 overflow-y-auto">
+          <div 
+            v-for="staff in filteredAvailableStaff" 
             :key="staff.id"
-            class="w-full flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
-            @click="addStaffMember(staff)"
+            class="flex items-center p-3 rounded-lg cursor-pointer transition-colors"
+            :class="modalSelectedStaff.some(s => s.id === staff.id) ? 'bg-gray-100' : 'hover:bg-gray-100'"
+            @click="selectStaff(staff)"
           >
             <img 
               :src="staff.avatar"
               :alt="staff.name"
-              class="w-8 h-8 rounded-full"
+              class="w-10 h-10 rounded-full mr-3"
             />
-            <span>{{ staff.name }}</span>
+            <div>
+              <div class="font-medium">{{ staff.name }}</div>
+              <div class="text-sm text-gray-500">{{ staff.role }}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-4 flex justify-end">
+          <button 
+            @click="closeStaffModal"
+            class="px-4 py-2 bg-[#00A76F] text-white rounded-lg hover:bg-[#00A76F]/90 transition-colors"
+          >
+            Done
           </button>
         </div>
       </div>
@@ -696,20 +706,25 @@ const miniCalendarDate = ref(new Date())
 const selectedDate = ref(null)
 const selectedDay = ref(new Date().getDate().toString())
 const showAddEventModal = ref(false)
-const showStaffSelector = ref(false)
-const selectedStaff = ref([])
+const showStaffModal = ref(false)
+const staffSearchQuery = ref('')
+
+// Add this to the reactive variables section
+const modalSelectedStaff = ref([])
+
+// Update the newEvent object to include staff
 const newEvent = ref({
   title: '',
   startHour: null,
   duration: 1,
   color: '#00A76F',
   details: '',
-  day: null
+  day: null,
+  staff: []
 })
 
 // Hover state for calendar cells
 const hoveredCell = ref({ hour: null, day: null })
-const hoverColor = ref(null)
 
 // Other reactive variables
 const showTasks = ref(true)
@@ -733,9 +748,7 @@ const weekDays = ref([
   { name: 'Monday', date: '17' },
   { name: 'Tuesday', date: '18' },
   { name: 'Wednesday', date: '19' },
-  { name: 'Thursday', date: '20' },
-  { name: 'Friday', date: '21' },
-  { name: 'Saturday', date: '22' }
+  
 ])
 
 const timeSlots = ref(Array.from({ length: 13 }, (_, i) => i + 5)) // 5 AM to 5 PM
@@ -750,9 +763,11 @@ const eventColors = [
 ]
 
 const availableStaff = [
-  { id: 1, name: 'John Doe', avatar: '/images/tg1.jpg' },
-  { id: 2, name: 'Jane Smith', avatar: '/images/tg1.jpg' },
-  { id: 3, name: 'Mike Johnson', avatar: '/images/tg1.jpg' }
+  { id: 1, name: 'John Doe', role: 'Manager', avatar: '/images/tg1.jpg' },
+  { id: 2, name: 'Jane Smith', role: 'Assistant', avatar: '/images/tg1.jpg' },
+  { id: 3, name: 'Mike Johnson', role: 'Supervisor', avatar: '/images/tg1.jpg' },
+  { id: 4, name: 'Sarah Williams', role: 'Staff', avatar: '/images/tg1.jpg' },
+  { id: 5, name: 'David Brown', role: 'Staff', avatar: '/images/tg1.jpg' }
 ]
 
 // Add to reactive variables
@@ -775,6 +790,21 @@ const currentTask = computed(() => ({
   plot: '1',
   staff: [availableStaff[0]]
 }))
+
+const filteredAvailableStaff = computed(() => {
+  if (!staffSearchQuery.value) return availableStaff
+  
+  const query = staffSearchQuery.value.toLowerCase()
+  return availableStaff.filter(staff => 
+    staff.name.toLowerCase().includes(query) || 
+    staff.role.toLowerCase().includes(query)
+  )
+})
+
+const selectedStaffDisplay = computed(() => {
+  if (newEvent.value.staff.length === 0) return ''
+  return newEvent.value.staff.map(staff => staff.name).join(', ')
+})
 
 const calendarDays = computed(() => {
   const year = miniCalendarDate.value.getFullYear()
@@ -926,6 +956,19 @@ const openAddEventModal = (hour, day) => {
   showAddEventModal.value = true
 }
 
+const closeAddEventModal = () => {
+  showAddEventModal.value = false
+  newEvent.value = {
+    title: '',
+    startHour: null,
+    duration: 1,
+    color: '#00A76F',
+    details: '',
+    day: null,
+    staff: []
+  }
+}
+
 const addEvent = () => {
   const event = {
     id: Date.now(),
@@ -935,33 +978,35 @@ const addEvent = () => {
     day: newEvent.value.day,
     color: newEvent.value.color,
     details: newEvent.value.details,
-    staff: selectedStaff.value
+    staff: newEvent.value.staff
   }
 
   events.value.push(event)  
-  showAddEventModal.value = false
+  closeAddEventModal()
+}
+
+// Update the selectStaff function
+const selectStaff = (staff) => {
+  const index = modalSelectedStaff.value.findIndex(s => s.id === staff.id)
   
-  // Reset all form fields
-  newEvent.value = {
-    title: '',
-    startHour: null,
-    duration: 1,
-    color: '#00A76F',
-    details: '',
-    day: null
+  if (index === -1) {
+    modalSelectedStaff.value.push(staff)
+  } else {
+    modalSelectedStaff.value.splice(index, 1)
   }
-  selectedStaff.value = []
 }
 
-const addStaffMember = (staff) => {
-  if (!selectedStaff.value.find(s => s.id === staff.id)) {
-    selectedStaff.value.push(staff)
-  }
-  showStaffSelector.value = false
+// Add a new function to handle closing the staff modal
+const closeStaffModal = () => {
+  newEvent.value.staff = [...modalSelectedStaff.value]
+  showStaffModal.value = false
+  modalSelectedStaff.value = []
 }
 
-const removeStaff = (staffId) => {
-  selectedStaff.value = selectedStaff.value.filter(staff => staff.id !== staffId)
+// Update the openStaffModal function
+const openStaffModal = () => {
+  modalSelectedStaff.value = [...newEvent.value.staff]
+  showStaffModal.value = true
 }
 
 const removeStaffFromEdit = (staffId) => {
@@ -1051,7 +1096,6 @@ const showEventDetailsModal = (event) => {
   showEventDetails.value = true
 }
 
-// Add these methods
 const toggleMonthDropdown = () => {
   showMonthDropdown.value = !showMonthDropdown.value
   currentView.value = 'month'
@@ -1086,10 +1130,10 @@ onMounted(() => {
       showMonthDropdown.value = false
     }
   })
+  
+  // Initialize the calendar
+  updateWeekDays()
 })
-
-// Initialize the calendar
-updateWeekDays()
 </script>
 
 <style>
