@@ -85,7 +85,7 @@
           </p>
 
           <!-- Step 1: Email Input -->
-          <form v-if="currentStep === 1" @submit.prevent="handleEmailSubmit" class="space-y-4">
+          <form v-if="currentStep === 1" @submit.prevent="handleSendResetEmail" class="space-y-4">
             <div>
               <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
               <input 
@@ -99,10 +99,10 @@
             </div>
 
             <button 
-              type="submit" 
+              type="submit" :disabled="isLoading"
               class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
             >
-              Send Verification Code
+             {{ isLoading ? "Sending Verification Code..." : "Send Verification Code" }}
             </button>
           </form>
 
@@ -131,10 +131,10 @@
             </div>
 
             <button 
-              type="submit" 
+              type="submit" :disabled="isLoading"
               class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
             >
-              Verify Code
+              {{ isLoading ? "Verifying Code..." : "Verify Code" }}
             </button>
 
             <div class="text-center mt-4">
@@ -200,13 +200,19 @@
             </div>
 
             <button 
-              type="submit" 
+              type="submit" :isLoading="false"
               class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
             >
-              Reset Password
+              {{ isLoading ? "Reseting Password..." : "Reset Password" }}
             </button>
           </form>
         </div>
+        <LoadingPage 
+          :is-visible="isLoading"
+          title="Sending Verification Code..."
+          message="Please wait while we set up your new account"
+          @loading-complete="onLoadingComplete"
+        />
       </div>
     </div>
   </div>
@@ -216,6 +222,9 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-vue-next'
+import api from '../../api/index.js'
+import toastr from 'toastr'
+import LoadingPage from '../layout/LoadingPage.vue'
 
 const router = useRouter()
 const currentStep = ref(1)
@@ -229,6 +238,7 @@ const isMobile = ref(window.innerWidth < 640)
 const verificationDigits = ref(['', '', '', '', '', ''])
 const codeRefs = ref([])
 const resendTimer = ref(0)
+const isLoading = ref(false);
 let resendInterval = null
 
 const handleResize = () => {
@@ -246,12 +256,6 @@ onUnmounted(() => {
     clearInterval(resendInterval)
   }
 })
-
-const handleEmailSubmit = () => {
-  // Simulate sending verification code
-  console.log('Sending verification code to:', email.value)
-  currentStep.value = 2
-}
 
 const handleCodeInput = (event, index) => {
   const value = event.target.value
@@ -307,32 +311,101 @@ const startResendTimer = () => {
   }, 1000)
 }
 
-const handleResendCode = () => {
-  // Simulate resending code
-  console.log('Resending verification code to:', email.value)
-  startResendTimer()
-}
-
-const handleVerifyCode = () => {
-  const code = verificationDigits.value.join('')
-  if (code.length !== 6) {
-    alert('Please enter all 6 digits')
-    return
+// Step 1: Request password reset
+const handleSendResetEmail = async () => {
+  try {
+    isLoading.value = true;
+    const response = await api.post("/auth/forgot-password", { email: email.value });
+    toastr.success(response.data.message);
+    currentStep.value = 2; // Move to verification step
+  } catch (error) {
+    isLoading.value = false
+    console.error("Error sending reset email:", error.response?.data || error);
+    toastr.error(error.response?.data?.detail || "Error sending reset email.");
+  } finally {
+    isLoading.value = false;
   }
-  // Simulate verifying code
-  console.log('Verifying code:', code)
-  currentStep.value = 3
-}
+};
 
-const handleResetPassword = () => {
+const handleResendCode = async () => {
+  isLoading.value = false;
+  try {
+    // Call backend to resend the verification 
+    isLoading.value = false;
+    // Call backend to resend the verification code to the provided email address
+    const response = await api.post("/auth/forgot-password", {
+      email: email.value,
+    });
+
+    toastr.success(response.data.message); // Notify the user that the code has been resent
+    startResendTimer(); // Start the resend timer (e.g., 30 seconds cooldown)
+
+  } catch (error) {
+    isLoading.value = false;
+    console.error("Error resending code:", error.response?.data || error);
+    toastr.error(error.response?.data?.detail || "Error resending code.");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// ✅ Step 2: Verify the 6-digit code
+const handleVerifyCode = async () => {
+  isLoading.value = true;
+  try {
+    // Join the verification digits into a single string
+    const verificationCodeString = verificationDigits.value.join('');
+
+    const response = await api.post("/auth/verify-code", {
+      email: email.value,
+      code: verificationCodeString  // Send the joined code as a single string
+    });
+
+    toastr.success(response.data.message);
+    currentStep.value = 3; // Move to password reset step
+  } catch (error) {
+    isLoading.value = false;
+    console.error("Error verifying code:", error.response?.data || error);
+    toastr.error(error.response?.data?.detail || "Invalid verification code.");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+
+const handleResetPassword = async () => {
+  isLoading.value = false; // Show loading state
+  // Check if the new password and confirm password match
   if (newPassword.value !== confirmPassword.value) {
-    alert('Passwords do not match!')
-    return
+    toastr.warning('Passwords do not match!');
+    return;
   }
-  // Simulate password reset
-  console.log('Resetting password')
-  router.push('/login')
-}
+
+  // Check if password meets any required criteria (e.g., length, strength)
+  if (newPassword.value.length < 6) {
+    toastr.warning('Password must be at least 6 characters long.');
+    return;
+  }
+ // Show loading state
+  try {
+    isLoading.value = true; // Show loading state
+    // Send request to backend to reset the password
+    const response = await api.post("/auth/reset-password", {
+      email: email.value, // User's email
+      new_password: newPassword.value, // New password
+    });
+
+    toastr.success(response.data.message); // Notify the user
+    router.push('/login'); // Redirect to login page after password is reset
+
+  } catch (error) {
+    isLoading.value = false; // Hide loading state
+    console.error("Error resetting password:", error.response?.data || error);
+    toastr.error(error.response?.data?.detail || "Error resetting password.");
+  } finally {
+    isLoading.value = false; // Hide loading state
+  }
+};
 
 const handleBackToLogin = () => {
   router.push('/login')
