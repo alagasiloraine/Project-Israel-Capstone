@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
 from ..schemas.crop_schema import CropInput, CropPrediction
-from ..ml.crop_model import CropRecommendationModel
+# from ..ml.crop_model import CropRecommendationModel
 
 router = APIRouter()
-model = CropRecommendationModel()
+# model = CropRecommendationModel()
 
 @router.post("/predict", response_model=List[CropPrediction])
 async def predict_crop(input_data: CropInput):
