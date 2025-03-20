@@ -1,8 +1,10 @@
 <template>
   <div class="min-h-screen bg-white relative overflow-hidden font-poppins home-section">
+    <Navbar @auth="handleAuth" />
+
     <transition name="page-transition" mode="out-in" @before-leave="beforeLeave" @enter="enter" @after-enter="afterEnter">
       <div :key="transitionKey" class="page-content" :style="contentStyle">
-        <Navbar @auth="handleAuth" />
+        <!-- <Navbar @auth="handleAuth" /> -->
         <!-- Wave Container -->
         <div class="absolute bottom-0 left-0 right-0 w-full h-[200px] sm:h-[300px] z-0 overflow-hidden px-6 sm:px-12 md:px-16 lg:px-24">
           <div class="wave wave-orange"></div>
