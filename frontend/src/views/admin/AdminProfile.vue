@@ -1,5 +1,5 @@
 <template>
-    <div class="h-screen flex flex-col">
+    <div class="h-screen flex flex-col font-poppins">
       <AdminHeader />
       <div class="flex-grow bg-gray-100 flex items-center justify-center p-4">
         <div class="w-full max-w-5xl bg-white rounded-lg shadow-md overflow-hidden mb-[80px]">
