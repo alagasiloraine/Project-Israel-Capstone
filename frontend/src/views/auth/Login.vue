@@ -292,7 +292,7 @@ const handleLogin = async () => {
     return;
   }
 
-  if (email.value == 'admin123' || password.value == 'admin123') {
+  if (email.value == 'admin123@gmail.com' || password.value == 'admin123') {
     // Admin user
     localStorage.setItem("isAdmin", true);
     router.push("/dashboard");
