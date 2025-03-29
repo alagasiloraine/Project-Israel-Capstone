@@ -3,8 +3,10 @@
     <Sidebar />
     <main class="flex-1 flex flex-col h-screen pt-32">
       <div class="flex-1 w-full px-4 sm:px-6 md:px-8 lg:px-10 overflow-hidden">
-        <div class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-green-100 h-[calc(100vh-140px)] overflow-y-auto transition-all duration-300 ease-in-out hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]">
-          <div class="p-6">
+        <!-- Main container with curved edges on all corners -->
+        <div class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-green-100 h-[calc(100vh-140px)] flex flex-col transition-all duration-300 ease-in-out hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]">
+          <!-- Fixed Header Section -->
+          <div class="p-6 border-b border-gray-100">
             <!-- Header -->
             <div class="mb-6">
               <h1 class="text-2xl font-bold text-gray-900 mb-2">Motor Control Data Table</h1>
@@ -15,9 +17,9 @@
               </div>
             </div>
 
-            <!-- Controls -->
-            <div class="flex items-center gap-4 mb-6">
-              <div class="relative flex-1">
+            <!-- Controls - Fixed -->
+            <div class="flex flex-wrap items-center gap-4 mb-2">
+              <div class="relative flex-1 min-w-[200px]">
                 <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
@@ -79,7 +81,7 @@
                   @click.stop="toggleDropdown('sort')"
                   class="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 hover:bg-gray-50"
                 >
-                  Sort by ID
+                  Sort by {{ sortKey ? headers.find(h => h.key === sortKey)?.label : 'ID' }}
                   <ChevronDown class="h-4 w-4" :class="{ 'transform rotate-180': activeDropdown === 'sort' }" />
                 </button>
                 
@@ -131,19 +133,26 @@
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- Table -->
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
+          <!-- Table Section - Scrollable -->
+          <div class="flex-1 p-4 overflow-auto">
+            <!-- Table container -->
+            <div class="w-full bg-white rounded-xl shadow-sm">
+              <table class="min-w-full table-fixed">
                 <thead>
-                  <tr>
-                    <th v-for="header in headers" :key="header.key" class="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                  <tr class="bg-gray-50 border-b border-gray-200">
+                    <th v-for="header in headers" :key="header.key" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <div class="text-gray-900">{{ header.label }}</div>
                     </th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr v-for="(row, index) in paginatedData" :key="index">
+                <tbody class="divide-y divide-gray-100">
+                  <tr 
+                    v-for="(row, index) in paginatedData" 
+                    :key="index"
+                    class="group transition-colors duration-150 hover:bg-gray-50"
+                  >
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.id }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                       <span 
@@ -158,12 +167,20 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.date }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.time }}</td>
                   </tr>
+                  <tr v-if="paginatedData.length === 0">
+                    <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                      No data found matching your criteria
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
+          </div>
 
+          <!-- Fixed Pagination Section -->
+          <div class="border-t border-gray-100 p-4 bg-white rounded-b-[20px]">
             <!-- Enhanced Pagination -->
-            <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
               <div class="text-sm text-gray-600 flex items-center gap-2">
                 <span class="hidden sm:inline">Showing</span>
                 <select 
@@ -171,6 +188,7 @@
                   class="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-colors"
                   @change="updatePagination"
                 >
+                  <option value="6">6</option>
                   <option value="10">10</option>
                   <option value="20">20</option>
                   <option value="50">50</option>
@@ -260,7 +278,7 @@ const data = ref([
 
 // Reactive state
 const searchQuery = ref('')
-const itemsPerPage = ref(10)
+const itemsPerPage = ref(6) // Changed from 5 to 6 as requested
 const currentPage = ref(1)
 const activeDropdown = ref(null)
 const sortKey = ref('id')
@@ -277,7 +295,8 @@ const filters = ref({
   status: { min: '', max: '' }
 })
 
-const exportFormats = ['csv', 'pdf', 'excel']
+// Changed from 'excel' to 'docs' to match Soil Analysis
+const exportFormats = ['csv', 'pdf', 'docs']
 
 // Computed properties
 const filteredData = computed(() => {
@@ -451,8 +470,8 @@ const exportData = (format) => {
     exportAsCSV(dataToExport)
   } else if (format === 'pdf') {
     exportAsPDF(dataToExport)
-  } else if (format === 'excel') {
-    exportAsExcel(dataToExport)
+  } else if (format === 'docs') { // Changed from 'excel' to 'docs'
+    exportAsDocs(dataToExport) // Changed function name
   }
   
   activeDropdown.value = null // Close dropdown after exporting
@@ -496,11 +515,12 @@ const exportAsPDF = (data) => {
   console.log('Data to export as PDF:', data)
 }
 
-const exportAsExcel = (data) => {
-  // In a real application, you would use a library like SheetJS
+// Changed from exportAsExcel to exportAsDocs
+const exportAsDocs = (data) => {
+  // In a real application, you would use a library to generate DOCS
   // For this example, we'll just show an alert
-  alert('Excel export would be implemented with a library like SheetJS')
-  console.log('Data to export as Excel:', data)
+  alert('DOCS export would be implemented with a library for document generation')
+  console.log('Data to export as DOCS:', data)
 }
 
 // Watch for changes that should reset pagination
@@ -522,31 +542,99 @@ onUnmounted(() => {
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 /* Enhanced scrollbar styling with dark green color */
-.overflow-y-auto {
+.overflow-y-auto, .overflow-auto {
   scrollbar-width: thin;
   scrollbar-color: rgba(20, 83, 45, 0.5) transparent;
 }
 
-.overflow-y-auto::-webkit-scrollbar {
+.overflow-y-auto::-webkit-scrollbar, .overflow-auto::-webkit-scrollbar {
   width: 6px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-track {
+.overflow-y-auto::-webkit-scrollbar-track, .overflow-auto::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
+.overflow-y-auto::-webkit-scrollbar-thumb, .overflow-auto::-webkit-scrollbar-thumb {
   background-color: rgba(20, 83, 45, 0.5);
   border-radius: 9999px;
   transition: background-color 200ms;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+.overflow-y-auto::-webkit-scrollbar-thumb:hover, .overflow-auto::-webkit-scrollbar-thumb:hover {
   background-color: rgba(20, 83, 45, 0.7);
 }
 
 /* Add smooth transitions for all elements */
 * {
   transition: color 200ms, background-color 200ms;
+}
+
+.relative {
+  position: relative;
+}
+
+[v-show] {
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.relative:hover {
+  z-index: 50;
+}
+
+/* Add smooth transitions for pagination buttons */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+.pagination-enter-active,
+.pagination-leave-active {
+  transition: opacity 0.2s ease-in-out;
+}
+
+.pagination-enter-from,
+.pagination-leave-to {
+  opacity: 0;
+}
+
+/* Add responsive styles for table */
+@media (max-width: 768px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  th, td {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}
+
+/* Ensure responsive layout on smaller screens */
+@media (max-width: 640px) {
+  .flex-col {
+    row-gap: 0.5rem;
+  }
+  
+  .pagination-container {
+    justify-content: center;
+  }
+}
+
+/* Improve table responsiveness */
+@media (max-width: 480px) {
+  table {
+    font-size: 0.75rem;
+  }
+  
+  th, td {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+  }
+}
+
+/* Add subtle hover effect to table rows */
+tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+  transition: background-color 0.2s ease;
 }
 </style>
