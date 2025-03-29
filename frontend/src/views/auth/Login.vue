@@ -292,8 +292,19 @@ const handleLogin = async () => {
     return;
   }
 
+<<<<<<< HEAD
+  if (email.value == 'admin123@gmail.com' || password.value == 'admin123') {
+=======
+
   if (email.value == 'admin@gmail.com' || password.value == 'admin123') {
     router.push('/overview')
+  if (email.value == 'admin123' || password.value == 'admin123') {
+>>>>>>> 535d802cd489b7b1eff3b3826b90f4f62328b3f4
+    // Admin user
+    localStorage.setItem("isAdmin", true);
+    router.push("/dashboard");
+    isLoading.value = false;
+    return;
   }
 
   try {

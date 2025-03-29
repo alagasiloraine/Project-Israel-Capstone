@@ -11,6 +11,8 @@ import SoilAnalysis from '../views/users/SoilAnalysis.vue'
 import UserProfile from '../views/users/UserProfile.vue'
 import About from '../views/users/About.vue'
 import OrganicSection from '../views/users/OrganicSection.vue'
+import WeatherForecast from '../views/users/WeatherForecast.vue'
+import Crops from '../views/users/Crops.vue'
 
 export const userRoutes = [
   {
@@ -77,5 +79,16 @@ export const userRoutes = [
     path: '/profile',
     name: 'UserProfile',
     component: UserProfile
+  },
+  {
+    path: '/weather',
+    name: 'WeatherForecast',
+    component: WeatherForecast
+  },
+  {
+    path: '/crops',
+    name: 'Crops',
+    component: Crops
   }
+
 ]

@@ -888,7 +888,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { 
   ChartBarIcon,
   ClipboardListIcon,
@@ -922,15 +922,22 @@ import {
 import Sidebar from '../layout/Sidebar.vue'
 import Pagination from '../layout/Pagination.vue'
 
+const nitrogen = ref(null)
+const phosphorus = ref(null)
+const potassium = ref(null)
+const soilpH = ref(null)
+const temperature = ref(null)
+const humidity = ref(null)
+
 // Greenhouse data
 const greenhouse1Data = ref({
-  nitrogen: '96.01',
-  phosphorus: '22.85',
-  potassium: '87.04',
-  ph: '7.22',
-  moisture: '45.00',
-  temperature: '32.52',
-  humidity: '76.68'
+  nitrogen: nitrogen,
+  phosphorus: phosphorus,
+  potassium: potassium,
+  ph: soilpH,
+  moisture: '0.0',
+  temperature: temperature,
+  humidity: humidity,
 })
 
 const greenhouse2Data = ref({
@@ -941,6 +948,19 @@ const greenhouse2Data = ref({
   moisture: '48.50',
   temperature: '30.75',
   humidity: '72.34'
+})
+
+onMounted(() => {
+  const eventSource = new EventSource('http://localhost:8000/stream')
+  eventSource.onmessage = (event) => {
+    const data = JSON.parse(event.data)
+    nitrogen.value = data.nitrogen
+    phosphorus.value = data.phosphorus
+    potassium.value = data.potassium
+    soilpH.value = data.soilpH
+    temperature.value = data.temperature
+    humidity.value = data.humidity
+  }
 })
 
 const selectedGreenhouse = ref(1)
