@@ -1206,7 +1206,7 @@ def main():
 
     print("Creating forecast visualizations...")
     # Add historical data for comparison
-    visualize_forecasts(forecast_results, historical_df)
+    visualize_forecasts(forecast_results, models, feature_sets, historical_df)
 
     output_csv_path = os.path.join(os.getcwd(), "weather_forecast_results.csv")
     try:
