@@ -1,0 +1,50 @@
+2025-03-28 14:24:08,532 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-03-28 14:24:08,574 - INFO - Added job "run_forecast_task" to job store "default"
+2025-03-28 14:24:08,575 - INFO - Scheduler started
+2025-03-28 14:24:08,577 - INFO - \U0001f4c5 Forecast scheduler initialized.
+2025-03-28 14:25:26,844 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:36:30,275 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:36:34,289 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:38:35,340 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:41:33,101 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:41:37,018 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:43:38,132 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:46:36,992 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:46:39,894 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:48:44,289 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:51:42,650 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:51:42,652 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:53:49,944 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:56:47,690 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:56:47,692 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 14:58:52,804 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:01:49,695 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:01:49,720 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:03:54,001 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:06:51,111 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:06:51,133 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:08:57,961 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:11:52,642 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:11:52,659 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:13:59,087 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:16:55,986 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:16:55,990 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:22:01,638 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:22:01,649 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:24:16,652 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:27:03,349 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:27:03,362 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:29:17,607 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:32:04,814 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:32:04,975 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-28 15:34:18,585 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.405327079018555%2C121.21506521885358&aqi=no "HTTP/1.1 200 OK"
+2025-03-30 11:58:34,311 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-03-30 11:58:34,371 - INFO - Added job "run_forecast_task" to job store "default"
+2025-03-30 11:58:34,371 - INFO - Scheduler started
+2025-03-30 11:58:34,383 - INFO - \U0001f4c5 Forecast scheduler initialized.
+2025-03-30 13:06:09,276 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-03-30 13:06:09,381 - INFO - Added job "run_forecast_task" to job store "default"
+2025-03-30 13:06:09,381 - INFO - Scheduler started
+2025-03-30 13:06:09,384 - INFO - \U0001f4c5 Forecast scheduler initialized.
+2025-03-30 13:06:09,444 - ERROR - Task was destroyed but it is pending!
+task: <Task pending name='Task-12' coro=<<async_generator_athrow without __name__>()>>

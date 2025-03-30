@@ -905,7 +905,7 @@ const humidity = ref(null)
 
 onMounted(() => {
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-    const host = 'localhost:800'
+    const host = 'localhost:8000'
     socket = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
   
     socket.onopen = () => {
