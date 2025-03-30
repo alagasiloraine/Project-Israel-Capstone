@@ -188,49 +188,49 @@ async def get_weather():
     }
 
 # ======== SERIAL READER =========
-SERIAL_PORT = 'COM4'
-BAUD_RATE = 9600
+# SERIAL_PORT = 'COM3'
+# BAUD_RATE = 4800
 
-async def read_serial_loop():
-    await asyncio.sleep(2)  # Allow FastAPI to fully start
-    try:
-        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
-        print(f"✅ Connected to Arduino on {SERIAL_PORT}")
+# async def read_serial_loop():
+#     await asyncio.sleep(2)  # Allow FastAPI to fully start
+#     try:
+#         ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+#         print(f"✅ Connected to Arduino on {SERIAL_PORT}")
         
-        while True:
-            try:
-                line = ser.readline().decode('utf-8').strip()
-                if line:
-                    try:
-                        data = json.loads(line)
-                        await sensor_data.forward_sensor_data(data)
-                    except json.JSONDecodeError:
-                        print("⚠️ Invalid JSON:", line)
-            except Exception as e:
-                print("❌ Error reading serial:", e)
-            await asyncio.sleep(0.1)
+#         while True:
+#             try:
+#                 line = ser.readline().decode('utf-8').strip()
+#                 if line:
+#                     try:
+#                         data = json.loads(line)
+#                         await sensor_data.forward_sensor_data(data)
+#                     except json.JSONDecodeError:
+#                         print("⚠️ Invalid JSON:", line)
+#             except Exception as e:
+#                 print("❌ Error reading serial:", e)
+#             await asyncio.sleep(0.1)
 
-    except Exception as e:
-        print("❌ Could not open serial port:", e)
+#     except Exception as e:
+#         print("❌ Could not open serial port:", e)
 
-# ======== STARTUP EVENTS =========
-@app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(read_serial_loop())
+# # ======== STARTUP EVENTS =========
+# @app.on_event("startup")
+# async def startup_event():
+#     asyncio.create_task(read_serial_loop())
 
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(run_forecast_task, 'interval', days=1)
-    scheduler.start()
-    print("📅 Forecast scheduler started (daily)")
-    logging.info("📅 Forecast scheduler initialized.")
+#     scheduler = BackgroundScheduler()
+#     scheduler.add_job(run_forecast_task, 'interval', days=1)
+#     scheduler.start()
+#     print("📅 Forecast scheduler started (daily)")
+#     logging.info("📅 Forecast scheduler initialized.")
 
-# ======== FORECAST WRAPPER =========
-def run_forecast_task():
-    try:
-        print("📈 [SCHEDULER] Running weather forecast script...")
-        logging.info("📈 Forecast run started.")
-        run_forecast()
-        logging.info("✅ Forecast completed successfully.")
-    except Exception as e:
-        print("❌ [SCHEDULER ERROR] Forecast failed:", str(e))
-        logging.error(f"❌ Forecast error: {e}")
+# # ======== FORECAST WRAPPER =========
+# def run_forecast_task():
+#     try:
+#         print("📈 [SCHEDULER] Running weather forecast script...")
+#         logging.info("📈 Forecast run started.")
+#         run_forecast()
+#         logging.info("✅ Forecast completed successfully.")
+#     except Exception as e:
+#         print("❌ [SCHEDULER ERROR] Forecast failed:", str(e))
+#         logging.error(f"❌ Forecast error: {e}")
