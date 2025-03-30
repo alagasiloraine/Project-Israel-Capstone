@@ -17,8 +17,8 @@
                   <Leaf class="h-6 w-6 text-green-500 transition-transform duration-300 group-hover:scale-110" />
                   <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">N</span>
                 </div>
-                <div class="text-2xl font-bold text-green-700">96.01</div>
-                <div class="text-xs text-green-600">Nitrogen (mg/kg)</div>
+                <div class="text-2xl font-bold text-green-700">{{ nitrogen }}</div>
+                <div class="text-xs text-green-600">Nitrogen (mg/kg)</div>  
               </div>
 
               <!-- Phosphorus Level -->
@@ -27,7 +27,7 @@
                   <TestTube class="h-6 w-6 text-blue-500 transition-transform duration-300 group-hover:scale-110" />
                   <span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">P</span>
                 </div>
-                <div class="text-2xl font-bold text-blue-700">22.85</div>
+                <div class="text-2xl font-bold text-blue-700">{{ phosphorus }}</div>
                 <div class="text-xs text-blue-600">Phosphorus (mg/kg)</div>
               </div>
 
@@ -37,7 +37,7 @@
                   <TestTubes class="h-6 w-6 text-purple-500 transition-transform duration-300 group-hover:scale-110" />
                   <span class="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded-full">K</span>
                 </div>
-                <div class="text-2xl font-bold text-purple-700">87.04</div>
+                <div class="text-2xl font-bold text-purple-700">{{ potassium }}</div>
                 <div class="text-xs text-purple-600">Potassium (mg/kg)</div>
               </div>
 
@@ -47,7 +47,7 @@
                   <Beaker class="h-6 w-6 text-orange-500 transition-transform duration-300 group-hover:scale-110" />
                   <span class="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded-full">pH</span>
                 </div>
-                <div class="text-2xl font-bold text-orange-700">7.22</div>
+                <div class="text-2xl font-bold text-orange-700">{{ soilpH }}</div>
                 <div class="text-xs text-orange-600">Soil pH Level</div>
               </div>
 
@@ -57,7 +57,7 @@
                   <Thermometer class="h-6 w-6 text-red-500 transition-transform duration-300 group-hover:scale-110" />
                   <span class="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded-full">Temp</span>
                 </div>
-                <div class="text-2xl font-bold text-red-700">32.52</div>
+                <div class="text-2xl font-bold text-red-700">{{ temperature }}</div>
                 <div class="text-xs text-red-600">Temperature (°C)</div>
               </div>
 
@@ -67,7 +67,7 @@
                   <Droplets class="h-6 w-6 text-sky-500 transition-transform duration-300 group-hover:scale-110" />
                   <span class="text-xs font-semibold text-sky-600 bg-sky-100 px-2 py-1 rounded-full">RH</span>
                 </div>
-                <div class="text-2xl font-bold text-sky-700">76.68</div>
+                <div class="text-2xl font-bold text-sky-700">{{ humidity }}</div>
                 <div class="text-xs text-sky-600">Humidity (%)</div>
               </div>
             </div>
@@ -245,21 +245,21 @@
                 </div>
 
                 <!-- Enhanced Weather Card with Colored Icons -->
+
                 <div class="bg-white rounded-2xl p-6 shadow-lg border border-blue-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
-                  <!-- Weather Card Header -->
-                <div class="flex justify-between items-start mb-4">
-                  <div class="flex items-center justify-between w-full">
-                    <div class="bg-sky-50 rounded-full px-2.5 py-1 flex items-center space-x-1.5 shadow-inner">
-                      <CloudSun class="w-4 h-4 text-sky-500" />
-                      <h3 class="text-sm font-semibold text-sky-700 tracking-wide">Weather Forecast</h3>
-                    </div>
-                    <div class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
-                      LIVE
+
+                  <!-- <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center justify-between w-full">
+                      <div class="bg-sky-50 rounded-full px-2.5 py-1 flex items-center space-x-1.5 shadow-inner">
+                        <CloudSun class="w-4 h-4 text-sky-500" />
+                        <h3 class="text-sm font-semibold text-sky-700 tracking-wide">Weather Forecast</h3>
+                      </div>
+                      <div class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
+                        LIVE
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                  <!-- Current Weather -->
                   <div class="flex items-center justify-between mb-4">
                     <div>
                       <div class="flex items-end space-x-1">
@@ -276,7 +276,6 @@
                     </div>
                   </div>
 
-                  <!-- Weather Details -->
                   <div class="grid grid-cols-2 gap-3 mb-4">
                     <div v-for="(detail, index) in weatherDetails" :key="index" 
                          class="bg-gray-50 rounded-lg p-2 transition-all duration-300 hover:bg-gray-100">
@@ -290,7 +289,6 @@
                     </div>
                   </div>
 
-                  <!-- 7-Day Forecast -->
                   <div>
                     <h4 class="text-xs font-semibold mb-2 text-gray-900">7-Day Forecast</h4>
                     <div class="grid grid-cols-7 gap-1">
@@ -306,7 +304,63 @@
                         <span class="text-xs font-bold text-gray-900">{{ day.temp }}°</span>
                       </div>
                     </div>
+                  </div> -->
+                
+                  <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center justify-between w-full">
+                      <div class="bg-sky-50 rounded-full px-2.5 py-1 flex items-center space-x-1.5 shadow-inner">
+                        <CloudSun class="w-4 h-4 text-sky-500" />
+                        <h3 class="text-sm font-semibold text-sky-700 tracking-wide">Weather Forecast</h3>
+                      </div>
+                      <div class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">LIVE</div>
+                    </div>
                   </div>
+
+                  <!-- Current Weather -->
+                  <div class="flex items-center justify-between mb-4">
+                    <div>
+                      <div class="flex items-end space-x-1">
+                        <p class="text-4xl font-bold text-gray-900">{{ weather?.temperature_f }}</p>
+                        <p class="text-xl font-semibold text-gray-600 mb-1">°C</p>
+                      </div>
+                      <p class="text-base mt-1 text-gray-600">{{ weather?.weather_condition }}</p>
+                    </div>
+                    <div class="weather-icon-wrapper">
+                      <component 
+                        :is="getWeatherIcon(weather?.weather_condition)"
+                        :class="['h-14 w-14 transform transition-transform hover:scale-110', getWeatherIconColor(weatherData[0]?.weather)]"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Weather Details -->
+                  <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div v-for="(detail, index) in weatherDetails" :key="index" class="bg-gray-50 rounded-lg p-2 transition-all duration-300 hover:bg-gray-100">
+                      <div class="flex items-center space-x-2">
+                        <component :is="detail.icon" :class="['h-4 w-4', getDetailIconColor(detail.label)]" />
+                        <div>
+                          <p class="text-xs text-gray-500">{{ detail.label }}</p>
+                          <p class="text-sm font-semibold text-gray-900">{{ detail.value }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 7-Day Forecast -->
+                  <div>
+                    <h4 class="text-xs font-semibold mb-2 text-gray-900">7-Day Forecast</h4>
+                    <div class="grid grid-cols-7 gap-1">
+                      <div v-for="(day, index) in weatherData" :key="index" class="flex flex-col items-center p-1 rounded-lg transition-all duration-300 hover:bg-gray-50">
+                        <span class="text-[10px] mb-1 text-gray-600">{{ day.date.slice(0, 3) }}</span>
+                        <component 
+                          :is="getWeatherIcon(day.weather)"
+                          :class="['h-6 w-6 mb-1', getWeatherIconColor(day.weather)]"
+                        />
+                        <span class="text-xs font-bold text-gray-900">{{ day.temp }}°</span>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
@@ -585,6 +639,8 @@
                     <canvas ref="performanceChartRef"></canvas>
                   </div>
                 </div>
+
+
               </div>
             </div>
           </div>
@@ -595,7 +651,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Chart, registerables } from 'chart.js';
 import { 
   Sprout,
@@ -637,6 +693,7 @@ const motorOnPercentage = ref(65.7); // Example: motor was on 65.7% of the week
 
 const circumference = 2 * Math.PI * 48;
 const dashOffset = computed(() => circumference * (1 - motorOnPercentage.value / 100));
+
 
 const weeklyData = [
   { label: 'M', percentage: 70 },
@@ -749,91 +806,203 @@ const toggleMotorStatus = () => {
   motorStatus.value = !motorStatus.value;
 };
 
-// Weather Data
-const weatherData = ref([
-  { 
-    date: 'Monday', 
-    temp: 22, 
-    weather: 'partly-cloudy',
-    humidity: 65,
-    windSpeed: 12,
-    precipitation: 0
-  },
-  { 
-    date: 'Tuesday', 
-    temp: 24, 
-    weather: 'sunny',
-    humidity: 55,
-    windSpeed: 8,
-    precipitation: 0
-  },
-  { 
-    date: 'Wednesday', 
-    temp: 20, 
-    weather: 'rainy',
-    humidity: 85,
-    windSpeed: 15,
-    precipitation: 25
-  },
-  { 
-    date: 'Thursday', 
-    temp: 23, 
-    weather: 'cloudy',
-    humidity: 70,
-    windSpeed: 10,
-    precipitation: 0
-  },
-  { 
-    date: 'Friday', 
-    temp: 26, 
-    weather: 'sunny',
-    humidity: 50,
-    windSpeed: 5,
-    precipitation: 0
-  },
-  { 
-    date: 'Saturday', 
-    temp: 25, 
-    weather: 'partly-cloudy',
-    humidity: 60,
-    windSpeed: 7,
-    precipitation: 0
-  },
-  { 
-    date: 'Today', 
-    temp: 21, 
-    weather: 'rainy',
-    humidity: 80,
-    windSpeed: 18,
-    precipitation: 15
-  },
-]);
+// // Weather Data
+// const weatherData = ref([
+//   { 
+//     date: 'Monday', 
+//     temp: 22, 
+//     weather: 'partly-cloudy',
+//     humidity: 65,
+//     windSpeed: 12,
+//     precipitation: 0
+//   },
+//   { 
+//     date: 'Tuesday', 
+//     temp: 24, 
+//     weather: 'sunny',
+//     humidity: 55,
+//     windSpeed: 8,
+//     precipitation: 0
+//   },
+//   { 
+//     date: 'Wednesday', 
+//     temp: 20, 
+//     weather: 'rainy',
+//     humidity: 85,
+//     windSpeed: 15,
+//     precipitation: 25
+//   },
+//   { 
+//     date: 'Thursday', 
+//     temp: 23, 
+//     weather: 'cloudy',
+//     humidity: 70,
+//     windSpeed: 10,
+//     precipitation: 0
+//   },
+//   { 
+//     date: 'Friday', 
+//     temp: 26, 
+//     weather: 'sunny',
+//     humidity: 50,
+//     windSpeed: 5,
+//     precipitation: 0
+//   },
+//   { 
+//     date: 'Saturday', 
+//     temp: 25, 
+//     weather: 'partly-cloudy',
+//     humidity: 60,
+//     windSpeed: 7,
+//     precipitation: 0
+//   },
+//   { 
+//     date: 'Today', 
+//     temp: 21, 
+//     weather: 'rainy',
+//     humidity: 80,
+//     windSpeed: 18,
+//     precipitation: 15
+//   },
+// ]);
 
-// Weather details data
-const weatherDetails = computed(() => [
-  {
-    label: 'Humidity',
-    value: `${weatherData.value[6].humidity}%`,
-    icon: Droplets
-  },
-  {
-    label: 'Wind Speed',
-    value: `${weatherData.value[6].windSpeed} km/h`,
-    icon: Wind
-  },
-  {
-    label: 'Precipitation',
-    value: `${weatherData.value[6].precipitation}%`,
-    icon: CloudRain
-  },
-  {
-    label: 'UV Index',
-    value: 'Low',
-    icon: Sun
-  }
-]);
+// // Weather details data
+// const weatherDetails = computed(() => [
+//   {
+//     label: 'Humidity',
+//     value: `${weatherData.value[6].humidity}%`,
+//     icon: Droplets
+//   },
+//   {
+//     label: 'Wind Speed',
+//     value: `${weatherData.value[6].windSpeed} km/h`,
+//     icon: Wind
+//   },
+//   {
+//     label: 'Precipitation',
+//     value: `${weatherData.value[6].precipitation}%`,
+//     icon: CloudRain
+//   },
+//   {
+//     label: 'UV Index',
+//     value: 'Low',
+//     icon: Sun
+//   }
+// ]);
+
+const weatherData = ref({})
+const npkData = ref({})
+const weather = ref(null)
+let socket
+
+const nitrogen = ref(null)
+const phosphorus = ref(null)
+const potassium = ref(null)
+const soilpH = ref(null)
+const temperature = ref(null)
+const humidity = ref(null)
+  
+
+onMounted(() => {
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+    const host = 'localhost:8000'
+    socket = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
+  
+    socket.onopen = () => {
+      console.log('[Weather WS] Connected')
+    }
+  
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+      console.log('[Weather WS] Data received:', data)
+      weather.value = data
+    }
+  
+    socket.onerror = (err) => {
+      console.error('[Weather WS] Error:', err)
+    }
+  
+    socket.onclose = () => {
+      console.warn('[Weather WS] Disconnected')
+    }
+
+    const eventSource = new EventSource('http://localhost:8000/stream')
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+      nitrogen.value = data.nitrogen
+      phosphorus.value = data.phosphorus
+      potassium.value = data.potassium
+      soilpH.value = data.soilpH
+      temperature.value = data.temperature
+      humidity.value = data.humidity
+    }
+})
+
+onBeforeUnmount(() => {
+    if (socket) socket.close()
+  })
+
+
+const weatherDetails = computed(() => {
+  if (!weather.value) return []
+  return [
+    { label: 'Humidity', value: weather.value.humidity + '%', icon: Droplets },
+    { label: 'Wind', value: weather.value.wind_speed_ms + ' m/s', icon: Wind },
+    { label: 'Precipitation', value: weather.value.rain_mm + ' mm', icon: CloudRain },
+    { label: 'UV Index', value: weather.value.uv, icon: Sun },
+  ]
+})
+
+
+// const getWeatherDescription = (weather) => {
+//   switch (weather) {
+//     case 'sunny': return 'Clear skies'
+//     case 'partly-cloudy': return 'Partly cloudy'
+//     case 'cloudy': return 'Overcast'
+//     case 'rainy': return 'Rainy'
+//     case 'stormy': return 'Thunderstorms'
+//     case 'drizzle': return 'Light rain'
+//     default: return 'Mixed conditions'
+//   }
+// }
+
+// const getWeatherIcon = (weather) => {
+//   switch (weather) {
+//     case 'sunny': return 'SunIcon'
+//     case 'partly-cloudy': return 'CloudSunIcon'
+//     case 'cloudy': return 'CloudIcon'
+//     case 'rainy': return 'CloudRainIcon'
+//     case 'stormy': return 'CloudLightningIcon'
+//     case 'drizzle': return 'CloudDrizzleIcon'
+//     default: return 'CloudIcon'
+//   }
+// }
+
+// const getWeatherIconColor = (weather) => {
+//   switch (weather) {
+//     case 'sunny': return 'text-amber-400'
+//     case 'partly-cloudy': return 'text-blue-400'
+//     case 'cloudy': return 'text-gray-400'
+//     case 'rainy': return 'text-blue-500'
+//     case 'stormy': return 'text-indigo-600'
+//     case 'drizzle': return 'text-blue-400'
+//     default: return 'text-blue-500'
+//   }
+// }
+
+// const getDetailIconColor = (label) => {
+//   switch (label) {
+//     case 'Humidity': return 'text-blue-500'
+//     case 'Wind': return 'text-teal-500'
+//     case 'Precipitation': return 'text-indigo-500'
+//     case 'UV Index': return 'text-amber-500'
+//     default: return 'text-gray-500'
+//   }
+// }
+
 
 // Helper Functions
+
 const getWeatherIcon = (weather) => {
   switch (weather) {
     case 'sunny':

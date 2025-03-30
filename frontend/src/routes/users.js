@@ -13,6 +13,9 @@ import About from '../views/users/About.vue'
 import OrganicSection from '../views/users/OrganicSection.vue'
 import WeatherForecast from '../views/users/WeatherForecast.vue'
 
+import Crops from '../views/users/Crops.vue'
+
+
 export const userRoutes = [
   {
     path: '/',
@@ -83,5 +86,13 @@ export const userRoutes = [
     path: '/weather',
     name: 'WeatherForecast',
     component: WeatherForecast
+
+  },
+  {
+    path: '/crops',
+    name: 'Crops',
+    component: Crops
+
   }
+
 ]

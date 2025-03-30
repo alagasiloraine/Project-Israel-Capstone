@@ -295,6 +295,7 @@ const handleLogin = async () => {
 
   if (email.value == 'admin@gmail.com' || password.value == 'admin123') {
     router.push('/overview')
+  }
   if (email.value == 'admin123' || password.value == 'admin123') {
     // Admin user
     localStorage.setItem("isAdmin", true);
