@@ -18,7 +18,7 @@ WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 
 
 @router.get("/forecast")
-async def get_forecast_result():
+async def get_7_day_forecast():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     csv_path = os.path.abspath(os.path.join(base_dir, "../ml/weather_ml/forecast/weather_forecast_results.csv"))
 
@@ -29,7 +29,10 @@ async def get_forecast_result():
         reader = csv.DictReader(csvfile)
         data = [row for row in reader]
 
-    return {"forecast": data}
+    # Sort by date and limit to the first 7 entries
+    forecast_data = sorted(data, key=lambda x: datetime.strptime(x['date'], '%Y-%m-%d'))[:7]
+
+    return {"forecast": forecast_data}
 
 
 @router.get("/weather")

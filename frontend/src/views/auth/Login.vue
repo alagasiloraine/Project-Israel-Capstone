@@ -372,7 +372,7 @@ const generateProfilePicture = (email) => {
   const initials = email[0].toUpperCase();
   return `https://dummyimage.com/100x100/000/fff.png&text=${initials}`;
 };
-}
+
 
 </script>
 

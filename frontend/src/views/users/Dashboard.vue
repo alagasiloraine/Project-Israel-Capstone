@@ -936,6 +936,8 @@ onMounted(() => {
       temperature.value = data.temperature
       humidity.value = data.humidity
     }
+
+
 })
 
 onBeforeUnmount(() => {

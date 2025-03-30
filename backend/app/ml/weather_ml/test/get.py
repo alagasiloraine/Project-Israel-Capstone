@@ -72,7 +72,7 @@ if "daily" in data:
         "pressure": data["daily"]["surface_pressure_mean"]
     })
     
-    df.to_csv("weather_data_2015_to_present.csv", index=False)
+    df.to_csv("weather_data.csv", index=False)
     print(f"✅ Historical data ({start_date} to {end_date}) saved successfully!")
 else:
     print("❌ Error:", data.get("reason", "Unknown API error"))
