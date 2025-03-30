@@ -2,9 +2,11 @@
   <div class="h-screen flex bg-gradient-to-br from-green-50 to-emerald-100 font-poppins overflow-hidden">
     <Sidebar />
     <main class="flex-1 flex flex-col h-screen pt-32">
-      <div class="flex-1 w-full px-4 sm:px-6 md:px-8 lg:px-10 overflow-hidden">
-        <div class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-green-100 h-[calc(100vh-140px)] overflow-y-auto transition-all duration-300 ease-in-out hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]">
-          <div class="p-6">
+      <div class="flex-1 w-full px-4 sm:px-6 md:px:8 lg:px-10 overflow-hidden">
+        <!-- Main container with curved edges on all corners -->
+        <div class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-green-100 h-[calc(100vh-140px)] flex flex-col transition-all duration-300 ease-in-out hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]">
+          <!-- Fixed Header Section -->
+          <div class="p-6 border-b border-gray-100">
             <!-- Header -->
             <div class="mb-6">
               <h1 class="text-2xl font-bold text-gray-900 mb-2">Soil Analysis Measurements</h1>
@@ -15,9 +17,9 @@
               </div>
             </div>
 
-            <!-- Controls -->
-            <div class="flex items-center gap-4 mb-6">
-              <div class="relative flex-1">
+            <!-- Controls - Fixed -->
+            <div class="flex flex-wrap items-center gap-4 mb-2">
+              <div class="relative flex-1 min-w-[200px]">
                 <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
@@ -131,61 +133,101 @@
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- Table -->
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
+          <!-- Table Section - No Scrolling -->
+          <div class="flex-1 p-4 overflow-auto">
+            <!-- Table container without scrolling -->
+            <div class="w-full bg-white rounded-xl shadow-sm">
+              <table class="min-w-full table-fixed">
                 <thead>
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                  <tr class="bg-gray-50 border-b border-gray-200">
+                    <th class="w-[15%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                    <th class="w-[10%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
                       <div class="text-green-600">Nitrogen</div>
                       <div class="text-gray-400 text-[10px]">(MG/KG)</div>
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                    <th class="w-[10%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
                       <div class="text-blue-600">Phosphorus</div>
                       <div class="text-gray-400 text-[10px]">(MG/KG)</div>
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                    <th class="w-[10%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
                       <div class="text-purple-600">Potassium</div>
                       <div class="text-gray-400 text-[10px]">(MG/KG)</div>
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                    <th class="w-[8%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
                       <div class="text-orange-600">pH</div>
                       <div class="text-gray-400 text-[10px]">(LEVEL)</div>
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                    <th class="w-[10%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
                       <div class="text-red-600">Temperature</div>
                       <div class="text-gray-400 text-[10px]">(°C)</div>
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider">
-                      <div>Humidity</div>
+                    <th class="w-[8%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-gray-600">Humidity</div>
                       <div class="text-gray-400 text-[10px]">(%)</div>
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                    <th class="w-[15%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Predicted Crop
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                    <th class="w-[14%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date Predicted
                     </th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr v-for="(row, index) in filteredAndSortedData" :key="index">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.date }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">{{ row.nitrogen }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{{ row.phosphorus }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-purple-600">{{ row.potassium }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-orange-600">{{ row.ph }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">{{ row.temperature }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">{{ row.humidity }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      {{ row.predictedCrop }}
-                      <span v-if="row.successRate" class="text-gray-400 text-xs">({{ row.successRate }})</span>
+                <tbody class="divide-y divide-gray-100">
+                  <tr 
+                    v-for="(row, index) in filteredAndSortedData" 
+                    :key="index"
+                    class="group transition-colors duration-150 hover:bg-gray-50"
+                  >
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-600">{{ row.date }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.datePredicted || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-green-600 bg-green-50/30 px-2 py-1 rounded-md inline-block text-center w-[80px]">
+                        {{ row.nitrogen }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-blue-600 bg-blue-50/30 px-2 py-1 rounded-md inline-block text-center w-[80px]">
+                        {{ row.phosphorus }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-purple-600 bg-purple-50/30 px-2 py-1 rounded-md inline-block text-center w-[80px]">
+                        {{ row.potassium }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-orange-600 bg-orange-50/30 px-2 py-1 rounded-md inline-block text-center w-[60px]">
+                        {{ row.ph }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-red-600 bg-red-50/30 px-2 py-1 rounded-md inline-block text-center w-[80px]">
+                        {{ row.temperature }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-md inline-block text-center w-[60px]">
+                        {{ row.humidity }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div v-if="row.predictedCrop" class="flex items-center">
+                        <span class="text-sm text-gray-800 bg-emerald-50 px-3 py-1 rounded-full">
+                          {{ row.predictedCrop }}
+                          <span v-if="row.successRate" class="text-gray-500 text-xs ml-1">({{ row.successRate }})</span>
+                        </span>
+                      </div>
+                      <div v-else class="text-sm text-gray-400">-</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {{ row.datePredicted || '-' }}
+                    </td>
                   </tr>
                   <tr v-if="filteredAndSortedData.length === 0">
                     <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500">
@@ -195,9 +237,12 @@
                 </tbody>
               </table>
             </div>
+          </div>
 
+          <!-- Fixed Pagination Section -->
+          <div class="border-t border-gray-100 p-4 bg-white rounded-b-[20px]">
             <!-- Enhanced Pagination -->
-            <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
               <div class="text-sm text-gray-600 flex items-center gap-2">
                 <span class="hidden sm:inline">Showing</span>
                 <select 
@@ -205,6 +250,7 @@
                   class="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-colors"
                   @change="updatePagination"
                 >
+                  <option value="5">5</option>
                   <option value="10">10</option>
                   <option value="20">20</option>
                   <option value="50">50</option>
@@ -324,8 +370,27 @@ const originalData = ref([
   }
 ])
 
-// Working data copy
-const data = ref([...originalData.value])
+// Add more sample data to demonstrate pagination
+const generateMoreData = () => {
+  const additionalData = []
+  for (let i = 0; i < 20; i++) {
+    const baseData = originalData.value[i % 4]
+    additionalData.push({
+      ...baseData,
+      date: `Nov ${28 + Math.floor(i/4)}, 2024 ${14 + Math.floor(i/8)}:${34 + i}:${Math.floor(Math.random() * 60)}`,
+      nitrogen: +(baseData.nitrogen * (0.9 + Math.random() * 0.2)).toFixed(2),
+      phosphorus: +(baseData.phosphorus * (0.9 + Math.random() * 0.2)).toFixed(2),
+      potassium: +(baseData.potassium * (0.9 + Math.random() * 0.2)).toFixed(2),
+      ph: +(baseData.ph * (0.95 + Math.random() * 0.1)).toFixed(2),
+      temperature: +(baseData.temperature * (0.95 + Math.random() * 0.1)).toFixed(2),
+      humidity: +(baseData.humidity * (0.95 + Math.random() * 0.1)).toFixed(2),
+    })
+  }
+  return [...originalData.value, ...additionalData]
+}
+
+// Working data copy with more entries to demonstrate pagination
+const data = ref(generateMoreData())
 
 // Initialize filters object
 const filters = ref({
@@ -339,7 +404,7 @@ const filters = ref({
 
 // Reactive state
 const searchQuery = ref('')
-const itemsPerPage = ref(10)
+const itemsPerPage = ref(5) // Changed default from 6 to 5
 const currentPage = ref(1)
 const activeDropdown = ref(null)
 const sortKey = ref('date')
@@ -367,11 +432,12 @@ const headers = [
   { key: 'datePredicted', label: 'Date Predicted' }
 ]
 
-const exportFormats = ['csv', 'pdf', 'excel']
+// Changed from 'excel' to 'docs'
+const exportFormats = ['csv', 'pdf', 'docs']
 
 // Computed properties
 const filteredData = computed(() => {
-  let result = [...originalData.value]
+  let result = [...data.value]
   
   // Apply search filter
   if (searchQuery.value) {
@@ -545,8 +611,8 @@ const exportData = (format) => {
     exportAsCSV(dataToExport)
   } else if (format === 'pdf') {
     exportAsPDF(dataToExport)
-  } else if (format === 'excel') {
-    exportAsExcel(dataToExport)
+  } else if (format === 'docs') { // Changed from 'excel' to 'docs'
+    exportAsDocs(dataToExport) // Changed function name
   }
   
   activeDropdown.value = null // Close dropdown after exporting
@@ -590,11 +656,12 @@ const exportAsPDF = (data) => {
   console.log('Data to export as PDF:', data)
 }
 
-const exportAsExcel = (data) => {
-  // In a real application, you would use a library like SheetJS
+// Changed from exportAsExcel to exportAsDocs
+const exportAsDocs = (data) => {
+  // In a real application, you would use a library to generate DOCS
   // For this example, we'll just show an alert
-  alert('Excel export would be implemented with a library like SheetJS')
-  console.log('Data to export as Excel:', data)
+  alert('DOCS export would be implemented with a library for document generation')
+  console.log('Data to export as DOCS:', data)
 }
 
 // Watch for changes that should reset pagination
@@ -650,5 +717,34 @@ button {
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
   }
+}
+
+/* Ensure responsive layout on smaller screens */
+@media (max-width: 640px) {
+  .flex-col {
+    row-gap: 0.5rem;
+  }
+  
+  .pagination-container {
+    justify-content: center;
+  }
+}
+
+/* Improve table responsiveness */
+@media (max-width: 480px) {
+  table {
+    font-size: 0.75rem;
+  }
+  
+  th, td {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+  }
+}
+
+/* Add subtle hover effect to table rows */
+tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+  transition: background-color 0.2s ease;
 }
 </style>
