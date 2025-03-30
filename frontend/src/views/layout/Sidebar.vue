@@ -1,8 +1,8 @@
 <template>
   <nav class="fixed top-2 mx-4 left-0 right-0 bg-gradient-to-r from-[#00A572] to-[#008F61] backdrop-blur-md bg-opacity-95 shadow-lg z-50 rounded-xl border border-transparent border-t-[3px] border-t-orange-400">
     <div class="max-w-[1920px] mx-auto px-4 lg:px-6 py-2.5">
-      <!-- Top row with logo, search and profile -->
-      <div class="flex items-center">
+      <!-- Top row with logo and profile -->
+      <div class="flex items-center justify-between">
         <!-- Logo and PROJECT ISRAEL text - positioned with padding-top -->
         <div class="flex items-center relative w-[180px]" style="padding-top: 4px;">
           <div class="bg-white rounded-full shadow-lg flex items-center justify-center overflow-hidden border-2 border-white/30 hover:border-white/50 transition-all duration-300" style="width: 2.8rem; height: 2.8rem;">
@@ -19,68 +19,8 @@
           </div>
         </div>
 
-        <!-- Centered Search bar with autocomplete suggestions -->
-        <div class="flex-1 flex justify-center px-4">
-          <div class="relative w-80 md:w-96 lg:w-[450px]">
-            <input 
-              v-model="searchQuery"
-              type="text" 
-              placeholder="Search..." 
-              class="w-full bg-white/20 border border-white/30 rounded-lg py-1.5 px-4 pl-9 text-sm text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
-              @focus="showSuggestions = true"
-              @input="handleSearchInput"
-            />
-            <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-white/70" />
-            
-            <!-- Search Suggestions Dropdown -->
-            <div 
-              v-if="showSuggestions && filteredSuggestions.length > 0" 
-              class="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg overflow-hidden z-50 border border-gray-100"
-            >
-              <div class="max-h-[300px] overflow-y-auto">
-                <div 
-                  v-for="(suggestion, index) in filteredSuggestions" 
-                  :key="index"
-                  class="flex items-start p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                  @click="selectSuggestion(suggestion)"
-                >
-                  <div class="flex-1">
-                    <div class="flex items-center">
-                      <component 
-                        :is="suggestion.icon" 
-                        class="h-4 w-4 text-[#00A572] mr-2 flex-shrink-0" 
-                      />
-                      <p class="text-sm font-medium text-gray-800">{{ suggestion.title }}</p>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-0.5 ml-6">{{ suggestion.category }}</p>
-                  </div>
-                  <ArrowRight class="h-3.5 w-3.5 text-gray-400 self-center flex-shrink-0" />
-                </div>
-              </div>
-              
-              <!-- Show all results button -->
-              <div class="p-2 bg-gray-50 border-t border-gray-100">
-                <button 
-                  @click="viewAllResults"
-                  class="w-full text-center text-xs font-medium text-[#00A572] hover:underline"
-                >
-                  View all results
-                </button>
-              </div>
-            </div>
-            
-            <!-- No results message -->
-            <div 
-              v-if="showSuggestions && searchQuery && filteredSuggestions.length === 0" 
-              class="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg overflow-hidden z-50 border border-gray-100 p-3"
-            >
-              <p class="text-sm text-gray-500 text-center">No results found for "{{ searchQuery }}"</p>
-            </div>
-          </div>
-        </div>
-
         <!-- User Profile Section with Notification Icon - balanced spacing -->
-        <div class="flex items-center group w-[180px] justify-end">
+        <div class="flex items-center group justify-end">
           <span class="text-xs text-white mr-2 hidden md:block opacity-90 group-hover:opacity-100 transition-opacity">{{ user?.email }}</span>
           
           <!-- Notification Icon - with balanced spacing -->
@@ -212,13 +152,6 @@
 
   <!-- Spacer for content below navbar -->
   <div class="h-20"></div>
-  
-  <!-- Click outside handler for search suggestions -->
-  <div 
-    v-if="showSuggestions" 
-    class="fixed inset-0 z-40"
-    @click="showSuggestions = false"
-  ></div>
 </template>
 
 <script setup>
@@ -236,175 +169,13 @@ import {
   Gauge,
   Power,
   Cloud,
-  Search,
-  Bell,
-  ArrowRight,
-  FileText,
-  Settings,
-  Users,
-  HelpCircle,
-  Leaf,
-  BarChart,
-  Calendar,
-  Map
+  Bell
 } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
 const user = ref(null)
 const isSensorDropdownOpen = ref(false)
-const searchQuery = ref('')
-const showSuggestions = ref(false)
-const searchTimeout = ref(null)
-
-// Sample search suggestions data
-// In a real application, this would come from an API or a more comprehensive data source
-const searchSuggestions = [
-  { 
-    title: 'Dashboard Overview', 
-    category: 'Pages', 
-    url: '/dashboard', 
-    icon: LayoutDashboard 
-  },
-  { 
-    title: 'Crop Prediction Models', 
-    category: 'Features', 
-    url: '/prediction', 
-    icon: Brain 
-  },
-  { 
-    title: 'Soil Moisture Analysis', 
-    category: 'Reports', 
-    url: '/soil-moisture', 
-    icon: Droplets 
-  },
-  { 
-    title: 'Weather Forecast', 
-    category: 'Data', 
-    url: '/weather', 
-    icon: Cloud 
-  },
-  { 
-    title: 'Device Control Panel', 
-    category: 'Settings', 
-    url: '/control', 
-    icon: Cpu 
-  },
-  { 
-    title: 'Temperature Sensors', 
-    category: 'Hardware', 
-    url: '/temperature', 
-    icon: Thermometer 
-  },
-  { 
-    title: 'Water Level Monitoring', 
-    category: 'Sensors', 
-    url: '/water-level', 
-    icon: Gauge 
-  },
-  { 
-    title: 'Motor Control Settings', 
-    category: 'Configuration', 
-    url: '/motor-control', 
-    icon: Power 
-  },
-  { 
-    title: 'Humidity Tracking', 
-    category: 'Sensors', 
-    url: '/humidity', 
-    icon: Droplets 
-  },
-  { 
-    title: 'Crop Calendar', 
-    category: 'Planning', 
-    url: '/calendar', 
-    icon: Calendar 
-  },
-  { 
-    title: 'Field Mapping', 
-    category: 'Visualization', 
-    url: '/mapping', 
-    icon: Map 
-  },
-  { 
-    title: 'Yield Analysis', 
-    category: 'Reports', 
-    url: '/yield', 
-    icon: BarChart 
-  },
-  { 
-    title: 'Pest Detection', 
-    category: 'Monitoring', 
-    url: '/pests', 
-    icon: Leaf 
-  },
-  { 
-    title: 'User Management', 
-    category: 'Administration', 
-    url: '/users', 
-    icon: Users 
-  },
-  { 
-    title: 'System Settings', 
-    category: 'Configuration', 
-    url: '/settings', 
-    icon: Settings 
-  },
-  { 
-    title: 'Documentation', 
-    category: 'Help', 
-    url: '/docs', 
-    icon: FileText 
-  },
-  { 
-    title: 'Support Center', 
-    category: 'Help', 
-    url: '/support', 
-    icon: HelpCircle 
-  }
-]
-
-// Filter suggestions based on search query
-const filteredSuggestions = computed(() => {
-  if (!searchQuery.value) return []
-  
-  const query = searchQuery.value.toLowerCase()
-  return searchSuggestions.filter(suggestion => 
-    suggestion.title.toLowerCase().includes(query) || 
-    suggestion.category.toLowerCase().includes(query)
-  ).slice(0, 8) // Limit to 8 results for better UX
-})
-
-// Handle search input with debounce
-const handleSearchInput = () => {
-  // Clear previous timeout
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value)
-  }
-  
-  // Set new timeout for debounce (300ms)
-  searchTimeout.value = setTimeout(() => {
-    // This would typically make an API call in a real application
-    // For now, we're just using the computed filteredSuggestions
-    showSuggestions.value = true
-  }, 300)
-}
-
-// Handle suggestion selection
-const selectSuggestion = (suggestion) => {
-  searchQuery.value = suggestion.title
-  showSuggestions.value = false
-  router.push(suggestion.url)
-}
-
-// View all search results
-const viewAllResults = () => {
-  router.push({
-    path: '/search',
-    query: { q: searchQuery.value }
-  })
-  showSuggestions.value = false
-}
 
 const menuItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -470,14 +241,10 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', closeDropdown)
   window.removeEventListener('resize', handleResize)
   clearTimeout(resizeTimeout)
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value)
-  }
 })
 
 watch(() => route.path, () => {
   isSensorDropdownOpen.value = false
-  showSuggestions.value = false
 })
 </script>
 
