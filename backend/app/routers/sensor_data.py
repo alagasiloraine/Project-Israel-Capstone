@@ -16,7 +16,8 @@ class SensorData(BaseModel):
     nitrogen: float
     phosphorus: float
     potassium: float
-    soilpH: float
+    soilPh: float 
+    soilMoisture: float  # Optional if you want to keep using it later
     temperature: float
     humidity: float
 
