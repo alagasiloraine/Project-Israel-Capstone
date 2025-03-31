@@ -1,5 +1,4 @@
-```vue type="vue" project="Agricultural Dashboard" file="Dashboard.vue"
-[v0-no-op-code-block-prefix]<template>
+<template>
   <div class="h-screen flex bg-gradient-to-br from-green-50 to-emerald-100 font-poppins overflow-hidden">
     <Sidebar />
     <!-- Main Content -->
