@@ -82,6 +82,7 @@
               alt="Profile"
             />
           </div>
+          
         </div>
       </div>
 

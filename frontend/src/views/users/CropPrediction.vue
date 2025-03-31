@@ -79,37 +79,6 @@
                   </p>
                 </div>
 
-                <!-- Enhanced Greenhouse Toggle -->
-                <div class="mb-8">
-                  <label class="text-sm font-medium text-gray-700 mb-3 block">Monitoring Location</label>
-                  <div class="inline-flex p-1.5 bg-gray-50 rounded-xl shadow-inner">
-                    <button 
-                      @click="selectGreenhouse(1)"
-                      :class="[
-                        'px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2',
-                        selectedGreenhouse === 1 
-                          ? 'bg-green-500 text-white shadow-md transform scale-[1.02]' 
-                          : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-white/80'
-                      ]"
-                    >
-                      <WarehouseIcon class="w-4 h-4" />
-                      Greenhouse 1
-                    </button>
-                    <button 
-                      @click="selectGreenhouse(2)"
-                      :class="[
-                        'px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2',
-                        selectedGreenhouse === 2 
-                          ? 'bg-green-500 text-white shadow-md transform scale-[1.02]' 
-                          : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-white/80'
-                      ]"
-                    >
-                      <WarehouseIcon class="w-4 h-4" />
-                      Greenhouse 2
-                    </button>
-                  </div>
-                </div>
-
                 <!-- Form Fields Container -->
                 <div class="space-y-6">
                   <!-- Primary Measurements Section -->
@@ -433,20 +402,6 @@
                               </div>
                             </td>
                             <td class="px-4 py-3.5 whitespace-nowrap">
-                              <div class="flex items-center gap-3">
-                                <img 
-                                  :src="prediction.staffAvatar" 
-                                  class="h-8 w-8 rounded-full ring-2 ring-white"
-                                />
-                                <div class="flex flex-col">
-                                  <span class="text-sm font-medium text-gray-900">
-                                    {{ prediction.staffName }}
-                                  </span>
-                                  <span class="text-xs text-gray-500">Staff</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td class="px-4 py-3.5 whitespace-nowrap">
                               <div class="flex flex-col">
                                 <span class="text-sm font-medium text-gray-900">
                                   {{ prediction.date.split(',')[1] }}
@@ -727,20 +682,6 @@
                 </p>
               </div>
 
-              <!-- Staff Information -->
-              <div class="bg-white rounded-lg p-3 border border-gray-100">
-                <div class="flex items-center gap-3">
-                  <img 
-                    :src="selectedPrediction?.staffAvatar" 
-                    class="h-8 w-8 rounded-full ring-2 ring-white"
-                  />
-                  <div>
-                    <h4 class="text-sm font-medium text-gray-900">{{ selectedPrediction?.staffName }}</h4>
-                    <p class="text-xs text-gray-500">Assigned Staff</p>
-                  </div>
-                </div>
-              </div>
-
               <!-- Status Management -->
               <div class="bg-white rounded-lg p-3 border border-gray-100">
                 <div class="flex items-center gap-2 text-green-600 mb-2">
@@ -992,7 +933,6 @@ const itemsPerPage = ref(5)  // Changed default to 5
 
 const tableHeaders = [
   { key: 'crop', label: 'Recommended Crop' },
-  { key: 'staff', label: 'Staff' },
   { key: 'date', label: 'Date & Time' },
   { key: 'successRate', label: 'Success Rate' },
   { key: 'status', label: 'Status' },
@@ -1003,8 +943,6 @@ const predictions = ref([
   {
     id: 1,
     crop: 'Chickpea',
-    staffName: 'Ellie Rose Almeda',
-    staffAvatar: 'https://ui-avatars.com/api/?name=John+Doe',
     date: 'Today, 2:30 PM',
     successRate: 99.68,
     status: 'Planted',
@@ -1013,8 +951,6 @@ const predictions = ref([
   {
     id: 2,
     crop: 'Watermelon',
-    staffName: 'Cy Kean Perjes',
-    staffAvatar: 'https://ui-avatars.com/api/?name=Jane+Smith',
     date: 'Today, 1:15 PM',
     successRate: 95.42,
     status: 'Ongoing',
@@ -1023,8 +959,6 @@ const predictions = ref([
   {
     id: 3,
     crop: 'Chickpea',
-    staffName: 'Loraine Alagasi',
-    staffAvatar: 'https://ui-avatars.com/api/?name=Jane+Smith',
     date: 'Today, 1:15 PM',
     successRate: 95.42,
     status: 'Harvested',
@@ -1033,8 +967,6 @@ const predictions = ref([
   {
     id: 4,
     crop: 'Rice',
-    staffName: 'Alagasi Loraine',
-    staffAvatar: 'https://ui-avatars.com/api/?name=Jane+Smith',
     date: 'Today, 1:15 PM',
     successRate: 95.42,
     status: 'Cancelled',
@@ -1043,8 +975,6 @@ const predictions = ref([
   {
     id: 5,
     crop: 'Watermelon',
-    staffName: 'Jamyca Manibo',
-    staffAvatar: 'https://ui-avatars.com/api/?name=Jane+Smith',
     date: 'Today, 1:15 PM',
     successRate: 95.42,
     status: 'Planted',
