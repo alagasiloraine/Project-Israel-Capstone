@@ -292,8 +292,16 @@ const handleLogin = async () => {
     return;
   }
 
+
   if (email.value == 'admin@gmail.com' || password.value == 'admin123') {
     router.push('/overview')
+  }
+  if (email.value == 'admin123' || password.value == 'admin123') {
+    // Admin user
+    localStorage.setItem("isAdmin", true);
+    router.push("/dashboard");
+    isLoading.value = false;
+    return;
   }
 
   try {
@@ -364,7 +372,6 @@ const generateProfilePicture = (email) => {
   const initials = email[0].toUpperCase();
   return `https://dummyimage.com/100x100/000/fff.png&text=${initials}`;
 };
-
 
 </script>
 

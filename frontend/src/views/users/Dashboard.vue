@@ -9,68 +9,80 @@
         <div class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-green-100 h-[calc(100vh-140px)] overflow-y-auto transition-all duration-300 ease-in-out hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]">
           <!-- Content Wrapper -->
           <div class="p-6">
-            <!-- Top Metrics Cards -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 mb-10">
-              <!-- Nitrogen Level -->
-              <div class="group bg-white rounded-2xl p-5 border-2 border-green-100 shadow-lg transition-all duration-300 hover:border-green-400 hover:shadow-xl hover:-translate-y-1">
-                <div class="flex items-center justify-between mb-3">
-                  <Leaf class="h-6 w-6 text-green-500 transition-transform duration-300 group-hover:scale-110" />
-                  <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">N</span>
-                </div>
-                <div class="text-2xl font-bold text-green-700">96.01</div>
-                <div class="text-xs text-green-600">Nitrogen (mg/kg)</div>
-              </div>
+            <!-- Find the Top Metrics Cards section and replace it with this updated version -->
+  
+  <!-- Top Metrics Cards -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
+    <!-- Nitrogen Level -->
+    <div class="group bg-white rounded-xl p-4 border-2 border-green-100 shadow-lg transition-all duration-300 hover:border-green-400 hover:shadow-xl hover:-translate-y-1">
+      <div class="flex items-center justify-between mb-2">
+        <Leaf class="h-5 w-5 text-green-500 transition-transform duration-300 group-hover:scale-110" />
+        <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">N</span>
+      </div>
+      <div class="text-xl font-bold text-green-700">{{ nitrogen }}</div>
+      <div class="text-xs text-green-600">Nitrogen (mg/kg)</div>  
+    </div>
 
-              <!-- Phosphorus Level -->
-              <div class="group bg-white rounded-2xl p-5 border-2 border-blue-100 shadow-lg transition-all duration-300 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1">
-                <div class="flex items-center justify-between mb-3">
-                  <TestTube class="h-6 w-6 text-blue-500 transition-transform duration-300 group-hover:scale-110" />
-                  <span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">P</span>
-                </div>
-                <div class="text-2xl font-bold text-blue-700">22.85</div>
-                <div class="text-xs text-blue-600">Phosphorus (mg/kg)</div>
-              </div>
+    <!-- Phosphorus Level -->
+    <div class="group bg-white rounded-xl p-4 border-2 border-blue-100 shadow-lg transition-all duration-300 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1">
+      <div class="flex items-center justify-between mb-2">
+        <TestTube class="h-5 w-5 text-blue-500 transition-transform duration-300 group-hover:scale-110" />
+        <span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">P</span>
+      </div>
+      <div class="text-xl font-bold text-blue-700">{{ phosphorus }}</div>
+      <div class="text-xs text-blue-600">Phosphorus (mg/kg)</div>
+    </div>
 
-              <!-- Potassium Level -->
-              <div class="group bg-white rounded-2xl p-5 border-2 border-purple-100 shadow-lg transition-all duration-300 hover:border-purple-400 hover:shadow-xl hover:-translate-y-1">
-                <div class="flex items-center justify-between mb-3">
-                  <TestTubes class="h-6 w-6 text-purple-500 transition-transform duration-300 group-hover:scale-110" />
-                  <span class="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded-full">K</span>
-                </div>
-                <div class="text-2xl font-bold text-purple-700">87.04</div>
-                <div class="text-xs text-purple-600">Potassium (mg/kg)</div>
-              </div>
+    <!-- Potassium Level -->
+    <div class="group bg-white rounded-xl p-4 border-2 border-purple-100 shadow-lg transition-all duration-300 hover:border-purple-400 hover:shadow-xl hover:-translate-y-1">
+      <div class="flex items-center justify-between mb-2">
+        <TestTubes class="h-5 w-5 text-purple-500 transition-transform duration-300 group-hover:scale-110" />
+        <span class="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full">K</span>
+      </div>
+      <div class="text-xl font-bold text-purple-700">{{ potassium }}</div>
+      <div class="text-xs text-purple-600">Potassium (mg/kg)</div>
+    </div>
 
-              <!-- Soil pH Level -->
-              <div class="group bg-white rounded-2xl p-5 border-2 border-orange-100 shadow-lg transition-all duration-300 hover:border-orange-400 hover:shadow-xl hover:-translate-y-1">
-                <div class="flex items-center justify-between mb-3">
-                  <Beaker class="h-6 w-6 text-orange-500 transition-transform duration-300 group-hover:scale-110" />
-                  <span class="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded-full">pH</span>
-                </div>
-                <div class="text-2xl font-bold text-orange-700">7.22</div>
-                <div class="text-xs text-orange-600">Soil pH Level</div>
-              </div>
+    <!-- Soil pH Level -->
+    <div class="group bg-white rounded-xl p-4 border-2 border-orange-100 shadow-lg transition-all duration-300 hover:border-orange-400 hover:shadow-xl hover:-translate-y-1">
+      <div class="flex items-center justify-between mb-2">
+        <Beaker class="h-5 w-5 text-orange-500 transition-transform duration-300 group-hover:scale-110" />
+        <span class="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">pH</span>
+      </div>
+      <div class="text-xl font-bold text-orange-700">{{ soilPh }}</div>
+      <div class="text-xs text-orange-600">Soil pH Level</div>
+    </div>
 
-              <!-- Temperature -->
-              <div class="group bg-white rounded-2xl p-5 border-2 border-red-100 shadow-lg transition-all duration-300 hover:border-red-400 hover:shadow-xl hover:-translate-y-1">
-                <div class="flex items-center justify-between mb-3">
-                  <Thermometer class="h-6 w-6 text-red-500 transition-transform duration-300 group-hover:scale-110" />
-                  <span class="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded-full">Temp</span>
-                </div>
-                <div class="text-2xl font-bold text-red-700">32.52</div>
-                <div class="text-xs text-red-600">Temperature (°C)</div>
-              </div>
+    <!-- Soil Moisture -->
+    <div class="group bg-white rounded-xl p-4 border-2 border-emerald-100 shadow-lg transition-all duration-300 hover:border-emerald-400 hover:shadow-xl hover:-translate-y-1">
+      <div class="flex items-center justify-between mb-2">
+        <Sprout class="h-5 w-5 text-emerald-500 transition-transform duration-300 group-hover:scale-110" />
+        <span class="text-xs font-semibold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">SM</span>
+      </div>
+      <div class="text-xl font-bold text-emerald-700">{{ soilMoisture }}</div>
+      <div class="text-xs text-emerald-600">Soil Moisture</div>
+    </div>
 
-              <!-- Humidity -->
-              <div class="group bg-white rounded-2xl p-5 border-2 border-sky-100 shadow-lg transition-all duration-300 hover:border-sky-400 hover:shadow-xl hover:-translate-y-1">
-                <div class="flex items-center justify-between mb-3">
-                  <Droplets class="h-6 w-6 text-sky-500 transition-transform duration-300 group-hover:scale-110" />
-                  <span class="text-xs font-semibold text-sky-600 bg-sky-100 px-2 py-1 rounded-full">RH</span>
-                </div>
-                <div class="text-2xl font-bold text-sky-700">76.68</div>
-                <div class="text-xs text-sky-600">Humidity (%)</div>
-              </div>
-            </div>
+    <!-- Temperature -->
+    <div class="group bg-white rounded-xl p-4 border-2 border-red-100 shadow-lg transition-all duration-300 hover:border-red-400 hover:shadow-xl hover:-translate-y-1">
+      <div class="flex items-center justify-between mb-2">
+        <Thermometer class="h-5 w-5 text-red-500 transition-transform duration-300 group-hover:scale-110" />
+        <span class="text-xs font-semibold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">Temp</span>
+      </div>
+      <div class="text-xl font-bold text-red-700">{{ temperature }}</div>
+      <div class="text-xs text-red-600">Temperature (°C)</div>
+    </div>
+
+    <!-- Humidity -->
+    <div class="group bg-white rounded-xl p-4 border-2 border-sky-100 shadow-lg transition-all duration-300 hover:border-sky-400 hover:shadow-xl hover:-translate-y-1">
+      <div class="flex items-center justify-between mb-2">
+        <Droplets class="h-5 w-5 text-sky-500 transition-transform duration-300 group-hover:scale-110" />
+        <span class="text-xs font-semibold text-sky-600 bg-sky-100 px-2 py-0.5 rounded-full">RH</span>
+      </div>
+      <div class="text-xl font-bold text-sky-700">{{ humidity }}</div>
+      <div class="text-xs text-sky-600">Humidity (%)</div>
+    </div>
+  </div>
 
             <!-- Charts Section -->
             <div class="grid grid-cols-1 gap-8">
@@ -246,40 +258,36 @@
 
                 <!-- Enhanced Weather Card with Colored Icons -->
                 <div class="bg-white rounded-2xl p-6 shadow-lg border border-blue-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
-                  <!-- Weather Card Header -->
-                <div class="flex justify-between items-start mb-4">
-                  <div class="flex items-center justify-between w-full">
-                    <div class="bg-sky-50 rounded-full px-2.5 py-1 flex items-center space-x-1.5 shadow-inner">
-                      <CloudSun class="w-4 h-4 text-sky-500" />
-                      <h3 class="text-sm font-semibold text-sky-700 tracking-wide">Weather Forecast</h3>
-                    </div>
-                    <div class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
-                      LIVE
+                  <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center justify-between w-full">
+                      <div class="bg-sky-50 rounded-full px-2.5 py-1 flex items-center space-x-1.5 shadow-inner">
+                        <CloudSun class="w-4 h-4 text-sky-500" />
+                        <h3 class="text-sm font-semibold text-sky-700 tracking-wide">Weather Forecast</h3>
+                      </div>
+                      <div class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">LIVE</div>
                     </div>
                   </div>
-                </div>
 
                   <!-- Current Weather -->
                   <div class="flex items-center justify-between mb-4">
                     <div>
                       <div class="flex items-end space-x-1">
-                        <p class="text-4xl font-bold text-gray-900">{{ weatherData[6].temp }}</p>
+                        <p class="text-4xl font-bold text-gray-900">{{ weather?.temperature_f }}</p>
                         <p class="text-xl font-semibold text-gray-600 mb-1">°C</p>
                       </div>
-                      <p class="text-base mt-1 text-gray-600">{{ getWeatherDescription(weatherData[6].weather) }}</p>
+                      <p class="text-base mt-1 text-gray-600">{{ weather?.weather_condition }}</p>
                     </div>
                     <div class="weather-icon-wrapper">
                       <component 
-                        :is="getWeatherIcon(weatherData[6].weather)"
-                        :class="['h-14 w-14 transform transition-transform hover:scale-110', getWeatherIconColor(weatherData[6].weather)]"
+                        :is="getWeatherIcon(weather?.weather_condition)"
+                        :class="['h-14 w-14 transform transition-transform hover:scale-110', getWeatherIconColor(weatherData[0]?.weather)]"
                       />
                     </div>
                   </div>
 
                   <!-- Weather Details -->
                   <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div v-for="(detail, index) in weatherDetails" :key="index" 
-                         class="bg-gray-50 rounded-lg p-2 transition-all duration-300 hover:bg-gray-100">
+                    <div v-for="(detail, index) in weatherDetails" :key="index" class="bg-gray-50 rounded-lg p-2 transition-all duration-300 hover:bg-gray-100">
                       <div class="flex items-center space-x-2">
                         <component :is="detail.icon" :class="['h-4 w-4', getDetailIconColor(detail.label)]" />
                         <div>
@@ -294,10 +302,7 @@
                   <div>
                     <h4 class="text-xs font-semibold mb-2 text-gray-900">7-Day Forecast</h4>
                     <div class="grid grid-cols-7 gap-1">
-                      <div v-for="(day, index) in weatherData" 
-                           :key="index" 
-                           class="flex flex-col items-center p-1 rounded-lg transition-all duration-300 hover:bg-gray-50"
-                      >
+                      <div v-for="(day, index) in weatherData" :key="index" class="flex flex-col items-center p-1 rounded-lg transition-all duration-300 hover:bg-gray-50">
                         <span class="text-[10px] mb-1 text-gray-600">{{ day.date.slice(0, 3) }}</span>
                         <component 
                           :is="getWeatherIcon(day.weather)"
@@ -336,7 +341,7 @@
                   <div class="flex items-center space-x-3 mb-6">
                     <div class="flex-1">
                       <div class="flex items-baseline">
-                        <span class="text-3xl font-bold text-emerald-600">45%</span>
+                        <span class="text-3xl font-bold text-emerald-600">{{ soilMoisture }}%</span>
                         <span class="ml-2 text-sm text-emerald-500">Optimal Range</span>
                       </div>
                       <div class="flex items-center mt-1">
@@ -595,7 +600,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Chart, registerables } from 'chart.js';
 import { 
   Sprout,
@@ -625,28 +630,6 @@ Chart.register(...registerables);
 const lineChartRefs = ref([]);
 const performanceChartRef = ref(null);
 const waterLevel = ref(75);
-
-const soilMoistureChartRef = ref(null);
-const humidityChartRef = ref(null);
-const temperatureChartRef = ref(null);
-const soilPhChartRef = ref(null);
-
-// Update the motorStatus and motorStatusPercentage variables
-const motorStatus = ref(false);
-const motorOnPercentage = ref(65.7); // Example: motor was on 65.7% of the week
-
-const circumference = 2 * Math.PI * 48;
-const dashOffset = computed(() => circumference * (1 - motorOnPercentage.value / 100));
-
-const weeklyData = [
-  { label: 'M', percentage: 70 },
-  { label: 'T', percentage: 65 },
-  { label: 'W', percentage: 80 },
-  { label: 'T', percentage: 55 },
-  { label: 'F', percentage: 75 },
-  { label: 'S', percentage: 50 },
-  { label: 'S', percentage: 65 },
-];
 
 const metrics = [
   {
@@ -744,167 +727,13 @@ const lineChartOptions = {
   }
 };
 
-// Function to toggle motor status
-const toggleMotorStatus = () => {
-  motorStatus.value = !motorStatus.value;
-};
-
-// Weather Data
-const weatherData = ref([
-  { 
-    date: 'Monday', 
-    temp: 22, 
-    weather: 'partly-cloudy',
-    humidity: 65,
-    windSpeed: 12,
-    precipitation: 0
-  },
-  { 
-    date: 'Tuesday', 
-    temp: 24, 
-    weather: 'sunny',
-    humidity: 55,
-    windSpeed: 8,
-    precipitation: 0
-  },
-  { 
-    date: 'Wednesday', 
-    temp: 20, 
-    weather: 'rainy',
-    humidity: 85,
-    windSpeed: 15,
-    precipitation: 25
-  },
-  { 
-    date: 'Thursday', 
-    temp: 23, 
-    weather: 'cloudy',
-    humidity: 70,
-    windSpeed: 10,
-    precipitation: 0
-  },
-  { 
-    date: 'Friday', 
-    temp: 26, 
-    weather: 'sunny',
-    humidity: 50,
-    windSpeed: 5,
-    precipitation: 0
-  },
-  { 
-    date: 'Saturday', 
-    temp: 25, 
-    weather: 'partly-cloudy',
-    humidity: 60,
-    windSpeed: 7,
-    precipitation: 0
-  },
-  { 
-    date: 'Today', 
-    temp: 21, 
-    weather: 'rainy',
-    humidity: 80,
-    windSpeed: 18,
-    precipitation: 15
-  },
-]);
-
-// Weather details data
-const weatherDetails = computed(() => [
-  {
-    label: 'Humidity',
-    value: `${weatherData.value[6].humidity}%`,
-    icon: Droplets
-  },
-  {
-    label: 'Wind Speed',
-    value: `${weatherData.value[6].windSpeed} km/h`,
-    icon: Wind
-  },
-  {
-    label: 'Precipitation',
-    value: `${weatherData.value[6].precipitation}%`,
-    icon: CloudRain
-  },
-  {
-    label: 'UV Index',
-    value: 'Low',
-    icon: Sun
-  }
-]);
-
-// Helper Functions
-const getWeatherIcon = (weather) => {
-  switch (weather) {
-    case 'sunny':
-      return Sun;
-    case 'partly-cloudy':
-      return CloudSun;
-    case 'cloudy':
-      return Cloud;
-    case 'rainy':
-      return CloudRain;
-    case 'stormy':
-      return CloudLightning;
-    case 'drizzle':
-      return CloudDrizzle;
-    default:
-      return CloudSun;
-  }
-};
-
-const getWeatherDescription = (weather) => {
-  switch (weather) {
-    case 'sunny':
-      return 'Clear skies';
-    case 'partly-cloudy':
-      return 'Partly cloudy';
-    case 'cloudy':
-      return 'Overcast';
-    case 'rainy':
-      return 'Rainy';
-    case 'stormy':
-      return 'Thunderstorms';
-    case 'drizzle':
-      return 'Light rain';
-    default:
-      return 'Mixed conditions';
-  }
-};
-
-// Add new helper function for weather icon colors
-const getWeatherIconColor = (weather) => {
-  switch (weather) {
-    case 'sunny':
-      return 'text-amber-400';
-    case 'partly-cloudy':
-      return 'text-blue-400';
-    case 'cloudy':
-      return 'text-gray-400';
-    case 'rainy':
-      return 'text-blue-500';
-    case 'stormy':
-      return 'text-indigo-600';
-    case 'drizzle':
-      return 'text-blue-400';
-    default:
-      return 'text-blue-500';
-  }
-};
-
-// Add new helper function for detail icon colors
-const getDetailIconColor = (label) => {
-  switch (label) {
-    case 'Humidity':
-      return 'text-blue-500';
-    case 'Wind Speed':
-      return 'text-teal-500';
-    case 'Precipitation':
-      return 'text-indigo-500';
-    case 'UV Index':
-      return 'text-amber-500';
-    default:
-      return 'text-gray-500';
+const pieChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false
+    }
   }
 };
 
@@ -1099,7 +928,7 @@ onMounted(() => {
           tension: 0.4,
           borderWidth: 2,
           pointRadius: 0,
-          pointHoverRadius: 6
+          pointHoverRadius: 6,
         }]
       },
       options: {
