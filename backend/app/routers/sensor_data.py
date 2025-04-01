@@ -124,11 +124,12 @@ class SensorData(BaseModel):
     nitrogen: float
     phosphorus: float
     potassium: float
-    soilpH: float
+    soilPh: float 
+    soilMoisture: float  # Optional if you want to keep using it later
     temperature: float
     humidity: float
 
-# Main POST endpoint
+# POST endpoint (optional external posting like Postman or test)
 @router.post("/sensor-data")
 async def receive_sensor_data(data: SensorData):
     message = data.dict()
