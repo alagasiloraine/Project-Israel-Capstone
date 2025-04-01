@@ -38,8 +38,8 @@ async def get_7_day_forecast():
 @router.get("/weather")
 async def get_weather():
    # Use lat/lon of Parang, Calapan City, Oriental Mindoro
-    latitude = 13.405327079018555
-    longitude = 121.21506521885358
+    latitude = 13.401977220608616
+    longitude = 121.22464223345575
     coordinates = f"{latitude},{longitude}"
     
 
