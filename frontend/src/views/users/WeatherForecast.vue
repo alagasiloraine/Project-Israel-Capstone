@@ -1,5 +1,4 @@
 <template>
-
   <div class="h-screen flex bg-gradient-to-br from-green-50 to-emerald-100 font-poppins overflow-hidden">
     <Sidebar />
     <!-- Main Content -->
@@ -607,9 +606,17 @@ const getRandomWindSpeed = () => {
   return Math.floor(Math.random() * 8) + 4
 }
 
-onMounted(() => {
+onMounted(async () => {
   // Animation for temperature path could be initialized here if needed
+  try {
+    const res = await api.get('/weather/forecast')
+    forecast.value = res.data.forecast
+  } catch (err) {
+    console.error('Error fetching forecast:', err)
+  }
 })
+
+import api from '../../api/index.js'
 </script>
 
 <style scoped>
@@ -784,4 +791,3 @@ onMounted(() => {
   }
 }
 </style>
-
