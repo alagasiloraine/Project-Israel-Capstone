@@ -216,8 +216,10 @@ async def firebase_test():
 
 @app.get("/weather/")
 async def get_weather():
-    latitude = 13.3945574
-    longitude = 121.1870931
+    # latitude = 13.392611362807832
+    # longitude = 121.22978104985009
+    latitude = 13.401977220608616
+    longitude = 121.22464223345575
     coordinates = f"{latitude},{longitude}"
 
     params = {

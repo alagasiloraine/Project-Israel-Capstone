@@ -927,15 +927,15 @@ onMounted(() => {
     }
 
     const eventSource = new EventSource('http://localhost:8000/stream')
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      nitrogen.value = data.nitrogen
-      phosphorus.value = data.phosphorus
-      potassium.value = data.potassium
-      soilpH.value = data.soilpH
-      temperature.value = data.temperature
-      humidity.value = data.humidity
-    }
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        nitrogen.value = data.nitrogen
+        phosphorus.value = data.phosphorus
+        potassium.value = data.potassium
+        soilpH.value = data.soilpH
+        temperature.value = data.temperature
+        humidity.value = data.humidity
+      }
 
 
 })
