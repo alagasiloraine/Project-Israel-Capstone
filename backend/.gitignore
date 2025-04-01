@@ -3,3 +3,4 @@ serviceAccountKey.json
 .env
 crop_ml
 data
+venv
