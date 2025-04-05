@@ -85,7 +85,7 @@
 
 
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List
@@ -98,7 +98,7 @@ from fastapi.encoders import jsonable_encoder
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-router = APIRouter()
+router = APIRouter(prefix="/api")
 
 # Load environment variables
 load_dotenv()
@@ -169,6 +169,8 @@ async def stream_sensor_data():
                 latest_data = doc.to_dict()
                 if latest_data:
                     yield f"data: {json.dumps(jsonable_encoder(latest_data))}\n\n"
+
+                print(latest_data)
         except Exception as e:
             print("❌ Error fetching latest Firebase data:", e)
 
@@ -199,3 +201,24 @@ async def forward_sensor_data(data_dict):
     # Push to frontend
     for queue in subscribers:
         await queue.put(data_dict)
+
+
+@router.get('/sensor/readings')
+async def get_sensor_data():
+    try:
+        docs = db.collection("sensor_readings") \
+                 .order_by("timestamp", direction=firestore.Query.DESCENDING) \
+                 .stream()
+
+        sensor_data = []
+        for doc in docs:
+            sensor_data.append(doc.to_dict())
+
+        if not sensor_data:
+            return {"message": "No sensor data found"}
+        
+        print(sensor_data)
+        return sensor_data
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

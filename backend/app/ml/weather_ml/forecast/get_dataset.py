@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 import os
 
 # Coordinates for Parang, Calapan City, Oriental Mindoro
-LATITUDE = 13.3945574
-LONGITUDE = 121.1870931
+LATITUDE = 13.401977220608616
+LONGITUDE = 121.22464223345575
 DATASET_PATH = "dataset.csv"
 
 def main():
