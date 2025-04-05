@@ -3979,3 +3979,340 @@ google.auth.exceptions.TransportError: ('Connection aborted.', RemoteDisconnecte
 2025-04-05 14:19:48,296 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
 2025-04-05 14:20:39,634 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
 2025-04-05 14:20:56,031 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 14:21:29,539 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-04-05 14:21:29,540 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-04-05 14:21:29,540 - INFO - Added job "schedule_forecast_script" to job store "default"
+2025-04-05 14:21:29,541 - INFO - Added job "schedule_dataset_update" to job store "default"
+2025-04-05 14:21:29,541 - INFO - Scheduler started
+2025-04-05 14:21:29,545 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
+2025-04-05 14:26:33,271 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 14:31:36,113 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 14:36:38,109 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 14:41:40,913 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 14:46:43,523 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 14:51:46,154 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 14:56:48,983 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 15:01:50,794 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 15:06:53,633 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 15:11:56,219 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 15:16:57,986 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 15:22:00,848 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 15:22:20,439 - ERROR - AuthMetadataPluginCallback "<google.auth.transport.grpc.AuthMetadataPlugin object at 0x0000026DCB900D50>" raised exception!
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 1386, in getresponse
+    response.begin()
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 325, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 294, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\util\retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 1386, in getresponse
+    response.begin()
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 325, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 294, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\requests.py", line 186, in __call__
+    response = self.session.request(
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\adapters.py", line 682, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\grpc\_plugin_wrapping.py", line 105, in __call__
+    self._metadata_plugin(
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\grpc.py", line 95, in __call__
+    callback(self._get_authorization_headers(context), None)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\grpc.py", line 81, in _get_authorization_headers
+    self._credentials.before_request(
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\credentials.py", line 239, in before_request
+    self._blocking_refresh(request)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\credentials.py", line 202, in _blocking_refresh
+    self.refresh(request)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\service_account.py", line 448, in refresh
+    access_token, expiry, _ = _client.jwt_grant(
+                              ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 299, in jwt_grant
+    response_data = _token_endpoint_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 259, in _token_endpoint_request
+    response_status_ok, response_data, retryable_error = _token_endpoint_request_no_throw(
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+               ^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\requests.py", line 192, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-04-05 15:27:23,701 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 15:32:26,310 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 15:37:28,953 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 15:42:31,687 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 15:47:34,223 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 15:52:36,173 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 15:57:37,943 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 16:02:40,472 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 16:07:43,697 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 16:12:46,268 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 16:17:48,938 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 16:23:20,810 - ERROR - AuthMetadataPluginCallback "<google.auth.transport.grpc.AuthMetadataPlugin object at 0x0000026DCB900D50>" raised exception!
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 1386, in getresponse
+    response.begin()
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 325, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 294, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\util\retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 1386, in getresponse
+    response.begin()
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 325, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 294, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\requests.py", line 186, in __call__
+    response = self.session.request(
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\adapters.py", line 682, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\grpc\_plugin_wrapping.py", line 105, in __call__
+    self._metadata_plugin(
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\grpc.py", line 95, in __call__
+    callback(self._get_authorization_headers(context), None)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\grpc.py", line 81, in _get_authorization_headers
+    self._credentials.before_request(
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\credentials.py", line 239, in before_request
+    self._blocking_refresh(request)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\credentials.py", line 202, in _blocking_refresh
+    self.refresh(request)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\service_account.py", line 448, in refresh
+    access_token, expiry, _ = _client.jwt_grant(
+                              ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 299, in jwt_grant
+    response_data = _token_endpoint_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 259, in _token_endpoint_request
+    response_status_ok, response_data, retryable_error = _token_endpoint_request_no_throw(
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+               ^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\requests.py", line 192, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-04-05 16:28:22,916 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 16:33:25,463 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 16:38:27,378 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 16:43:29,870 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 16:48:32,496 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 16:53:35,546 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 16:58:37,945 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 17:03:40,568 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 17:08:42,353 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 17:13:44,700 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 17:18:47,196 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 17:23:48,819 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 17:24:08,351 - ERROR - AuthMetadataPluginCallback "<google.auth.transport.grpc.AuthMetadataPlugin object at 0x0000026DCB900D50>" raised exception!
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 1386, in getresponse
+    response.begin()
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 325, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 294, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\util\retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 1386, in getresponse
+    response.begin()
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 325, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 294, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\requests.py", line 186, in __call__
+    response = self.session.request(
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\adapters.py", line 682, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\grpc\_plugin_wrapping.py", line 105, in __call__
+    self._metadata_plugin(
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\grpc.py", line 95, in __call__
+    callback(self._get_authorization_headers(context), None)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\grpc.py", line 81, in _get_authorization_headers
+    self._credentials.before_request(
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\credentials.py", line 239, in before_request
+    self._blocking_refresh(request)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\credentials.py", line 202, in _blocking_refresh
+    self.refresh(request)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\service_account.py", line 448, in refresh
+    access_token, expiry, _ = _client.jwt_grant(
+                              ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 299, in jwt_grant
+    response_data = _token_endpoint_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 259, in _token_endpoint_request
+    response_status_ok, response_data, retryable_error = _token_endpoint_request_no_throw(
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+               ^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\requests.py", line 192, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-04-05 17:29:11,144 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 17:34:13,624 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 17:39:15,496 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 17:44:19,287 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-04-05 17:49:21,845 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"

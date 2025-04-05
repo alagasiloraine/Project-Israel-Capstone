@@ -307,7 +307,7 @@
 
                         <!-- Use actual condition if available -->
                         <component 
-                          :is="getWeatherIcon(day.condition || 'Clear')" 
+                          :is="getWeatherIcon(day.temp || 'Clear')" 
                           class="h-6 w-6 mb-1 text-yellow-500"
                         />
 
@@ -704,7 +704,7 @@ import api from '../../api/index'
 Chart.register(...registerables);
 
 const lineChartRefs = ref([]);
-const waterLevel = ref(75);
+const waterLevel = ref(40);
 
 // Refs for chart instances
 const soilMoistureChartInstance = ref(null);
@@ -1343,25 +1343,6 @@ const weatherDetails = computed(() => {
   ]
 })
 
-// const getWeatherIcon = (weather) => {
-//   switch (weather) {
-//     case 'sunny':
-//       return Sun;
-//     case 'partly-cloudy':
-//       return CloudSun;
-//     case 'cloudy':
-//       return Cloud;
-//     case 'rainy':
-//       return CloudRain;
-//     case 'stormy':
-//       return CloudLightning;
-//     case 'drizzle':
-//       return CloudDrizzle;
-//     default:
-//       return CloudSun;
-//   }
-// };
-
 // Add new helper function for weather icon colors
 const getWeatherIconColor = (weather) => {
   switch (weather) {
@@ -1382,29 +1363,25 @@ const getWeatherIconColor = (weather) => {
   }
 };
 
-const getWeatherIcon = (condition) => {
-  const cond = (condition || 'Clear').toLowerCase();
+const getWeatherIcon = (temperature) => {
+  const temp = typeof temperature === 'number' ? temperature : parseFloat(temperature);
 
-  switch (cond) {
-    case 'sunny':
-    case 'clear':
-      return Sun;
-    case 'partly cloudy':
-    case 'cloudy':
-      return CloudSun;
-    case 'overcast':
-      return Cloud;
-    case 'rain':
-    case 'rainy':
-    case 'showers':
-      return CloudRain;
-    case 'storm':
-    case 'thunderstorm':
-      return CloudLightning;
-    case 'drizzle':
-      return CloudDrizzle;
-    default:
-      return Cloud;
+  if (isNaN(temp)) return Cloud; // fallback if invalid
+
+  if (temp >= 32) {
+    return Sun; // very hot
+  } else if (temp >= 26 && temp < 32) {
+    return CloudSun; // warm and partly cloudy
+  } else if (temp >= 20 && temp < 26) {
+    return Cloud; // moderate
+  } else if (temp >= 15 && temp < 20) {
+    return CloudDrizzle; // cool and damp
+  } else if (temp >= 5 && temp < 15) {
+    return CloudRain; // cold rain
+  } else if (temp >= -5 && temp < 5) {
+    return Snowflake; // cold
+  } else {
+    return CloudLightning; // extreme cold/storm
   }
 };
 
