@@ -97,9 +97,8 @@
                               <label class="block text-xs font-medium text-gray-500">Nitrogen (N)</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.nitrogen"
-                                  readonly
+                                  type="number"
+                                  v-model="nitrogen"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">mg/kg</span>
@@ -109,7 +108,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-green-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${(parseFloat(currentGreenhouseData.nitrogen) / 150) * 100}%` }"
+                              :style="{ width: `${(parseFloat(nitrogen) / 150) * 100}%` }"
                             ></div>
                           </div>
                         </div>
@@ -127,9 +126,8 @@
                               <label class="block text-xs font-medium text-gray-500">Phosphorus (P)</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.phosphorus"
-                                  readonly
+                                  type="number"
+                                  v-model="phosphorus"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">mg/kg</span>
@@ -139,7 +137,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-blue-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${(parseFloat(currentGreenhouseData.phosphorus) / 150) * 100}%` }"
+                              :style="{ width: `${(parseFloat(phosphorus) / 150) * 100}%` }"
                             ></div>
                           </div>
                         </div>
@@ -157,9 +155,8 @@
                               <label class="block text-xs font-medium text-gray-500">Potassium (K)</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.potassium"
-                                  readonly
+                                  type="number"
+                                  v-model="potassium"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">mg/kg</span>
@@ -169,7 +166,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-purple-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${(parseFloat(currentGreenhouseData.potassium) / 150) * 100}%` }"
+                              :style="{ width: `${(parseFloat(potassium) / 150) * 100}%` }"
                             ></div>
                           </div>
                         </div>
@@ -187,9 +184,8 @@
                               <label class="block text-xs font-medium text-gray-500">Soil pH</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.ph"
-                                  readonly
+                                  type="number"
+                                  v-model="soilpH"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">pH</span>
@@ -199,7 +195,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-amber-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${(parseFloat(currentGreenhouseData.ph) / 14) * 100}%` }"
+                              :style="{ width: `${(parseFloat(soilpH) / 14) * 100}%` }"
                             ></div>
                           </div>
                         </div>
@@ -223,9 +219,8 @@
                               <label class="block text-xs font-medium text-gray-500">Soil Moisture</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.moisture"
-                                  readonly
+                                  type="number"
+                                  v-model="soilMoisture"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">%</span>
@@ -235,7 +230,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-cyan-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${parseFloat(currentGreenhouseData.moisture)}%` }"
+                              :style="{ width: `${parseFloat(soilMoisture)}%` }"
                             ></div>
                           </div>
                         </div>
@@ -253,9 +248,8 @@
                               <label class="block text-xs font-medium text-gray-500">Temperature</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.temperature"
-                                  readonly
+                                  type="number"
+                                  v-model="temperature"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">°C</span>
@@ -265,7 +259,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-orange-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${(parseFloat(currentGreenhouseData.temperature) / 50) * 100}%` }"
+                              :style="{ width: `${(parseFloat(temperature) / 50) * 100}%` }"
                             ></div>
                           </div>
                         </div>
@@ -283,9 +277,8 @@
                               <label class="block text-xs font-medium text-gray-500">Humidity</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.humidity"
-                                  readonly
+                                  type="number"
+                                  v-model="humidity"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">%</span>
@@ -295,7 +288,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-teal-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${parseFloat(currentGreenhouseData.humidity)}%` }"
+                              :style="{ width: `${parseFloat(humidity)}%` }"
                             ></div>
                           </div>
                         </div>
@@ -563,15 +556,15 @@
                 <div class="space-y-2">
                   <div class="flex items-center justify-between">
                     <span class="text-xs text-gray-600">Soil Compatibility</span>
-                    <span class="text-xs font-medium text-gray-900">98%</span>
+                    <span class="text-xs font-medium text-gray-900">{{ soilCompatibility }}%</span>
                   </div>
                   <div class="flex items-center justify-between">
                     <span class="text-xs text-gray-600">Growth Rate</span>
-                    <span class="text-xs font-medium text-gray-900">95%</span>
+                    <span class="text-xs font-medium text-gray-900">{{ growthRate }}%</span>
                   </div>
                   <div class="flex items-center justify-between">
                     <span class="text-xs text-gray-600">Yield Potential</span>
-                    <span class="text-xs font-medium text-gray-900">97%</span>
+                    <span class="text-xs font-medium text-gray-900">{{ yieldPotential }}%</span>
                   </div>
                 </div>
               </div>
@@ -597,7 +590,7 @@
                       </div>
                       <div class="text-right">
                         <div class="text-sm font-semibold text-gray-900">
-                          {{ option.successRate }}%
+                          {{ option.confidence }}%
                         </div>
                         <div class="text-[10px] text-gray-500">Success rate</div>
                       </div>
@@ -605,7 +598,7 @@
                     <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                       <div 
                         class="h-full bg-green-500 rounded-full transition-all" 
-                        :style="{ width: `${option.successRate}%` }"
+                        :style="{ width: `${option.confidence}%` }"
                       ></div>
                     </div>
                   </div>
@@ -638,6 +631,7 @@
               Close
             </button>
             <button 
+              @click="saveRecommendation"
               class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1.5 shadow-sm"
             >
               <DownloadIcon class="h-3.5 w-3.5" />
@@ -831,16 +825,18 @@ import {
   SaveIcon
 } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
-import Pagination from '../layout/Pagination.vue'
+// import Pagination from '../layout/Pagination.vue'
+import api from '../../api/index.js'
+import toastr from 'toastr'
 
 // Initialize all sensor data as reactive refs
-const nitrogen = ref(null)
-const phosphorus = ref(null)
-const potassium = ref(null)
-const soilPh = ref(null)
-const soilMoisture = ref(null)
-const temperature = ref(null)
-const humidity = ref(null)
+const nitrogen = ref(0)
+const phosphorus = ref(0)
+const potassium = ref(0)
+const soilpH = ref(0)
+const soilMoisture = ref(0)
+const temperature = ref(0)
+const humidity = ref(0)
 
 // Greenhouse data - now all parameters are dynamic
 const greenhouse1Data = ref({
@@ -863,7 +859,7 @@ const greenhouse2Data = ref({
   humidity: '72.34'
 })
 
-onMounted(() => {
+onMounted(async () => {
   // Connect to ESP32 data stream
   const eventSource = new EventSource('http://localhost:8000/stream')
   eventSource.onmessage = (event) => {
@@ -873,22 +869,14 @@ onMounted(() => {
     nitrogen.value = data.nitrogen
     phosphorus.value = data.phosphorus
     potassium.value = data.potassium
-    soilPh.value = data.soilPh
-    soilMoisture.value = data.soilMoisture
+    soilpH.value = data.soilpH
+    // soilMoisture.value = data.soilMoisture
+    soilMoisture.value = 70.0
     temperature.value = data.temperature
     humidity.value = data.humidity
     
-    // Update greenhouse1Data with the latest values from ESP32
-    greenhouse1Data.value = {
-      nitrogen: nitrogen.value || '32',
-      phosphorus: phosphorus.value || '121',
-      potassium: potassium.value || '114',
-      ph: soilPh.value || '5.3',
-      moisture: soilMoisture.value || '0.0',
-      temperature: temperature.value || '27.1',
-      humidity: humidity.value || '81.7'
-    }
   }
+
 })
 
 const selectedGreenhouse = ref(1)
@@ -902,22 +890,77 @@ const selectGreenhouse = (greenhouse) => {
 }
 
 const showModal = ref(false)
-const recommendedCrop = ref('Chickpea')
-const successRate = ref(99.68)
-const alternativeOptions = ref([
-  { crop: 'Watermelon', successRate: 95.42 },
-  { crop: 'Coffee', successRate: 92.31 }
-])
+const recommendedCrop = ref('')
+const successRate = ref(0)
+const soilCompatibility = ref(0)
+const growthRate = ref(0)
+const yieldPotential = ref(0)
+const alternativeOptions = ref([])
 
-const submitForm = () => {
-  showModal.value = true
+const submitForm = async () => {
+  const payload = {
+    nitrogen: parseFloat(nitrogen.value),
+    phosphorus: parseFloat(phosphorus.value),
+    potassium: parseFloat(potassium.value),
+    soilpH: parseFloat(soilpH.value),
+    soilMoisture: parseFloat(soilMoisture.value),
+    temperature: parseFloat(temperature.value),
+    humidity: parseFloat(humidity.value),
+  }
+
+  console.log("Payload being sent to backend:", payload)
+
+  try {
+    const res = await api.post('/crop/recommend', payload)
+    console.log("Payload sent to backend:", payload)
+
+
+    const result = res.data
+
+    recommendedCrop.value = result.recommendedCrop
+    successRate.value = result.successRate
+    alternativeOptions.value = result.alternativeOptions
+    soilCompatibility.value = result.soilCompatibility
+    growthRate.value = result.growthRate
+    yieldPotential.value = result.yieldPotential
+    showModal.value = true
+  } catch (error) {
+    console.error('Fetch error:', error)
+  }
 }
+
+
+const saveRecommendation = async () => {
+  const payload = {
+    recommendedCrop: recommendedCrop.value,
+    successRate: successRate.value,
+    soilCompatibility: soilCompatibility.value,
+    growthRate: growthRate.value,
+    yieldPotential: yieldPotential.value,
+    alternativeOptions: alternativeOptions.value,
+  }
+
+  try {
+    const res = await api.post('/crop/save', payload)
+    console.log("send to back:", payload)
+    console.log("✅ Saved recommendation:", res.data)
+    toastr.success('Recommendation Saved successfully')
+  } catch (error) {
+    console.error('❌ Error saving recommendation:', error)
+    toastr.error('Unexpected error, please try again')
+  }
+}
+
 
 const closeModal = () => {
   showModal.value = false
 }
+const predictions = ref([])
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
+const activeFilter = ref('All')
 
-// Table Data
 const filters = [
   { name: 'All' },
   { name: 'Planted' },
@@ -925,11 +968,6 @@ const filters = [
   { name: 'Cancelled' },
   { name: 'Harvested' }
 ]
-
-const activeFilter = ref('All')
-const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = ref(5)  // Changed default to 5
 
 const tableHeaders = [
   { key: 'crop', label: 'Recommended Crop' },
@@ -939,64 +977,27 @@ const tableHeaders = [
   { key: 'actions', label: 'Actions' }
 ]
 
-const predictions = ref([
-  {
-    id: 1,
-    crop: 'Chickpea',
-    date: 'Today, 2:30 PM',
-    successRate: 99.68,
-    status: 'Planted',
-    harvestDate: 'Mar 15, 2024'
-  },
-  {
-    id: 2,
-    crop: 'Watermelon',
-    date: 'Today, 1:15 PM',
-    successRate: 95.42,
-    status: 'Ongoing',
-    harvestDate: 'Mar 20, 2024'
-  },
-  {
-    id: 3,
-    crop: 'Chickpea',
-    date: 'Today, 1:15 PM',
-    successRate: 95.42,
-    status: 'Harvested',
-    harvestDate: 'Mar 20, 2024'
-  },
-  {
-    id: 4,
-    crop: 'Rice',
-    date: 'Today, 1:15 PM',
-    successRate: 95.42,
-    status: 'Cancelled',
-    harvestDate: 'Mar 20, 2024'
-  },
-  {
-    id: 5,
-    crop: 'Watermelon',
-    date: 'Today, 1:15 PM',
-    successRate: 95.42,
-    status: 'Planted',
-    harvestDate: 'Mar 20, 2024'
+const fetchSavedRecommendations = async () => {
+  try {
+    const response = await api.get('/crop/recommendations')
+    predictions.value = response.data
+  } catch (error) {
+    console.error("Error fetching predictions:", error)
   }
-])
+}
+
+onMounted(fetchSavedRecommendations)
 
 const filteredPredictions = computed(() => {
   let result = predictions.value
 
-  // Filter by status
   if (activeFilter.value !== 'All') {
     result = result.filter(p => p.status === activeFilter.value)
   }
 
-  // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    result = result.filter(p => 
-      p.crop.toLowerCase().includes(query) ||
-      p.staffName.toLowerCase().includes(query)
-    )
+    result = result.filter(p => p.crop.toLowerCase().includes(query))
   }
 
   return result
@@ -1008,25 +1009,15 @@ const paginatedPredictions = computed(() => {
   return filteredPredictions.value.slice(start, end)
 })
 
-const paginationStart = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
-const paginationEnd = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalPredictions.value))
-
-const displayedPages = computed(() => {
-  const pages = []
-  for (let i = 1; i <= totalPages.value; i++) {
-    if (i === 1 || i === totalPages.value || (i >= currentPage.value - 1 && i <= currentPage.value + 1)) {
-      pages.push(i)
-    }
-  }
-  return pages
-})
+const totalPages = computed(() => Math.ceil(filteredPredictions.value.length / itemsPerPage.value))
 
 const getStatusClass = (status) => {
   const classes = {
     'Planted': 'bg-green-100 text-green-700',
     'Ongoing': 'bg-blue-100 text-blue-700',
     'Cancelled': 'bg-red-100 text-red-700',
-    'Harvested': 'bg-gray-100 text-gray-700'
+    'Harvested': 'bg-gray-100 text-gray-700',
+    'Recommended': ''
   }
   return classes[status]
 }

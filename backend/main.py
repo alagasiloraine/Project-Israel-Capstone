@@ -159,9 +159,13 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="Crop Recommendation API")
 
 # ======== CORS CONFIG =========
+origins = [
+    "http://localhost:5173",  # your Vue dev server
+    "http://127.0.0.1:5173",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
