@@ -161,7 +161,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                   <tr 
-                    v-for="(row, index) in filteredAndSortedData" 
+                    v-for="(row, index) in soilMoistureData" 
                     :key="index"
                     class="group transition-colors duration-150 hover:bg-gray-50"
                   >
@@ -270,6 +270,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
+import api from '../../api/index.js'
 
 // Headers definition - Removed motorStatus
 const headers = [
@@ -550,11 +551,54 @@ watch([searchQuery, activeFilters, itemsPerPage], () => {
 // Lifecycle hooks
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+
+  fetchSoilMoistureData()
+
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+const soilMoistureData = ref([])
+
+const fetchSoilMoistureData = async () => {
+  try {
+    const response = await api.get('/sensor/readings');
+    const allData = response.data;
+    console.log('🌱 Raw sensor data:', allData);
+
+    soilMoistureData.value = allData
+      .filter(item => item.soilMoisture !== undefined)
+      .sort((a, b) => {
+        const timeA = a.timestamp?.seconds ? new Date(a.timestamp.seconds * 1000) : new Date();
+        const timeB = b.timestamp?.seconds ? new Date(b.timestamp.seconds * 1000) : new Date();
+        return timeB - timeA;
+      })
+      .map((item, index) => {
+        const timestamp = item.timestamp?.seconds
+          ? new Date(item.timestamp.seconds * 1000)
+          : new Date(); // fallback
+
+        return {
+          id: index + 1,
+          soilMoisture: item.soilMoisture,
+          soilStatus: item.soilStatus || 'N/A',
+          motorStatus: item.motorStatus || 'OFF',
+          date: timestamp.toLocaleDateString(),
+          time: timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+      });
+
+    console.log('✅ Processed soilMoistureData:', JSON.stringify(soilMoistureData.value, null, 2));
+
+  } catch (error) {
+    console.error("❌ Failed to fetch soil moisture data", error);
+  }
+};
+
+
+
 </script>
 
 <style>

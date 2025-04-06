@@ -273,6 +273,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
+import api from '../../api/index.js'
 
 // Headers definition
 const headers = [
@@ -283,16 +284,16 @@ const headers = [
 ]
 
 // Data
-const data = ref([
-  { id: 1, humidity: 85, date: '2024-05-17', time: '18:58:33' },
-  { id: 2, humidity: 45, date: '2024-05-17', time: '18:58:48' },
-  { id: 3, humidity: 30, date: '2024-05-17', time: '18:59:24' },
-  { id: 4, humidity: 75, date: '2024-05-17', time: '19:00:25' },
-  { id: 5, humidity: 25, date: '2024-05-17', time: '19:01:25' },
-  { id: 6, humidity: 90, date: '2024-05-17', time: '19:02:25' },
-  { id: 7, humidity: 92, date: '2024-05-17', time: '19:03:25' },
-  { id: 8, humidity: 88, date: '2024-05-17', time: '19:04:25' },
-])
+// const data = ref([
+//   { id: 1, humidity: 85, date: '2024-05-17', time: '18:58:33' },
+//   { id: 2, humidity: 45, date: '2024-05-17', time: '18:58:48' },
+//   { id: 3, humidity: 30, date: '2024-05-17', time: '18:59:24' },
+//   { id: 4, humidity: 75, date: '2024-05-17', time: '19:00:25' },
+//   { id: 5, humidity: 25, date: '2024-05-17', time: '19:01:25' },
+//   { id: 6, humidity: 90, date: '2024-05-17', time: '19:02:25' },
+//   { id: 7, humidity: 92, date: '2024-05-17', time: '19:03:25' },
+//   { id: 8, humidity: 88, date: '2024-05-17', time: '19:04:25' },
+// ])
 
 // Reactive state
 const searchQuery = ref('')
@@ -316,7 +317,7 @@ const exportFormats = ['csv', 'pdf', 'docs']
 
 // Computed properties
 const filteredData = computed(() => {
-  let result = [...data.value]
+  let result = [...humidityData.value]
   
   // Apply search filter
   if (searchQuery.value) {
@@ -551,11 +552,41 @@ watch([searchQuery, activeFilters, itemsPerPage], () => {
 // Lifecycle hooks
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+
+  fetchHumidityData()
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+const humidityData = ref([])
+
+const fetchHumidityData = async () => {
+  try {
+    const response = await api.get('/sensor/readings')
+    const allData = response.data
+    console.log("✅ Raw sensor data:", allData)
+
+    humidityData.value = allData
+      .filter(item => item.humidity !== undefined && item.timestamp)
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .map((item, index) => {
+        const timestamp = new Date(item.timestamp)
+        return {
+          id: index + 1,
+          humidity: item.humidity,
+          date: timestamp.toLocaleDateString(),
+          time: timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        }
+      })
+
+    console.log("✅ Processed humidityData:", humidityData.value)
+  } catch (error) {
+    console.error("❌ Failed to fetch humidity data", error)
+  }
+}
+
 </script>
 
 <style>
