@@ -1178,7 +1178,12 @@ def evaluate_models(historical_df, models, scalers, feature_sets):
 def main():
     load_dotenv()
     api_key = os.getenv("WEATHER_API_KEY")
-    location = "Parang,Calapan City,Oriental Mindoro"
+
+    # ✅ Use coordinates instead of location name
+    latitude = 13.401977220608616
+    longitude = 121.22464223345575
+    coordinates = f"{latitude},{longitude}"
+
     historical_data_path = "dataset.csv"
 
     print("Loading historical weather data...")
@@ -1186,7 +1191,8 @@ def main():
 
     print("Fetching current weather data...")
     try:
-        current_weather = fetch_current_weather(api_key, location)
+        # ✅ Pass coordinates here
+        current_weather = fetch_current_weather(api_key, coordinates)
         mapped_data = map_weather_data(current_weather)
         print(f"Current data: Max Temp: {mapped_data['temperature_max']}°C, Min Temp: {mapped_data['temperature_min']}°C")
     except Exception as e:
@@ -1194,19 +1200,16 @@ def main():
         return
 
     print("Training forecasting models...")
-    # Correct unpacking of all returned values
     models, scalers, feature_sets, _ = train_forecast_models(historical_df)
 
     print("Preparing forecast features...")
     forecast_df = prepare_forecast_features(historical_df, current_weather)
 
     print("Generating 30-day weather forecast...")
-    # Add missing historical_df parameter
     forecast_results = forecast_weather(forecast_df, models, scalers, feature_sets, historical_df)
 
     print("Creating forecast visualizations...")
-    # Add historical data for comparison
-    visualize_forecasts(forecast_results, historical_df)
+    visualize_forecasts(forecast_results, models, feature_sets, historical_df)
 
     output_csv_path = os.path.join(os.getcwd(), "weather_forecast_results.csv")
     try:

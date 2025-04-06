@@ -79,37 +79,6 @@
                   </p>
                 </div>
 
-                <!-- Enhanced Greenhouse Toggle -->
-                <div class="mb-8">
-                  <label class="text-sm font-medium text-gray-700 mb-3 block">Monitoring Location</label>
-                  <div class="inline-flex p-1.5 bg-gray-50 rounded-xl shadow-inner">
-                    <button 
-                      @click="selectGreenhouse(1)"
-                      :class="[
-                        'px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2',
-                        selectedGreenhouse === 1 
-                          ? 'bg-green-500 text-white shadow-md transform scale-[1.02]' 
-                          : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-white/80'
-                      ]"
-                    >
-                      <WarehouseIcon class="w-4 h-4" />
-                      Greenhouse 1
-                    </button>
-                    <button 
-                      @click="selectGreenhouse(2)"
-                      :class="[
-                        'px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2',
-                        selectedGreenhouse === 2 
-                          ? 'bg-green-500 text-white shadow-md transform scale-[1.02]' 
-                          : 'bg-white text-gray-600 hover:text-gray-800 hover:bg-white/80'
-                      ]"
-                    >
-                      <WarehouseIcon class="w-4 h-4" />
-                      Greenhouse 2
-                    </button>
-                  </div>
-                </div>
-
                 <!-- Form Fields Container -->
                 <div class="space-y-6">
                   <!-- Primary Measurements Section -->
@@ -128,9 +97,8 @@
                               <label class="block text-xs font-medium text-gray-500">Nitrogen (N)</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.nitrogen"
-                                  readonly
+                                  type="number"
+                                  v-model="nitrogen"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">mg/kg</span>
@@ -140,7 +108,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-green-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${(parseFloat(currentGreenhouseData.nitrogen) / 150) * 100}%` }"
+                              :style="{ width: `${(parseFloat(nitrogen) / 150) * 100}%` }"
                             ></div>
                           </div>
                         </div>
@@ -158,9 +126,8 @@
                               <label class="block text-xs font-medium text-gray-500">Phosphorus (P)</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.phosphorus"
-                                  readonly
+                                  type="number"
+                                  v-model="phosphorus"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">mg/kg</span>
@@ -170,7 +137,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-blue-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${(parseFloat(currentGreenhouseData.phosphorus) / 50) * 100}%` }"
+                              :style="{ width: `${(parseFloat(phosphorus) / 150) * 100}%` }"
                             ></div>
                           </div>
                         </div>
@@ -188,9 +155,8 @@
                               <label class="block text-xs font-medium text-gray-500">Potassium (K)</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.potassium"
-                                  readonly
+                                  type="number"
+                                  v-model="potassium"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">mg/kg</span>
@@ -200,7 +166,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-purple-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${(parseFloat(currentGreenhouseData.potassium) / 100) * 100}%` }"
+                              :style="{ width: `${(parseFloat(potassium) / 150) * 100}%` }"
                             ></div>
                           </div>
                         </div>
@@ -218,9 +184,8 @@
                               <label class="block text-xs font-medium text-gray-500">Soil pH</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.ph"
-                                  readonly
+                                  type="number"
+                                  v-model="soilpH"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">pH</span>
@@ -230,7 +195,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-amber-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${(parseFloat(currentGreenhouseData.ph) / 14) * 100}%` }"
+                              :style="{ width: `${(parseFloat(soilpH) / 14) * 100}%` }"
                             ></div>
                           </div>
                         </div>
@@ -254,9 +219,8 @@
                               <label class="block text-xs font-medium text-gray-500">Soil Moisture</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.moisture"
-                                  readonly
+                                  type="number"
+                                  v-model="soilMoisture"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">%</span>
@@ -266,7 +230,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-cyan-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${parseFloat(currentGreenhouseData.moisture)}%` }"
+                              :style="{ width: `${parseFloat(soilMoisture)}%` }"
                             ></div>
                           </div>
                         </div>
@@ -284,9 +248,8 @@
                               <label class="block text-xs font-medium text-gray-500">Temperature</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.temperature"
-                                  readonly
+                                  type="number"
+                                  v-model="temperature"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">°C</span>
@@ -296,7 +259,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-orange-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${(parseFloat(currentGreenhouseData.temperature) / 50) * 100}%` }"
+                              :style="{ width: `${(parseFloat(temperature) / 50) * 100}%` }"
                             ></div>
                           </div>
                         </div>
@@ -314,9 +277,8 @@
                               <label class="block text-xs font-medium text-gray-500">Humidity</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
-                                  type="text"
-                                  :value="currentGreenhouseData.humidity"
-                                  readonly
+                                  type="number"
+                                  v-model="humidity"
                                   class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
                                 />
                                 <span class="text-xs text-gray-500">%</span>
@@ -326,7 +288,7 @@
                           <div class="h-1 w-full bg-gray-100 rounded-full">
                             <div 
                               class="h-1 bg-teal-500 rounded-full transition-all duration-500"
-                              :style="{ width: `${parseFloat(currentGreenhouseData.humidity)}%` }"
+                              :style="{ width: `${parseFloat(humidity)}%` }"
                             ></div>
                           </div>
                         </div>
@@ -433,20 +395,6 @@
                               </div>
                             </td>
                             <td class="px-4 py-3.5 whitespace-nowrap">
-                              <div class="flex items-center gap-3">
-                                <img 
-                                  :src="prediction.staffAvatar" 
-                                  class="h-8 w-8 rounded-full ring-2 ring-white"
-                                />
-                                <div class="flex flex-col">
-                                  <span class="text-sm font-medium text-gray-900">
-                                    {{ prediction.staffName }}
-                                  </span>
-                                  <span class="text-xs text-gray-500">Staff</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td class="px-4 py-3.5 whitespace-nowrap">
                               <div class="flex flex-col">
                                 <span class="text-sm font-medium text-gray-900">
                                   {{ prediction.date.split(',')[1] }}
@@ -539,8 +487,7 @@
                         :key="page"
                         :class="[
                           'px-3 py-1 text-sm font-medium rounded-lg transition-colors duration-200',
-                          currentPage ===
- page
+                          currentPage === page
                             ? 'bg-green-500 text-white'
                             : 'text-gray-500 hover:bg-gray-50'
                         ]"
@@ -566,324 +513,282 @@
       </div>
     </main>
 
-    <!-- Enhanced Recommendation Modal with Compact Design -->
-    <Transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="transform scale-95 opacity-0"
-      enter-to-class="transform scale-100 opacity-100"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="transform scale-100 opacity-100"
-      leave-to-class="transform scale-95 opacity-0"
-    >
-      <div v-if="showModal" 
-           class="fixed inset-0 z-50 overflow-y-auto"
-           @click="closeModal">
-        <!-- Enhanced Backdrop -->
-        <div class="fixed inset-0 bg-black/20 backdrop-blur-[2px]"></div>
-        
-        <!-- Modal Container -->
-        <div class="flex min-h-full items-center justify-center p-4">
-          <div 
-            class="relative w-full max-w-xl transform overflow-hidden rounded-2xl bg-white p-6 text-left shadow-xl transition-all"
-            @click.stop
-          >
-
-            <!-- Modal Header -->
-            <div class="text-center mb-5">
-              <h2 class="text-xl font-semibold text-gray-800">Crop Recommendations</h2>
-              <p class="text-xs text-gray-500 mt-0.5">Based on your soil parameters</p>
-            </div>
-
-            <!-- Main Content Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <!-- Left Column -->
-              <div class="space-y-4">
-                <!-- Primary Recommendation -->
-                <div class="bg-green-50/50 rounded-lg p-5">
-                  <div class="flex items-center gap-2 text-green-600 mb-3">
-                    <SproutIcon class="h-4 w-4" />
-                    <span class="text-xs font-medium">Recommended Crop</span>
-                  </div>
-                  <h3 class="text-xl font-bold text-green-700 mb-2">{{ recommendedCrop }}</h3>
-                  <div class="flex items-baseline gap-1 mb-2">
-                    <span class="text-2xl font-bold text-green-600">{{ successRate }}</span>
-                    <span class="text-sm font-medium text-green-600">%</span>
-                  </div>
-                  <p class="text-xs text-gray-600">
-                    This crop has a {{ successRate }}% chance of success based on your soil composition.
-                  </p>
-                </div>
-
-                <!-- Success Metrics -->
-                <div class="bg-white rounded-lg p-4 border border-gray-100">
-                  <div class="flex items-center gap-2 text-green-600 mb-3">
-                    <TrendingUpIcon class="h-4 w-4" />
-                    <span class="text-xs font-medium">Success Metrics</span>
-                  </div>
-                  <div class="space-y-2">
-                    <div class="flex items-center justify-between">
-                      <span class="text-xs text-gray-600">Soil Compatibility</span>
-                      <span class="text-xs font-medium text-gray-900">98%</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                      <span class="text-xs text-gray-600">Growth Rate</span>
-                      <span class="text-xs font-medium text-gray-900">95%</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                      <span class="text-xs text-gray-600">Yield Potential</span>
-                      <span class="text-xs font-medium text-gray-900">97%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Right Column -->
-              <div class="space-y-4">
-                <!-- Alternative Options -->
-                <div class="bg-white rounded-lg p-4 border border-gray-100">
-                  <div class="flex items-center gap-2 text-green-600 mb-3">
-                    <ListIcon class="h-4 w-4" />
-                    <span class="text-xs font-medium">Alternative Options</span>
-                  </div>
-                  <div class="space-y-3">
-                    <div v-for="option in alternativeOptions" :key="option.crop" 
-                         class="group">
-                      <div class="flex items-center justify-between mb-1.5">
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-900">
-                            {{ option.crop }}
-                          </h4>
-                          <p class="text-[10px] text-gray-500">Recommended alternative</p>
-                        </div>
-                        <div class="text-right">
-                          <div class="text-sm font-semibold text-gray-900">
-                            {{ option.successRate }}%
-                          </div>
-                          <div class="text-[10px] text-gray-500">Success rate</div>
-                        </div>
-                      </div>
-                      <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                        <div 
-                          class="h-full bg-green-500 rounded-full transition-all" 
-                          :style="{ width: `${option.successRate}%` }"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Crop Rotation Tip -->
-                <div class="bg-green-50/50 rounded-lg p-3">
-                  <div class="flex items-start gap-2">
-                    <div class="mt-0.5">
-                      <InfoIcon class="h-3.5 w-3.5 text-green-600" />
-                    </div>
-                    <div>
-                      <h5 class="text-xs font-medium text-green-700 mb-1">Crop Rotation Tip</h5>
-                      <p class="text-[11px] leading-relaxed text-green-600">
-                        Consider rotating between these crops to maintain soil health and maximize yields over time.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex justify-end gap-2 mt-5 pt-4 border-t border-gray-100">
-              <button 
-                @click="closeModal"
-                class="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-200"
-              >
-                Close
-              </button>
-              <button 
-                class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1.5 shadow-sm"
-              >
-                <DownloadIcon class="h-3.5 w-3.5" />
-                Save Recommendation
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- Details Modal -->
-    <Transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="transform scale-95 opacity-0"
-      enter-to-class="transform scale-100 opacity-100"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="transform scale-100 opacity-100"
-      leave-to-class="transform scale-95 opacity-0"
-    >
-      <div v-if="showDetailsModal" 
-           class="fixed inset-0 z-50 overflow-y-auto"
-           @click="closeDetailsModal">
-        <!-- Enhanced Backdrop -->
-        <div class="fixed inset-0 bg-black/20 backdrop-blur-[2px]"></div>
+    <!-- Modal Overlay - Completely separate from the main content -->
+    <div v-if="showModal" class="fixed inset-0 z-50 overflow-hidden">
+      <!-- Backdrop with blur effect -->
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-[2px]" @click="closeModal"></div>
       
-        <!-- Modal Container -->
-        <div class="flex min-h-full items-center justify-center p-4">
-          <div 
-            class="relative w-full max-w-xl transform overflow-hidden rounded-2xl bg-white p-4 text-left shadow-xl transition-all max-h-[90vh] overflow-y-auto"
-            @click.stop
-          >
-            <!-- Modal Header -->
-            <div class="text-center mb-4">
-              <h2 class="text-lg font-semibold text-gray-800">Crop Details</h2>
-              <p class="text-xs text-gray-500 mt-0.5">Detailed information and management</p>
-            </div>
+      <!-- Modal Content - Centered and above the backdrop -->
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="relative bg-white rounded-2xl shadow-xl max-w-xl w-full mx-auto">
+          <!-- Modal Header -->
+          <div class="text-center p-6 pb-0">
+            <h2 class="text-xl font-semibold text-gray-800">Crop Recommendations</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Based on your soil parameters</p>
+          </div>
 
-            <!-- Main Content Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <!-- Left Column -->
-              <div class="space-y-3">
-                <!-- Primary Recommendation -->
-                <div class="bg-green-50/50 rounded-lg p-4">
-                  <div class="flex items-center gap-2 text-green-600 mb-2">
-                    <SproutIcon class="h-4 w-4" />
-                    <span class="text-xs font-medium">Recommended Crop</span>
-                  </div>
-                  <h3 class="text-lg font-bold text-green-700 mb-1">{{ selectedPrediction?.crop }}</h3>
-                  <div class="flex items-baseline gap-1 mb-1">
-                    <span class="text-xl font-bold text-green-600">{{ selectedPrediction?.successRate }}</span>
-                    <span class="text-sm font-medium text-green-600">%</span>
-                  </div>
-                  <p class="text-xs text-gray-600">
-                    Recommended on {{ selectedPrediction?.date }}
-                  </p>
+          <!-- Main Content Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 p-6">
+            <!-- Left Column -->
+            <div class="space-y-4">
+              <!-- Primary Recommendation -->
+              <div class="bg-green-50/50 rounded-lg p-5">
+                <div class="flex items-center gap-2 text-green-600 mb-3">
+                  <SproutIcon class="h-4 w-4" />
+                  <span class="text-xs font-medium">Recommended Crop</span>
                 </div>
-
-                <!-- Staff Information -->
-                <div class="bg-white rounded-lg p-3 border border-gray-100">
-                  <div class="flex items-center gap-3">
-                    <img 
-                      :src="selectedPrediction?.staffAvatar" 
-                      class="h-8 w-8 rounded-full ring-2 ring-white"
-                    />
-                    <div>
-                      <h4 class="text-sm font-medium text-gray-900">{{ selectedPrediction?.staffName }}</h4>
-                      <p class="text-xs text-gray-500">Assigned Staff</p>
-                    </div>
-                  </div>
+                <h3 class="text-xl font-bold text-green-700 mb-2">{{ recommendedCrop }}</h3>
+                <div class="flex items-baseline gap-1 mb-2">
+                  <span class="text-2xl font-bold text-green-600">{{ successRate }}</span>
+                  <span class="text-sm font-medium text-green-600">%</span>
                 </div>
-
-                <!-- Status Management -->
-                <div class="bg-white rounded-lg p-3 border border-gray-100">
-                  <div class="flex items-center gap-2 text-green-600 mb-2">
-                    <ActivityIcon class="h-4 w-4" />
-                    <span class="text-xs font-medium">Status Management</span>
-                  </div>
-                  <div class="grid grid-cols-2 gap-2">
-                    <button
-                      v-for="status in ['Planted', 'Ongoing', 'Harvested', 'Cancelled']"
-                      :key="status"
-                      @click="updateStatus(status)"
-                      :class="[
-                        'px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200',
-                        selectedPrediction?.status === status
-                          ? getStatusButtonClass(status)
-                          : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                      ]"
-                    >
-                      {{ status }}
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Crop Rotation Tip -->
-                <div class="bg-green-50/50 rounded-lg p-3">
-                  <div class="flex items-start gap-2">
-                    <div class="mt-0.5">
-                      <InfoIcon class="h-3.5 w-3.5 text-green-600" />
-                    </div>
-                    <div>
-                      <h5 class="text-xs font-medium text-green-700 mb-1">Crop Rotation Tip</h5>
-                      <p class="text-[11px] leading-relaxed text-green-600">
-                        Consider rotating between these crops to maintain soil health and maximize yields over time.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <p class="text-xs text-gray-600">
+                  This crop has a {{ successRate }}% chance of success based on your soil composition.
+                </p>
               </div>
 
-              <!-- Right Column -->
-              <div class="space-y-3">
-                <!-- Alternative Options -->
-                <div class="bg-white rounded-lg p-3 border border-gray-100">
-                  <div class="flex items-center gap-2 text-green-600 mb-2">
-                    <ListIcon class="h-4 w-4" />
-                    <span class="text-xs font-medium">Alternative Options</span>
-                  </div>
-                  <div class="space-y-2">
-                    <div v-for="option in alternativeCrops" :key="option.crop" 
-                         class="group">
-                      <div class="flex items-center justify-between mb-1">
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-900">
-                            {{ option.crop }}
-                          </h4>
-                          <p class="text-[10px] text-gray-500">Alternative crop</p>
-                        </div>
-                        <div class="text-right">
-                          <div class="text-sm font-semibold text-gray-900">
-                            {{ option.successRate }}%
-                          </div>
-                        </div>
-                      </div>
-                      <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                        <div 
-                          class="h-full bg-green-500 rounded-full transition-all" 
-                          :style="{ width: `${option.successRate}%` }"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
+              <!-- Success Metrics -->
+              <div class="bg-white rounded-lg p-4 border border-gray-100">
+                <div class="flex items-center gap-2 text-green-600 mb-3">
+                  <TrendingUpIcon class="h-4 w-4" />
+                  <span class="text-xs font-medium">Success Metrics</span>
                 </div>
-
-                <!-- Organic Fertilizer Recommendations -->
-                <div class="bg-white rounded-lg p-3 border border-gray-100">
-                  <div class="flex items-center gap-2 text-green-600 mb-2">
-                    <FlaskIcon class="h-4 w-4" />
-                    <span class="text-xs font-medium">Recommended Fertilizers</span>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-600">Soil Compatibility</span>
+                    <span class="text-xs font-medium text-gray-900">{{ soilCompatibility }}%</span>
                   </div>
-                  <div class="space-y-2">
-                    <div v-for="fertilizer in recommendedFertilizers" :key="fertilizer.name" 
-                         class="p-2 bg-gray-50 rounded-lg">
-                      <h4 class="text-sm font-medium text-gray-900">{{ fertilizer.name }}</h4>
-                      <p class="text-xs text-gray-600 mt-1">{{ fertilizer.description }}</p>
-                      <div class="flex items-center gap-2 mt-1">
-                        <span class="text-xs font-medium text-green-600">Application Rate:</span>
-                        <span class="text-xs text-gray-600">{{ fertilizer.rate }}</span>
-                      </div>
-                    </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-600">Growth Rate</span>
+                    <span class="text-xs font-medium text-gray-900">{{ growthRate }}%</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-600">Yield Potential</span>
+                    <span class="text-xs font-medium text-gray-900">{{ yieldPotential }}%</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-gray-100">
-              <button 
-                @click="closeDetailsModal"
-                class="px-3 py-1.5 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-200"
-              >
-                Close
-              </button>
-              <button 
-                class="px-3 py-1.5 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1.5 shadow-sm"
-                @click="saveChanges"
-              >
-                <SaveIcon class="h-3.5 w-3.5" />
-                Save Changes
-              </button>
+            <!-- Right Column -->
+            <div class="space-y-4">
+              <!-- Alternative Options -->
+              <div class="bg-white rounded-lg p-4 border border-gray-100">
+                <div class="flex items-center gap-2 text-green-600 mb-3">
+                  <ListIcon class="h-4 w-4" />
+                  <span class="text-xs font-medium">Alternative Options</span>
+                </div>
+                <div class="space-y-3">
+                  <div v-for="option in alternativeOptions" :key="option.crop" 
+                       class="group">
+                    <div class="flex items-center justify-between mb-1.5">
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-900">
+                          {{ option.crop }}
+                        </h4>
+                        <p class="text-[10px] text-gray-500">Recommended alternative</p>
+                      </div>
+                      <div class="text-right">
+                        <div class="text-sm font-semibold text-gray-900">
+                          {{ option.confidence }}%
+                        </div>
+                        <div class="text-[10px] text-gray-500">Success rate</div>
+                      </div>
+                    </div>
+                    <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        class="h-full bg-green-500 rounded-full transition-all" 
+                        :style="{ width: `${option.confidence}%` }"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Crop Rotation Tip -->
+              <div class="bg-green-50/50 rounded-lg p-3">
+                <div class="flex items-start gap-2">
+                  <div class="mt-0.5">
+                    <InfoIcon class="h-3.5 w-3.5 text-green-600" />
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-medium text-green-700 mb-1">Crop Rotation Tip</h5>
+                    <p class="text-[11px] leading-relaxed text-green-600">
+                      Consider rotating between these crops to maintain soil health and maximize yields over time.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex justify-end gap-2 p-6 pt-0 border-t border-gray-100">
+            <button 
+              @click="closeModal"
+              class="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-200"
+            >
+              Close
+            </button>
+            <button 
+              @click="saveRecommendation"
+              class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1.5 shadow-sm"
+            >
+              <DownloadIcon class="h-3.5 w-3.5" />
+              Save Recommendation
+            </button>
           </div>
         </div>
       </div>
-    </Transition>
+    </div>
+
+    <!-- Details Modal - Using the same approach as the recommendation modal -->
+    <div v-if="showDetailsModal" class="fixed inset-0 z-50 overflow-hidden">
+      <!-- Backdrop with blur effect -->
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-[2px]" @click="closeDetailsModal"></div>
+    
+      <!-- Modal Content - Centered and above the backdrop -->
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="relative bg-white rounded-2xl shadow-xl max-w-xl w-full mx-auto max-h-[90vh] overflow-y-auto">
+          <!-- Modal Header -->
+          <div class="text-center p-4 pb-0">
+            <h2 class="text-lg font-semibold text-gray-800">Crop Details</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Detailed information and management</p>
+          </div>
+
+          <!-- Main Content Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 p-4">
+            <!-- Left Column -->
+            <div class="space-y-3">
+              <!-- Primary Recommendation -->
+              <div class="bg-green-50/50 rounded-lg p-4">
+                <div class="flex items-center gap-2 text-green-600 mb-2">
+                  <SproutIcon class="h-4 w-4" />
+                  <span class="text-xs font-medium">Recommended Crop</span>
+                </div>
+                <h3 class="text-lg font-bold text-green-700 mb-1">{{ selectedPrediction?.crop }}</h3>
+                <div class="flex items-baseline gap-1 mb-1">
+                  <span class="text-xl font-bold text-green-600">{{ selectedPrediction?.successRate }}</span>
+                  <span class="text-sm font-medium text-green-600">%</span>
+                </div>
+                <p class="text-xs text-gray-600">
+                  Recommended on {{ selectedPrediction?.date }}
+                </p>
+              </div>
+
+              <!-- Status Management -->
+              <div class="bg-white rounded-lg p-3 border border-gray-100">
+                <div class="flex items-center gap-2 text-green-600 mb-2">
+                  <ActivityIcon class="h-4 w-4" />
+                  <span class="text-xs font-medium">Status Management</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <button
+                    v-for="status in ['Planted', 'Ongoing', 'Harvested', 'Cancelled']"
+                    :key="status"
+                    @click="updateStatus(status)"
+                    :class="[
+                      'px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200',
+                      selectedPrediction?.status === status
+                        ? getStatusButtonClass(status)
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                    ]"
+                  >
+                    {{ status }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Crop Rotation Tip -->
+              <div class="bg-green-50/50 rounded-lg p-3">
+                <div class="flex items-start gap-2">
+                  <div class="mt-0.5">
+                    <InfoIcon class="h-3.5 w-3.5 text-green-600" />
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-medium text-green-700 mb-1">Crop Rotation Tip</h5>
+                    <p class="text-[11px] leading-relaxed text-green-600">
+                      Consider rotating between these crops to maintain soil health and maximize yields over time.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-3">
+              <!-- Alternative Options -->
+              <div class="bg-white rounded-lg p-3 border border-gray-100">
+                <div class="flex items-center gap-2 text-green-600 mb-2">
+                  <ListIcon class="h-4 w-4" />
+                  <span class="text-xs font-medium">Alternative Options</span>
+                </div>
+                <div class="space-y-2">
+                  <div v-for="option in alternativeCrops" :key="option.crop" 
+                       class="group">
+                    <div class="flex items-center justify-between mb-1">
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-900">
+                          {{ option.crop }}
+                        </h4>
+                        <p class="text-[10px] text-gray-500">Alternative crop</p>
+                      </div>
+                      <div class="text-right">
+                        <div class="text-sm font-semibold text-gray-900">
+                          {{ option.successRate }}%
+                        </div>
+                      </div>
+                    </div>
+                    <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        class="h-full bg-green-500 rounded-full transition-all" 
+                        :style="{ width: `${option.successRate}%` }"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Organic Fertilizer Recommendations -->
+              <div class="bg-white rounded-lg p-3 border border-gray-100">
+                <div class="flex items-center gap-2 text-green-600 mb-2">
+                  <FlaskIcon class="h-4 w-4" />
+                  <span class="text-xs font-medium">Recommended Fertilizers</span>
+                </div>
+                <div class="space-y-2">
+                  <div v-for="fertilizer in recommendedFertilizers" :key="fertilizer.name" 
+                       class="p-2 bg-gray-50 rounded-lg">
+                    <h4 class="text-sm font-medium text-gray-900">{{ fertilizer.name }}</h4>
+                    <p class="text-xs text-gray-600 mt-1">{{ fertilizer.description }}</p>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="text-xs font-medium text-green-600">Application Rate:</span>
+                      <span class="text-xs text-gray-600">{{ fertilizer.rate }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex justify-end gap-2 p-4 pt-3 border-t border-gray-100">
+            <button 
+              @click="closeDetailsModal"
+              class="px-3 py-1.5 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-200"
+            >
+              Close
+            </button>
+            <button 
+              class="px-3 py-1.5 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1.5 shadow-sm"
+              @click="saveChanges"
+            >
+              <SaveIcon class="h-3.5 w-3.5" />
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -920,24 +825,28 @@ import {
   SaveIcon
 } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
-import Pagination from '../layout/Pagination.vue'
+// import Pagination from '../layout/Pagination.vue'
+import api from '../../api/index.js'
+import toastr from 'toastr'
 
-const nitrogen = ref(null)
-const phosphorus = ref(null)
-const potassium = ref(null)
-const soilpH = ref(null)
-const temperature = ref(null)
-const humidity = ref(null)
+// Initialize all sensor data as reactive refs
+const nitrogen = ref(0)
+const phosphorus = ref(0)
+const potassium = ref(0)
+const soilpH = ref(0)
+const soilMoisture = ref(0)
+const temperature = ref(0)
+const humidity = ref(0)
 
-// Greenhouse data
+// Greenhouse data - now all parameters are dynamic
 const greenhouse1Data = ref({
-  nitrogen: nitrogen,
-  phosphorus: phosphorus,
-  potassium: potassium,
-  ph: soilpH,
+  nitrogen: '32',
+  phosphorus: '121',
+  potassium: '114',
+  ph: '5.3',
   moisture: '0.0',
-  temperature: temperature,
-  humidity: humidity,
+  temperature: '27.1',
+  humidity: '81.7',
 })
 
 const greenhouse2Data = ref({
@@ -950,17 +859,24 @@ const greenhouse2Data = ref({
   humidity: '72.34'
 })
 
-onMounted(() => {
+onMounted(async () => {
+  // Connect to ESP32 data stream
   const eventSource = new EventSource('http://localhost:8000/stream')
   eventSource.onmessage = (event) => {
     const data = JSON.parse(event.data)
+    
+    // Update all sensor data from ESP32
     nitrogen.value = data.nitrogen
     phosphorus.value = data.phosphorus
     potassium.value = data.potassium
     soilpH.value = data.soilpH
+    // soilMoisture.value = data.soilMoisture
+    soilMoisture.value = 70.0
     temperature.value = data.temperature
     humidity.value = data.humidity
+    
   }
+
 })
 
 const selectedGreenhouse = ref(1)
@@ -974,22 +890,77 @@ const selectGreenhouse = (greenhouse) => {
 }
 
 const showModal = ref(false)
-const recommendedCrop = ref('Chickpea')
-const successRate = ref(99.68)
-const alternativeOptions = ref([
-  { crop: 'Watermelon', successRate: 95.42 },
-  { crop: 'Coffee', successRate: 92.31 }
-])
+const recommendedCrop = ref('')
+const successRate = ref(0)
+const soilCompatibility = ref(0)
+const growthRate = ref(0)
+const yieldPotential = ref(0)
+const alternativeOptions = ref([])
 
-const submitForm = () => {
-  showModal.value = true
+const submitForm = async () => {
+  const payload = {
+    nitrogen: parseFloat(nitrogen.value),
+    phosphorus: parseFloat(phosphorus.value),
+    potassium: parseFloat(potassium.value),
+    soilpH: parseFloat(soilpH.value),
+    soilMoisture: parseFloat(soilMoisture.value),
+    temperature: parseFloat(temperature.value),
+    humidity: parseFloat(humidity.value),
+  }
+
+  console.log("Payload being sent to backend:", payload)
+
+  try {
+    const res = await api.post('/crop/recommend', payload)
+    console.log("Payload sent to backend:", payload)
+
+
+    const result = res.data
+
+    recommendedCrop.value = result.recommendedCrop
+    successRate.value = result.successRate
+    alternativeOptions.value = result.alternativeOptions
+    soilCompatibility.value = result.soilCompatibility
+    growthRate.value = result.growthRate
+    yieldPotential.value = result.yieldPotential
+    showModal.value = true
+  } catch (error) {
+    console.error('Fetch error:', error)
+  }
 }
+
+
+const saveRecommendation = async () => {
+  const payload = {
+    recommendedCrop: recommendedCrop.value,
+    successRate: successRate.value,
+    soilCompatibility: soilCompatibility.value,
+    growthRate: growthRate.value,
+    yieldPotential: yieldPotential.value,
+    alternativeOptions: alternativeOptions.value,
+  }
+
+  try {
+    const res = await api.post('/crop/save', payload)
+    console.log("send to back:", payload)
+    console.log("✅ Saved recommendation:", res.data)
+    toastr.success('Recommendation Saved successfully')
+  } catch (error) {
+    console.error('❌ Error saving recommendation:', error)
+    toastr.error('Unexpected error, please try again')
+  }
+}
+
 
 const closeModal = () => {
   showModal.value = false
 }
+const predictions = ref([])
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
+const activeFilter = ref('All')
 
-// Table Data
 const filters = [
   { name: 'All' },
   { name: 'Planted' },
@@ -998,88 +969,35 @@ const filters = [
   { name: 'Harvested' }
 ]
 
-const activeFilter = ref('All')
-const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = ref(5)  // Changed default to 5
-
 const tableHeaders = [
   { key: 'crop', label: 'Recommended Crop' },
-  { key: 'staff', label: 'Staff' },
   { key: 'date', label: 'Date & Time' },
   { key: 'successRate', label: 'Success Rate' },
   { key: 'status', label: 'Status' },
   { key: 'actions', label: 'Actions' }
 ]
 
-const predictions = ref([
-  {
-    id: 1,
-    crop: 'Chickpea',
-    staffName: 'Ellie Rose Almeda',
-    staffAvatar: 'https://ui-avatars.com/api/?name=John+Doe',
-    date: 'Today, 2:30 PM',
-    successRate: 99.68,
-    status: 'Planted',
-    harvestDate: 'Mar 15, 2024'
-  },
-  {
-    id: 2,
-    crop: 'Watermelon',
-    staffName: 'Cy Kean Perjes',
-    staffAvatar: 'https://ui-avatars.com/api/?name=Jane+Smith',
-    date: 'Today, 1:15 PM',
-    successRate: 95.42,
-    status: 'Ongoing',
-    harvestDate: 'Mar 20, 2024'
-  },
-  {
-    id: 3,
-    crop: 'Chickpea',
-    staffName: 'Loraine Alagasi',
-    staffAvatar: 'https://ui-avatars.com/api/?name=Jane+Smith',
-    date: 'Today, 1:15 PM',
-    successRate: 95.42,
-    status: 'Harvested',
-    harvestDate: 'Mar 20, 2024'
-  },
-  {
-    id: 4,
-    crop: 'Rice',
-    staffName: 'Alagasi Loraine',
-    staffAvatar: 'https://ui-avatars.com/api/?name=Jane+Smith',
-    date: 'Today, 1:15 PM',
-    successRate: 95.42,
-    status: 'Cancelled',
-    harvestDate: 'Mar 20, 2024'
-  },
-  {
-    id: 5,
-    crop: 'Watermelon',
-    staffName: 'Jamyca Manibo',
-    staffAvatar: 'https://ui-avatars.com/api/?name=Jane+Smith',
-    date: 'Today, 1:15 PM',
-    successRate: 95.42,
-    status: 'Planted',
-    harvestDate: 'Mar 20, 2024'
+const fetchSavedRecommendations = async () => {
+  try {
+    const response = await api.get('/crop/recommendations')
+    predictions.value = response.data
+  } catch (error) {
+    console.error("Error fetching predictions:", error)
   }
-])
+}
+
+onMounted(fetchSavedRecommendations)
 
 const filteredPredictions = computed(() => {
   let result = predictions.value
 
-  // Filter by status
   if (activeFilter.value !== 'All') {
     result = result.filter(p => p.status === activeFilter.value)
   }
 
-  // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    result = result.filter(p => 
-      p.crop.toLowerCase().includes(query) ||
-      p.staffName.toLowerCase().includes(query)
-    )
+    result = result.filter(p => p.crop.toLowerCase().includes(query))
   }
 
   return result
@@ -1091,65 +1009,15 @@ const paginatedPredictions = computed(() => {
   return filteredPredictions.value.slice(start, end)
 })
 
-const totalPages = computed(() => {
-  return Math.ceil(filteredPredictions.value.length / itemsPerPage.value)
-})
+const totalPages = computed(() => Math.ceil(filteredPredictions.value.length / itemsPerPage.value))
 
 const getStatusClass = (status) => {
   const classes = {
-    'Planted': 'bg-green-50 text-green-700 ring-1 ring-green-600/20',
-    'Ongoing': 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/20',
-    'Cancelled': 'bg-red-50 text-red-700 ring-1 ring-red-600/20',
-    'Harvested': 'bg-gray-50 text-gray-700 ring-1 ring-gray-600/20'
-  }
-  return classes[status]
-}
-
-const showDetailsModal = ref(false)
-const selectedPrediction = ref(null)
-
-// Sample data for alternative crops
-const alternativeCrops = ref([
-  { crop: 'Mung Bean', successRate: 92.5 },
-  { crop: 'Green Peas', successRate: 89.8 }
-])
-
-// Sample data for recommended fertilizers
-const recommendedFertilizers = ref([
-  {
-    name: 'Vermicompost',
-    description: 'Rich in nutrients and beneficial microorganisms',
-    rate: '5-6 tons/hectare'
-  },
-  {
-    name: 'Bone Meal',
-    description: 'Excellent source of phosphorus and calcium',
-    rate: '100-150 kg/hectare'
-  }
-])
-
-const showDetails = (prediction) => {
-  selectedPrediction.value = { ...prediction }
-  showDetailsModal.value = true
-}
-
-const closeDetailsModal = () => {
-  showDetailsModal.value = false
-  selectedPrediction.value = null
-}
-
-const updateStatus = (newStatus) => {
-  if (selectedPrediction.value) {
-    selectedPrediction.value.status = newStatus
-  }
-}
-
-const getStatusButtonClass = (status) => {
-  const classes = {
-    'Planted': 'bg-green-500 text-white',
-    'Ongoing': 'bg-blue-500 text-white',
-    'Harvested': 'bg-gray-500 text-white',
-    'Cancelled': 'bg-red-500 text-white'
+    'Planted': 'bg-green-100 text-green-700',
+    'Ongoing': 'bg-blue-100 text-blue-700',
+    'Cancelled': 'bg-red-100 text-red-700',
+    'Harvested': 'bg-gray-100 text-gray-700',
+    'Recommended': ''
   }
   return classes[status]
 }

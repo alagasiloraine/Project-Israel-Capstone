@@ -293,7 +293,7 @@ const searchSuggestions = [
   { 
     title: 'Temperature Sensors', 
     category: 'Hardware', 
-    url: '/temperature', 
+    url: '/temperature-humidity', 
     icon: Thermometer 
   },
   { 
@@ -307,12 +307,6 @@ const searchSuggestions = [
     category: 'Configuration', 
     url: '/motor-control', 
     icon: Power 
-  },
-  { 
-    title: 'Humidity Tracking', 
-    category: 'Sensors', 
-    url: '/humidity', 
-    icon: Droplets 
   },
   { 
     title: 'Crop Calendar', 
@@ -417,8 +411,7 @@ const menuItems = [
 const sensorTypes = [
   { name: 'Soil Moisture', href: '/soil-moisture', icon: Droplets },
   { name: 'Water Level', href: '/water-level', icon: Gauge },
-  { name: 'Humidity', href: '/humidity', icon: Droplets },
-  { name: 'Temperature', href: '/temperature', icon: Thermometer },
+  { name: 'Temp/Humid', href: '/temperature-humidity', icon: Thermometer },
   { name: 'Motor Control', href: '/motor-control', icon: Power },
 ]
 
