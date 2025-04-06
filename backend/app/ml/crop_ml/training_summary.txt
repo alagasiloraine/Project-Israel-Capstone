@@ -1,0 +1,78 @@
+Crop Classification Model Training Summary
+========================================
+
+Dataset Information:
+- Total classes: 27
+- Total samples after filtering: 27000
+- Samples after resampling: 3053
+
+Model Architecture:
+Model: "functional"
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
+┃ Layer (type)                         ┃ Output Shape                ┃         Param # ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
+│ input_layer (InputLayer)             │ (None, 30)                  │               0 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ dense (Dense)                        │ (None, 128)                 │           3,968 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ leaky_re_lu (LeakyReLU)              │ (None, 128)                 │               0 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ batch_normalization                  │ (None, 128)                 │             512 │
+│ (BatchNormalization)                 │                             │                 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ dropout (Dropout)                    │ (None, 128)                 │               0 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ dense_1 (Dense)                      │ (None, 64)                  │           8,256 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ leaky_re_lu_1 (LeakyReLU)            │ (None, 64)                  │               0 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ batch_normalization_1                │ (None, 64)                  │             256 │
+│ (BatchNormalization)                 │                             │                 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ dropout_1 (Dropout)                  │ (None, 64)                  │               0 │
+├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+│ dense_2 (Dense)                      │ (None, 27)                  │           1,755 │
+└──────────────────────────────────────┴─────────────────────────────┴─────────────────┘
+ Total params: 43,475 (169.83 KB)
+ Trainable params: 14,363 (56.11 KB)
+ Non-trainable params: 384 (1.50 KB)
+ Optimizer params: 28,728 (112.22 KB)
+
+Training Performance:
+- Neural network test accuracy: 0.9493
+- Best validation accuracy: 0.9493
+- Best validation loss: 0.2390
+- XGBoost test accuracy: 0.9394
+- Ensemble test accuracy: 0.9591
+
+Selected Features (30):
+1. N (ppm)
+2. P (ppm)
+3. K (ppm)
+4. pH
+5. Soil Moisture (%)
+6. N (ppm)_P (ppm)_product
+7. N (ppm)_K (ppm)_ratio
+8. N (ppm)_K (ppm)_product
+9. N (ppm)_Temp (°C)_ratio
+10. N (ppm)_Temp (°C)_product
+11. N (ppm)_Humidity (%)_ratio
+12. N (ppm)_Humidity (%)_product
+13. N (ppm)_pH_ratio
+14. N (ppm)_pH_product
+15. N (ppm)_Soil Moisture (%)_ratio
+16. N (ppm)_Soil Moisture (%)_product
+17. P (ppm)_K (ppm)_product
+18. P (ppm)_Humidity (%)_product
+19. P (ppm)_pH_ratio
+20. P (ppm)_Soil Moisture (%)_product
+21. K (ppm)_Temp (°C)_ratio
+22. K (ppm)_Temp (°C)_product
+23. K (ppm)_Humidity (%)_ratio
+24. K (ppm)_Humidity (%)_product
+25. K (ppm)_pH_ratio
+26. K (ppm)_pH_product
+27. K (ppm)_Soil Moisture (%)_ratio
+28. K (ppm)_Soil Moisture (%)_product
+29. Humidity (%)_pH_ratio
+30. pH_Soil Moisture (%)_ratio

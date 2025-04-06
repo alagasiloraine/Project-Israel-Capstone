@@ -40,13 +40,16 @@
                 <div class="flex items-center justify-between mb-6">
                   <div>
                     <div class="flex items-end space-x-1">
-                      <p class="text-5xl font-bold text-emerald-900">24</p>
+                      <p class="text-5xl font-bold text-emerald-900">{{ weather?.temperature_c }}</p>
                       <p class="text-2xl font-semibold text-emerald-700 mb-1">°C</p>
                     </div>
-                    <p class="text-base mt-1 text-emerald-600">Heavy Rain</p>
+                    <p class="text-base mt-1 text-emerald-600">{{weather?.weather_condition}}</p>
                   </div>
                   <div class="weather-icon-wrapper">
-                    <CloudRain class="h-16 w-16 transform transition-transform hover:scale-110 text-emerald-500" />
+                    <component 
+                        :is="getWeatherIcon(weather?.weather_condition)"
+                        :class="['h-14 w-14 transform transition-transform hover:scale-110', getWeatherIconColor(weather?.weather_condition)]"
+                      />
                   </div>
                 </div>
 
@@ -58,7 +61,7 @@
                       <Waves class="h-6 w-6 text-teal-500 mr-3" />
                       <span class="text-sm font-medium text-teal-700">Pressure</span>
                     </div>
-                    <span class="text-lg font-semibold text-teal-800">173</span>
+                    <span class="text-lg font-semibold text-teal-800">{{ weather?.pressure_hpa }}</span>
                   </div>
                   
                   <!-- Humidity - Cyan/blue color scheme -->
@@ -67,7 +70,7 @@
                       <Droplet class="h-6 w-6 text-cyan-500 mr-3" />
                       <span class="text-sm font-medium text-cyan-700">Humidity</span>
                     </div>
-                    <span class="text-lg font-semibold text-cyan-800">92%</span>
+                    <span class="text-lg font-semibold text-cyan-800">{{ weather?.humidity }}%</span>
                   </div>
                   
                   <!-- Wind Speed - Green color scheme -->
@@ -76,7 +79,7 @@
                       <Wind class="h-6 w-6 text-green-500 mr-3" />
                       <span class="text-sm font-medium text-green-700">Wind Speed</span>
                     </div>
-                    <span class="text-lg font-semibold text-green-800">6 km/h</span>
+                    <span class="text-lg font-semibold text-green-800">{{ weather?.wind_speed_kph }} km/h</span>
                   </div>
                   
                   <!-- UV Index - Amber/yellow color scheme -->
@@ -85,13 +88,13 @@
                       <Sun class="h-6 w-6 text-amber-500 mr-3" />
                       <span class="text-sm font-medium text-amber-700">UV Index</span>
                     </div>
-                    <span class="text-lg font-semibold text-amber-800">3</span>
+                    <span class="text-lg font-semibold text-amber-800">{{ weather?.uv }}</span>
                   </div>
                 </div>
               </div>
               
               <!-- Interactive Map Card - Enhanced with 3D effect -->
-              <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl overflow-hidden shadow-sm relative group hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+              <!-- <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl overflow-hidden shadow-sm relative group hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
                 <div class="absolute inset-0 bg-grid-emerald-500/5"></div>
                 <div class="relative h-full p-6">
                   <div class="flex justify-between items-start mb-4">
@@ -109,12 +112,12 @@
                     </div>
                   </div>
                   
-                  <!-- Map placeholder with enhanced styling -->
+                  <!-- Map placeholder with enhanced styling --
                   <div class="mt-4 h-[calc(100%-3rem)] rounded-xl bg-white/40 backdrop-blur-sm border border-white/60 shadow-inner flex items-center justify-center overflow-hidden relative">
-                    <!-- Map grid lines -->
+                    <!-- Map grid lines ->
                     <div class="absolute inset-0 bg-grid-emerald-500/10"></div>
                     
-                    <!-- Map content -->
+                    <!-- Map content --
                     <div class="text-center z-10">
                       <div class="relative">
                         <Map class="h-16 w-16 mx-auto mb-2 text-emerald-400" />
@@ -124,7 +127,7 @@
                       <p class="text-xs text-emerald-600 mt-1">Click to explore weather patterns</p>
                     </div>
                     
-                    <!-- Map controls -->
+                    <!-- Map controls --
                     <div class="absolute bottom-3 right-3 flex space-x-2">
                       <button class="bg-white p-1.5 rounded-full shadow-sm hover:bg-emerald-50 transition-colors">
                         <Plus class="h-3.5 w-3.5 text-emerald-600" />
@@ -135,8 +138,34 @@
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> -->
               
+              <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl overflow-hidden shadow-sm relative group hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+                <div class="absolute inset-0 bg-grid-emerald-500/5"></div>
+                <div class="relative h-full p-6">
+                  <div class="flex justify-between items-start mb-4">
+                    <div class="bg-white px-3 py-1 rounded-full shadow-sm flex items-center">
+                      <Map class="w-3.5 h-3.5 text-emerald-600 mr-1" />
+                      <h2 class="text-sm font-bold text-emerald-700">Weather Map</h2>
+                    </div>
+                    <div class="flex space-x-2">
+                      <button class="bg-white p-1.5 rounded-full shadow-sm hover:bg-emerald-50 transition-colors">
+                        <RefreshCw class="h-3.5 w-3.5 text-emerald-600" />
+                      </button>
+                      <button class="bg-white p-1.5 rounded-full shadow-sm hover:bg-emerald-50 transition-colors">
+                        <MoreVertical class="h-3.5 w-3.5 text-emerald-600" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Actual Interactive Map -->
+                  <div class="mt-4 h-[calc(100%-3rem)] rounded-xl overflow-hidden relative border border-white/60 shadow-inner">
+                    <div id="weather-map" class="w-full h-full rounded-xl z-10"></div>
+                  </div>
+                </div>
+              </div>
+
+
               <!-- Popular Cities Card - Enhanced with hover effects -->
               <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-center mb-4">
@@ -496,12 +525,17 @@ import {
   MoreVertical,
   Plus,
   RefreshCw,
+  Snowflake,   // ✅ Add this for cold weather
   Sun,
   Thermometer,
   Waves,
   Wind
 } from 'lucide-vue-next'
+
 import Sidebar from '../layout/Sidebar.vue'
+import api from '../../api/index.js'
+import maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
 
 // Active tab state
 const activeTab = ref('summary')
@@ -549,23 +583,27 @@ const setActiveTab = (tab) => {
 }
 
 // Function to return the appropriate weather icon based on condition
-const getWeatherIcon = (condition) => {
-  const conditionLower = condition.toLowerCase()
-  
-  if (conditionLower.includes('heavy rain')) {
-    return CloudRain
-  } else if (conditionLower.includes('light rain') || conditionLower.includes('drizzle')) {
-    return CloudDrizzle
-  } else if (conditionLower.includes('thunder')) {
-    return CloudLightning
-  } else if (conditionLower.includes('partly cloudy')) {
-    return CloudSun
-  } else if (conditionLower.includes('sunny') || conditionLower.includes('clear')) {
-    return Sun
+const getWeatherIcon = (temperature) => {
+  const temp = typeof temperature === 'number' ? temperature : parseFloat(temperature);
+
+  if (isNaN(temp)) return Cloud; // fallback if invalid
+
+  if (temp >= 32) {
+    return Sun; // very hot
+  } else if (temp >= 26 && temp < 32) {
+    return CloudSun; // warm and partly cloudy
+  } else if (temp >= 20 && temp < 26) {
+    return Cloud; // moderate
+  } else if (temp >= 15 && temp < 20) {
+    return CloudDrizzle; // cool and damp
+  } else if (temp >= 5 && temp < 15) {
+    return CloudRain; // cold rain
+  } else if (temp >= -5 && temp < 5) {
+    return Snowflake; // cold
   } else {
-    return Cloud
+    return CloudLightning; // extreme cold/storm
   }
-}
+};
 
 // Function to get text color based on weather condition
 const getConditionColor = (condition) => {
@@ -586,10 +624,11 @@ const getConditionColor = (condition) => {
 
 // Function to get weather icon colors
 const getWeatherIconColor = (condition) => {
+  if (!condition) return 'text-gray-300'
   const conditionLower = condition.toLowerCase()
-  
+
   if (conditionLower.includes('rain') || conditionLower.includes('drizzle')) {
-    return 'text-emerald-500' // Updated to emerald for consistency
+    return 'text-emerald-500'
   } else if (conditionLower.includes('thunder')) {
     return 'text-purple-600'
   } else if (conditionLower.includes('sunny') || conditionLower.includes('clear')) {
@@ -601,22 +640,69 @@ const getWeatherIconColor = (condition) => {
   }
 }
 
+
 // Helper function to generate random wind speed for hourly view
 const getRandomWindSpeed = () => {
   return Math.floor(Math.random() * 8) + 4
 }
 
+const weather = ref(null)
+
+const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_API 
+
 onMounted(async () => {
   // Animation for temperature path could be initialized here if needed
-  try {
-    const res = await api.get('/weather/forecast')
-    forecast.value = res.data.forecast
-  } catch (err) {
-    console.error('Error fetching forecast:', err)
+  // try {
+  //   const res = await api.get('/weather/forecast')
+  //   forecast.value = res.data.forecast
+  // } catch (err) {
+  //   console.error('Error fetching forecast:', err)
+  // }
+
+  const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+  const host = 'localhost:8000'
+  const socket = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
+
+  socket.onopen = () => {
+    console.log('[Weather WS] Connected')
   }
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data)
+    console.log('[Weather WS] Data received:', data)
+
+    weather.value = data.current_weather
+    forecast.value = data.forecast_7_days.map(day => ({
+      ...day,
+      temp: parseFloat(day.temperature_max),
+      condition: day.condition || 'Clear'  // optional: adjust if CSV has this
+    }))
+  }
+
+  socket.onerror = (err) => {
+    console.error('[Weather WS] Error:', err)
+  }
+
+  socket.onclose = () => {
+    console.warn('[Weather WS] Disconnected')
+  }
+
+  const map = new maplibregl.Map({
+    container: 'weather-map',
+    style: `https://api.maptiler.com/maps/hybrid/style.json?key=${MAPTILER_KEY}`, // 🛰️ Satellite + Labels
+    center: [121.2151274080352, 13.405165290699628],
+    zoom: 14
+  })
+
+  map.addControl(new maplibregl.NavigationControl())
+
+  new maplibregl.Marker({ color: '#059669' })
+    .setLngLat([121.2151274080352, 13.405165290699628])
+    .setPopup(new maplibregl.Popup().setText('📍 Your Location'))
+    .addTo(map)
 })
 
-import api from '../../api/index.js'
+
 </script>
 
 <style scoped>
