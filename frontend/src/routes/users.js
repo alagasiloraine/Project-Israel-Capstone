@@ -4,17 +4,13 @@ import CropPrediction from '../views/users/CropPrediction.vue'
 import DeviceControl from '../views/users/DeviceControl.vue'
 import SoilMoisture from '../views/users/SoilMoisture.vue'
 import WaterLevel from '../views/users/WaterLevel.vue'
-import Humidity from '../views/users/Humidity.vue'
-import Temperature from '../views/users/Temperature.vue'
+import TemperatureHumidity from '../views/users/TemperatureHumidity.vue'
 import MotorControl from '../views/users/MotorControl.vue'
 import SoilAnalysis from '../views/users/SoilAnalysis.vue'
 import UserProfile from '../views/users/UserProfile.vue'
 import About from '../views/users/About.vue'
 import OrganicSection from '../views/users/OrganicSection.vue'
 import WeatherForecast from '../views/users/WeatherForecast.vue'
-
-import Crops from '../views/users/Crops.vue'
-
 
 export const userRoutes = [
   {
@@ -58,14 +54,9 @@ export const userRoutes = [
     component: WaterLevel
   },
   {
-    path: '/humidity',
-    name: 'Humidity',
-    component: Humidity
-  },
-  {
-    path: '/temperature',
-    name: 'Temperature',
-    component: Temperature
+    path: '/temperature-humidity',
+    name: 'temperature-humidity',
+    component: TemperatureHumidity
   },
   {
     path: '/motor-control',
@@ -86,13 +77,5 @@ export const userRoutes = [
     path: '/weather',
     name: 'WeatherForecast',
     component: WeatherForecast
-
-  },
-  {
-    path: '/crops',
-    name: 'Crops',
-    component: Crops
-
   }
-
 ]
