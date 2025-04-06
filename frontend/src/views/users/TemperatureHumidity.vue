@@ -9,7 +9,7 @@
           <div class="p-6 border-b border-gray-100">
             <!-- Header -->
             <div class="mb-6">
-              <h1 class="text-2xl font-bold text-gray-900 mb-2">Temperature Data Table</h1>
+              <h1 class="text-2xl font-bold text-gray-900 mb-2">Temperature & Humidity Data Table</h1>
               <div class="flex items-center text-sm text-gray-500">
                 <span class="text-red-600">Temperature</span>
                 <ChevronRight class="h-4 w-4 mx-1" />
@@ -142,18 +142,22 @@
               <table class="min-w-full table-fixed">
                 <thead>
                   <tr class="bg-gray-50 border-b border-gray-200">
-                    <th class="w-[15%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th class="w-[10%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       ID
                     </th>
-                    <th class="w-[25%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
-                      <div class="text-red-600">Temperature</div>
+                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-red-600">TEMPERATURE</div>
                       <div class="text-gray-400 text-[10px]">(°C)</div>
                     </th>
-                    <th class="w-[30%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
+                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-blue-600">HUMIDITY</div>
+                      <div class="text-gray-400 text-[10px]">(%)</div>
                     </th>
-                    <th class="w-[30%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Time
+                    <th class="w-[25%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      DATE
+                    </th>
+                    <th class="w-[25%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      TIME
                     </th>
                   </tr>
                 </thead>
@@ -165,20 +169,30 @@
                   >
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ row.id }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <div 
+                      <span 
                         :class="[
-                          'text-sm font-medium px-2 py-1 rounded-md inline-block text-center w-[80px]',
-                          getTemperatureClass(row.temperature)
+                          'text-sm font-medium',
+                          getTemperatureTextClass(row.temperature)
                         ]"
                       >
                         {{ row.temperature }}°C
-                      </div>
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span 
+                        :class="[
+                          'text-sm font-medium',
+                          getHumidityTextClass(row.humidity)
+                        ]"
+                      >
+                        {{ row.humidity }}%
+                      </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ row.date }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ row.time }}</td>
                   </tr>
                   <tr v-if="filteredAndSortedData.length === 0">
-                    <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
                       No data found matching your criteria
                     </td>
                   </tr>
@@ -266,51 +280,62 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
 
-// Headers definition
+// Headers definition - Added humidity
 const headers = [
   { key: 'id', label: 'ID' },
   { key: 'temperature', label: 'Temperature' },
+  { key: 'humidity', label: 'Humidity' },
   { key: 'date', label: 'Date' },
   { key: 'time', label: 'Time' }
 ]
 
-// Data
+// Data - Added humidity values
 const data = ref([
-  { id: 1, temperature: 28, date: '2024-05-17', time: '18:58:33' },
-  { id: 2, temperature: 32, date: '2024-05-17', time: '18:58:48' },
-  { id: 3, temperature: 30, date: '2024-05-17', time: '18:59:24' },
-  { id: 4, temperature: 35, date: '2024-05-17', time: '19:00:25' },
-  { id: 5, temperature: 25, date: '2024-05-17', time: '19:01:25' },
-  { id: 6, temperature: 29, date: '2024-05-17', time: '19:02:25' },
-  { id: 7, temperature: 29, date: '2024-05-17', time: '19:02:25' },
-  { id: 8, temperature: 29, date: '2024-05-17', time: '19:02:25' },
+  { id: 1, temperature: 28, humidity: 65, date: '2024-05-17', time: '18:58:33' },
+  { id: 2, temperature: 32, humidity: 58, date: '2024-05-17', time: '18:58:48' },
+  { id: 3, temperature: 30, humidity: 62, date: '2024-05-17', time: '18:59:24' },
+  { id: 4, temperature: 35, humidity: 52, date: '2024-05-17', time: '19:00:25' },
+  { id: 5, temperature: 25, humidity: 75, date: '2024-05-17', time: '19:01:25' },
+  { id: 6, temperature: 29, humidity: 68, date: '2024-05-17', time: '19:02:25' },
+  { id: 7, temperature: 29, humidity: 67, date: '2024-05-17', time: '19:02:25' },
+  { id: 8, temperature: 29, humidity: 69, date: '2024-05-17', time: '19:02:25' },
 ])
 
 // Reactive state
 const searchQuery = ref('')
-const itemsPerPage = ref(5) // Changed from 10 to 5 to match requirement
+const itemsPerPage = ref(5)
 const currentPage = ref(1)
 const activeDropdown = ref(null)
 const sortKey = ref('id')
 const sortDirection = ref('asc')
 const activeFilters = ref({})
 
+// Added humidity to filter fields
 const filterFields = [
-  { key: 'temperature', label: 'Temperature' }
+  { key: 'temperature', label: 'Temperature' },
+  { key: 'humidity', label: 'Humidity' }
 ]
 
+// Added humidity to filters
 const filters = ref({
-  temperature: { min: '', max: '' }
+  temperature: { min: '', max: '' },
+  humidity: { min: '', max: '' }
 })
 
-// Changed from 'excel' to 'docs' to match requirement
 const exportFormats = ['csv', 'pdf', 'docs']
 
-// Helper functions
-const getTemperatureClass = (temp) => {
-  if (temp >= 32) return 'bg-red-100/30 text-red-600'
-  if (temp >= 28) return 'bg-yellow-100/30 text-yellow-600'
-  return 'bg-green-100/30 text-green-600'
+// Helper functions for text color only (removed background and box styling)
+const getTemperatureTextClass = (temp) => {
+  if (temp >= 32) return 'text-red-600'
+  if (temp >= 28) return 'text-yellow-600'
+  return 'text-green-600'
+}
+
+// Updated helper function for humidity styling (text color only)
+const getHumidityTextClass = (humidity) => {
+  if (humidity >= 70) return 'text-blue-600'
+  if (humidity >= 60) return 'text-sky-600'
+  return 'text-indigo-600'
 }
 
 // Computed properties
@@ -489,8 +514,8 @@ const exportData = (format) => {
     exportAsCSV(dataToExport)
   } else if (format === 'pdf') {
     exportAsPDF(dataToExport)
-  } else if (format === 'docs') { // Changed from 'excel' to 'docs'
-    exportAsDocs(dataToExport) // Changed function name
+  } else if (format === 'docs') {
+    exportAsDocs(dataToExport)
   }
   
   activeDropdown.value = null // Close dropdown after exporting
@@ -506,7 +531,7 @@ const exportAsCSV = (data) => {
       // Handle special cases like objects or arrays
       const value = row[header.key]
       if (typeof value === 'string' && value.includes(',')) {
-        return `"${value}"`
+        return "${value}"
       }
       return value
     }).join(',')
@@ -520,7 +545,7 @@ const exportAsCSV = (data) => {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.setAttribute('href', url)
-  link.setAttribute('download', 'temperature_data.csv')
+  link.setAttribute('download', 'temperature_humidity_data.csv')
   link.style.visibility = 'hidden'
   document.body.appendChild(link)
   link.click()
@@ -534,7 +559,6 @@ const exportAsPDF = (data) => {
   console.log('Data to export as PDF:', data)
 }
 
-// Changed from exportAsExcel to exportAsDocs
 const exportAsDocs = (data) => {
   // In a real application, you would use a library to generate DOCS
   // For this example, we'll just show an alert

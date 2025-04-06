@@ -145,19 +145,16 @@
                     <th class="w-[10%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       ID
                     </th>
-                    <th class="w-[15%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Soil Status
                     </th>
-                    <th class="w-[15%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Soil Moisture
                     </th>
-                    <th class="w-[15%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Motor Status
-                    </th>
-                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th class="w-[25%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date
                     </th>
-                    <th class="w-[15%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th class="w-[25%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Time
                     </th>
                   </tr>
@@ -182,21 +179,11 @@
                       </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ row.soilMoisture }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      <span 
-                        :class="[
-                          'px-2 py-1 rounded-full text-sm font-medium',
-                          row.motorStatus === 'ON' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                        ]"
-                      >
-                        {{ row.motorStatus }}
-                      </span>
-                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.date }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.time }}</td>
                   </tr>
                   <tr v-if="filteredAndSortedData.length === 0">
-                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
                       No data found matching your criteria
                     </td>
                   </tr>
@@ -284,17 +271,16 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
 
-// Headers definition
+// Headers definition - Removed motorStatus
 const headers = [
   { key: 'id', label: 'ID' },
   { key: 'soilStatus', label: 'Soil Status' },
   { key: 'soilMoisture', label: 'Soil Moisture' },
-  { key: 'motorStatus', label: 'Motor Status' },
   { key: 'date', label: 'Date' },
   { key: 'time', label: 'Time' }
 ]
 
-// Data
+// Data - Kept motorStatus in the data but it won't be displayed
 const data = ref([
   { id: 1, soilStatus: 'WET', soilMoisture: 100, motorStatus: 'OFF', date: '2024-05-17', time: '18:58:33' },
   { id: 2, soilStatus: 'MEDIUM', soilMoisture: 33, motorStatus: 'OFF', date: '2024-05-17', time: '18:58:48' },
@@ -309,24 +295,23 @@ const data = ref([
 
 // Reactive state
 const searchQuery = ref('')
-const itemsPerPage = ref(6) // Changed from 5 to 6
+const itemsPerPage = ref(6)
 const currentPage = ref(1)
 const activeDropdown = ref(null)
 const sortKey = ref('id')
 const sortDirection = ref('asc')
 const activeFilters = ref({})
 
+// Removed motorStatus from filterFields
 const filterFields = [
-  { key: 'soilMoisture', label: 'Soil Moisture' },
-  { key: 'motorStatus', label: 'Motor Status' }
+  { key: 'soilMoisture', label: 'Soil Moisture' }
 ]
 
+// Removed motorStatus from filters
 const filters = ref({
-  soilMoisture: { min: '', max: '' },
-  motorStatus: { min: '', max: '' }
+  soilMoisture: { min: '', max: '' }
 })
 
-// Changed from 'excel' to 'docs'
 const exportFormats = ['csv', 'pdf', 'docs']
 
 // Computed properties
@@ -505,8 +490,8 @@ const exportData = (format) => {
     exportAsCSV(dataToExport)
   } else if (format === 'pdf') {
     exportAsPDF(dataToExport)
-  } else if (format === 'docs') { // Changed from 'excel' to 'docs'
-    exportAsDocs(dataToExport) // Changed function name
+  } else if (format === 'docs') {
+    exportAsDocs(dataToExport)
   }
   
   activeDropdown.value = null // Close dropdown after exporting
@@ -522,7 +507,7 @@ const exportAsCSV = (data) => {
       // Handle special cases like objects or arrays
       const value = row[header.key]
       if (typeof value === 'string' && value.includes(',')) {
-        return `"${value}"`
+        return "${value}"
       }
       return value
     }).join(',')
@@ -550,7 +535,6 @@ const exportAsPDF = (data) => {
   console.log('Data to export as PDF:', data)
 }
 
-// Changed from exportAsExcel to exportAsDocs
 const exportAsDocs = (data) => {
   // In a real application, you would use a library to generate DOCS
   // For this example, we'll just show an alert
