@@ -141,13 +141,29 @@ async def get_saved_recommendations():
                 "id": doc.id,
                 "crop": data.get("recommendedCrop", ""),
                 "successRate": data.get("successRate", 0.0),
-                "status": data.get("status", "Planted"),  # Optional default
-                "date": formatted_date
+                "status": data.get("status", "Planted"),
+                "date": formatted_date,
+                "alternativeOptions": data.get("alternativeOptions", []),
+                "growthRate": data.get("growthRate"),
+                "soilCompatibility": data.get("soilCompatibility"),
+                "yieldPotential": data.get("yieldPotential")
             })
+
 
         return recommendations
 
     except Exception as e:
         import traceback
         traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/recommendations/{doc_id}/status")
+async def update_recommendation_status(doc_id: str, status: str):
+    try:
+        db.collection("crop_recommendations").document(doc_id).update({
+            "status": status
+        })
+        return {"message": "Status updated successfully"}
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -672,7 +672,16 @@
                   <span class="text-sm font-medium text-green-600">%</span>
                 </div>
                 <p class="text-xs text-gray-600">
-                  Recommended on {{ selectedPrediction?.date }}
+                  Recommended on {{
+                    new Date(selectedPrediction?.date).toLocaleString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
+                    })
+                  }}
                 </p>
               </div>
 
@@ -689,7 +698,7 @@
                     @click="updateStatus(status)"
                     :class="[
                       'px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200',
-                      selectedPrediction?.status === status
+                      editedStatus === status
                         ? getStatusButtonClass(status)
                         : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
                     ]"
@@ -723,9 +732,13 @@
                   <ListIcon class="h-4 w-4" />
                   <span class="text-xs font-medium">Alternative Options</span>
                 </div>
+
                 <div class="space-y-2">
-                  <div v-for="option in alternativeCrops" :key="option.crop" 
-                       class="group">
+                  <div 
+                    v-for="option in alternativeCrops" 
+                    :key="option.crop" 
+                    class="group"
+                  >
                     <div class="flex items-center justify-between mb-1">
                       <div>
                         <h4 class="text-sm font-medium text-gray-900">
@@ -735,19 +748,21 @@
                       </div>
                       <div class="text-right">
                         <div class="text-sm font-semibold text-gray-900">
-                          {{ option.successRate }}%
+                          {{ option.successRate || option.confidence }}%
                         </div>
                       </div>
                     </div>
                     <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                       <div 
                         class="h-full bg-green-500 rounded-full transition-all" 
-                        :style="{ width: `${option.successRate}%` }"
+                        :style="{ width: `${option.successRate || option.confidence}%` }"
                       ></div>
                     </div>
+
                   </div>
                 </div>
               </div>
+
 
               <!-- Organic Fertilizer Recommendations -->
               <div class="bg-white rounded-lg p-3 border border-gray-100">
@@ -861,7 +876,7 @@ const greenhouse2Data = ref({
 
 onMounted(async () => {
   // Connect to ESP32 data stream
-  const eventSource = new EventSource('http://localhost:8000/stream')
+  const eventSource = new EventSource('http://localhost:8000/api/stream')
   eventSource.onmessage = (event) => {
     const data = JSON.parse(event.data)
     
@@ -876,6 +891,8 @@ onMounted(async () => {
     humidity.value = data.humidity
     
   }
+
+  fetchSavedRecommendations()
 
 })
 
@@ -945,6 +962,8 @@ const saveRecommendation = async () => {
     console.log("send to back:", payload)
     console.log("✅ Saved recommendation:", res.data)
     toastr.success('Recommendation Saved successfully')
+    closeModal()
+    fetchSavedRecommendations()
   } catch (error) {
     console.error('❌ Error saving recommendation:', error)
     toastr.error('Unexpected error, please try again')
@@ -1022,11 +1041,104 @@ const getStatusClass = (status) => {
   return classes[status]
 }
 
-const saveChanges = () => {
-  // Here you would implement the logic to save the changes
-  // For now, we'll just close the modal
-  closeDetailsModal()
+const showDetailsModal = ref(false)
+const selectedPrediction = ref(null)
+const alternativeCrops = ref([])
+const recommendedFertilizers = ref([])
+const editedStatus = ref(null)
+
+const showDetails = (prediction) => {
+  selectedPrediction.value = prediction
+  editedStatus.value = prediction.status  
+  // Sort alternatives by confidence or successRate (whichever you save)
+  const sortedAlternatives = [...(prediction.alternativeOptions || [])].sort(
+    (a, b) => (b.confidence || b.successRate || 0) - (a.confidence || a.successRate || 0)
+  )
+
+  alternativeCrops.value = sortedAlternatives
+
+  // If fertilizers were included
+  recommendedFertilizers.value = prediction.recommendedFertilizers || []
+
+  showDetailsModal.value = true
 }
+
+const updateStatus = (status) => {
+  editedStatus.value = status
+}
+
+const getStatusButtonClass = (status) => {
+  switch (status) {
+    case 'Planted':
+      return 'bg-green-100 text-green-700'
+    case 'Ongoing':
+      return 'bg-blue-100 text-blue-700'
+    case 'Harvested':
+      return 'bg-gray-100 text-gray-700'
+    case 'Cancelled':
+      return 'bg-red-100 text-red-700'
+    default:
+      return 'bg-gray-50 text-gray-600'
+  }
+}
+
+// const updateStatus = async (newStatus) => {
+//   if (!selectedPrediction.value || !selectedPrediction.value.id) return
+
+//   const docId = selectedPrediction.value.id
+
+//   try {
+//     await api.post(`/crop/recommendations/${docId}/status`, null, {
+//       params: { status: newStatus }
+//     })
+
+//     // ✅ Update local state
+//     selectedPrediction.value.status = newStatus
+
+//     // ✅ If you're showing it in a table too:
+//     const index = predictions.value.findIndex(p => p.id === docId)
+//     if (index !== -1) {
+//       predictions.value[index].status = newStatus
+//     }
+
+//     toastr.success('Crop status updated!')
+//   } catch (error) {
+//     console.error('Error updating status:', error)
+//     toastr.error('Failed to update crop status.')
+//   }
+// }
+
+const closeDetailsModal = () => {
+  showDetailsModal.value = false
+  selectedPrediction.value = null
+  alternativeCrops.value = []
+  recommendedFertilizers.value = []
+  editedStatus.value = null
+}
+
+
+const saveChanges = async () => {
+  if (!selectedPrediction.value) return
+
+  try {
+    await api.post(`/crop/recommendations/${selectedPrediction.value.id}/status`, null, {
+      params: { status: editedStatus.value }
+    })
+
+    selectedPrediction.value.status = editedStatus.value // update locally too
+
+    // Optional: update in the main table
+    const index = predictions.value.findIndex(p => p.id === selectedPrediction.value.id)
+    if (index !== -1) predictions.value[index].status = editedStatus.value
+
+    toastr.success('Status updated successfully')
+    closeDetailsModal()
+  } catch (err) {
+    console.error('Error saving changes:', err)
+    toastr.error('Failed to save changes')
+  }
+}
+
 </script>
 
 <style>
