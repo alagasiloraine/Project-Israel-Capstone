@@ -292,7 +292,6 @@
                   </div>
 
                   <!-- 7-Day Forecast -->
-
                   <div>
                     <h4 class="text-xs font-semibold mb-2 text-gray-900">7-Day Forecast</h4>
                     <div class="grid grid-cols-7 gap-1">
@@ -317,8 +316,6 @@
                       </div>
                     </div>
                   </div>
-
-
 
                 </div>
               </div>
@@ -536,9 +533,9 @@
                         <span class="text-3xl font-bold text-orange-600">{{ soilpH ?? '0.0' }}</span>
                         <span
                           class="ml-2 text-sm font-medium"
-                          :class="getPhStatus(todayReading?.soilpH).color"
+                          :class="getPhStatus(todayReading?.soilPh).color"
                         >
-                          {{ getPhStatus(todayReading?.soilpH).label }}
+                          {{ getPhStatus(todayReading?.soilPh).label }}
                         </span>
                       </div>
                       <div class="flex items-center mt-1" v-if="soilPhChange">
@@ -704,7 +701,7 @@ import api from '../../api/index'
 Chart.register(...registerables);
 
 const lineChartRefs = ref([]);
-const waterLevel = ref(40);
+const waterLevel = ref(0);
 
 // Refs for chart instances
 const soilMoistureChartInstance = ref(null);
@@ -973,11 +970,26 @@ onMounted(() => {
       nitrogen.value = data.nitrogen
       phosphorus.value = data.phosphorus
       potassium.value = data.potassium
-      soilpH.value = data.soilpH
+      soilpH.value = data.soilPh
       temperature.value = data.temperature
       humidity.value = data.humidity
       soilMoisture.value = data.soilMoisture
     }
+
+  const eventWaterSource = new EventSource('http://localhost:8000/api/water-stream')
+
+  eventWaterSource.onmessage = (event) => {
+    const data = JSON.parse(event.data)
+
+    if (data.type === 'water') {
+      waterLevel.value = data.data.waterLevel
+      console.log("💧 Updated Water Level:", waterLevel.value + "%")
+    }
+  }
+
+eventSource.onerror = (e) => {
+  console.error("❌ SSE Error:", e)
+}
   
   fetchSensorData();
 })
@@ -986,6 +998,7 @@ const fetchSensorData = async () => {
   try {
     const res = await api.get('/sensor/readings')
     sensorReadings.value = res.data
+    console.log(sensorReadings)
     initAllCharts()
   } catch (err) {
     console.error("Error fetching sensor data:", err)
@@ -1098,7 +1111,7 @@ const initAllCharts = () => {
 
 
   if (soilPhChartRef.value) {
-    const data = extract('soilpH');
+    const data = extract('soilPh');
     const maxY = Math.ceil(Math.max(...data) * 10) / 10;
     const minY = Math.floor(Math.min(...data) * 10) / 10;
 
@@ -1267,7 +1280,7 @@ const temperatureChange = computed(() => {
 });
 
 const soilPhChange = computed(() => {
-  return getChange(todayReading.value?.soilpH, yesterdayReading.value?.soilpH);
+  return getChange(todayReading.value?.soilPh, yesterdayReading.value?.soilPh);
 });
 
 
@@ -1384,9 +1397,6 @@ const getWeatherIcon = (temperature) => {
     return CloudLightning; // extreme cold/storm
   }
 };
-
-
-
 
 // Add new helper function for detail icon colors
 const getDetailIconColor = (label) => {

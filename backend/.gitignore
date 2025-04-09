@@ -1,9 +1,6 @@
 venv
 serviceAccountKey.json
 .env
-crop_ml
-cy
 data
-=======
-data
-loreng
+forecast_log.txt
+
