@@ -99,6 +99,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 router = APIRouter(prefix="/api")
+# router = APIRouter()
 
 # Load environment variables
 load_dotenv()
@@ -128,6 +129,10 @@ class SensorData(BaseModel):
     soilMoisture: float  # Optional if you want to keep using it later
     temperature: float
     humidity: float
+
+class WaterLevelData(BaseModel):
+    waterLevel: float
+
 
 # POST endpoint (optional external posting like Postman or test)
 @router.post("/sensor-data")
@@ -186,6 +191,8 @@ async def stream_sensor_data():
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
+
+
 # Internal usage from serial reader
 async def forward_sensor_data(data_dict):
     # Save to Firestore
@@ -222,3 +229,61 @@ async def get_sensor_data():
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/water-data")
+async def get_water_data(data: WaterLevelData):
+    water_level = data.waterLevel
+
+    print(f"📥 Received water level: {water_level}%")
+
+    message = {
+        "type": "water",
+        "data": {
+            "waterLevel": water_level
+        }
+    }
+
+    # Save to Firebase
+    try:
+        db.collection("water_level_readings").add({
+            "waterLevel": water_level,
+            "timestamp": firestore.SERVER_TIMESTAMP
+        })
+        print("✅ Water level saved to Firebase")
+    except Exception as e:
+        print("❌ Failed to save water level to Firebase:", e)
+
+    # Push to subscribers
+    for queue in subscribers:
+        await queue.put(message)
+
+    return {"message": "Water level received successfully"}
+
+
+@router.get("/water-stream")
+async def stream_sensor_data():
+    queue = asyncio.Queue()
+    subscribers.append(queue)
+
+    async def event_generator():
+        try:
+            # Last water level
+            docs = db.collection("water_level_readings").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(1).stream()
+            for doc in docs:
+                latest = doc.to_dict()
+                if latest:
+                    yield f"data: {json.dumps(jsonable_encoder({'type': 'water', 'data': latest}))}\n\n"
+        except Exception as e:
+            print("❌ Error loading latest water data:", e)
+
+        try:
+            while True:
+                data = await queue.get()
+                yield f"data: {json.dumps(jsonable_encoder(data))}\n\n"
+        except asyncio.CancelledError:
+            pass
+        finally:
+            subscribers.remove(queue)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
