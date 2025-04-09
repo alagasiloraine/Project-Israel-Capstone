@@ -146,7 +146,7 @@
                   <div class="flex justify-between items-start mb-4">
                     <div class="bg-white px-3 py-1 rounded-full shadow-sm flex items-center">
                       <Map class="w-3.5 h-3.5 text-emerald-600 mr-1" />
-                      <h2 class="text-sm font-bold text-emerald-700">Weather Map</h2>
+                      <h2 class="text-sm font-bold text-emerald-700">Map</h2>
                     </div>
                     <div class="flex space-x-2">
                       <button class="bg-white p-1.5 rounded-full shadow-sm hover:bg-emerald-50 transition-colors">
@@ -225,9 +225,15 @@
                       <div class="bg-white rounded-full p-2 shadow-sm mr-3">
                         <component :is="getWeatherIcon(day.condition)" class="h-5 w-5 text-emerald-600" />
                       </div>
-                      <div class="text-sm font-medium text-gray-800">{{ day.highTemp }}° / {{ day.lowTemp }}°</div>
+                      <div class="text-sm font-medium text-gray-800">
+                        {{ Number(day.temperature_max).toFixed(1) }}° / {{ Number(day.temperature_min).toFixed(1) }}°
+                      </div>
+
                     </div>
-                    <div class="text-xs text-gray-600">{{ day.date }}</div>
+                    <div class="text-xs text-gray-600">
+                      {{ new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}
+                    </div>
+
                   </div>
                 </div>
               </div>
@@ -550,15 +556,15 @@ const popularCities = ref([
 ])
 
 // 7-day forecast data
-const forecast = ref([
-  { date: '25 Jul, Thu', highTemp: 24, lowTemp: 22, condition: 'Heavy Rain' },
-  { date: '26 Jul, Fri', highTemp: 24, lowTemp: 22, condition: 'Partly Cloudy' },
-  { date: '27 Jul, Sat', highTemp: 24, lowTemp: 22, condition: 'Heavy Rain' },
-  { date: '28 Jul, Sun', highTemp: 24, lowTemp: 22, condition: 'Heavy Rain' },
-  { date: '29 Jul, Mon', highTemp: 25, lowTemp: 23, condition: 'Light Rain' },
-  { date: '30 Jul, Tue', highTemp: 26, lowTemp: 22, condition: 'Partly Cloudy' },
-  { date: '31 Jul, Wed', highTemp: 27, lowTemp: 23, condition: 'Mostly Sunny' }
-])
+//const forecast = ref([
+//  { date: '25 Jul, Thu', highTemp: 24, lowTemp: 22, condition: 'Heavy Rain' },
+//  { date: '26 Jul, Fri', highTemp: 24, lowTemp: 22, condition: 'Partly Cloudy' },
+//  { date: '27 Jul, Sat', highTemp: 24, lowTemp: 22, condition: 'Heavy Rain' },
+//  { date: '28 Jul, Sun', highTemp: 24, lowTemp: 22, condition: 'Heavy Rain' },
+//  { date: '29 Jul, Mon', highTemp: 25, lowTemp: 23, condition: 'Light Rain' },
+//  { date: '30 Jul, Tue', highTemp: 26, lowTemp: 22, condition: 'Partly Cloudy' },
+//  { date: '31 Jul, Wed', highTemp: 27, lowTemp: 23, condition: 'Mostly Sunny' }
+//])
 
 // Hourly forecast data
 const hourlyForecast = ref([
@@ -647,6 +653,7 @@ const getRandomWindSpeed = () => {
 }
 
 const weather = ref(null)
+const forecast = ref([])
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_API 
 
