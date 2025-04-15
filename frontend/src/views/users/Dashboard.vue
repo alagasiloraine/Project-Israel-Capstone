@@ -672,7 +672,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { Chart, registerables } from 'chart.js';
 import { 
   Sprout,
@@ -999,11 +999,87 @@ const fetchSensorData = async () => {
     const res = await api.get('/sensor/readings')
     sensorReadings.value = res.data
     console.log(sensorReadings)
+    await nextTick();
     initAllCharts()
+    initSoilPhChart()
   } catch (err) {
     console.error("Error fetching sensor data:", err)
   }
 }
+
+const initSoilPhChart = () => {
+  if (!soilPhChartRef.value) {
+    console.warn("⛔ soilPhChartRef is not available");
+    return;
+  }
+
+  const readings = sensorReadings.value.slice(0, 6).reverse();
+  const validPoints = readings.filter(r => r.soilPh !== null && r.soilPh !== undefined);
+
+  const data = validPoints.map(r => r.soilPh);
+  const labels = validPoints.map(r =>
+    new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  );
+
+  console.log("✅ Soil pH labels:", labels);
+  console.log("✅ Soil pH data:", data);
+
+  if (data.length === 0) {
+    console.warn("⛔ No Soil pH data found");
+    return;
+  }
+
+  const minY = Math.floor(Math.min(...data) * 10) / 10;
+  const maxY = Math.ceil(Math.max(...data) * 10) / 10;
+
+  // Ensure min and max are not the same (Chart.js won't render flatline)
+  const yMin = minY === maxY ? minY - 0.5 : minY;
+  const yMax = minY === maxY ? maxY + 0.5 : maxY;
+
+  const ctx = soilPhChartRef.value.getContext('2d');
+  if (ctx) {
+    if (soilPhChartInstance.value) {
+      soilPhChartInstance.value.destroy();
+    }
+
+    soilPhChartInstance.value = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Soil pH',
+          data,
+          borderColor: '#f97316',
+          backgroundColor: 'rgba(249, 115, 22, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#f97316'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: false,
+            min: yMin,
+            max: yMax,
+            ticks: {
+              stepSize: 0.2
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: true
+          }
+        }
+      }
+    });
+  }
+};
 
 
 const initAllCharts = () => {
@@ -1110,40 +1186,55 @@ const initAllCharts = () => {
   }
 
 
-  if (soilPhChartRef.value) {
-    const data = extract('soilPh');
-    const maxY = Math.ceil(Math.max(...data) * 10) / 10;
-    const minY = Math.floor(Math.min(...data) * 10) / 10;
+  // if (soilPhChartRef.value) {
+  //   const readings = sensorReadings.value.slice(0, 6).reverse();
+  //   const validPoints = readings.filter(r => r.soilPh !== null && r.soilPh !== undefined);
 
-    soilPhChartInstance.value = new Chart(soilPhChartRef.value.getContext('2d'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Soil pH',
-          data,
-          borderColor: '#f97316',
-          backgroundColor: 'rgba(249, 115, 22, 0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: false,
-            min: minY,
-            max: maxY,
-            ticks: {
-              stepSize: 0.2
-            }
-          }
-        }
-      }
-    });
-  }
+  //   const data = validPoints.map(r => r.soilPh);
+  //   const labels = validPoints.map((r, i) =>
+  //     new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || `T${i + 1}`
+  //   );
+
+  //   console.log("✅ Soil pH labels:", labels);
+  //   console.log("✅ Soil pH data:", data);
+
+  //   if (data.length > 0 && soilPhChartRef.value) {
+  //     const maxY = Math.ceil(Math.max(...data) * 10) / 10;
+  //     const minY = Math.floor(Math.min(...data) * 10) / 10;
+
+  //     const ctx = soilPhChartRef.value.getContext('2d');
+  //     if (ctx) {
+  //       soilPhChartInstance.value = new Chart(ctx, {
+  //         type: 'line',
+  //         data: {
+  //           labels,
+  //           datasets: [{
+  //             label: 'Soil pH',
+  //             data,
+  //             borderColor: '#f97316',
+  //             backgroundColor: 'rgba(249, 115, 22, 0.1)',
+  //             fill: true,
+  //             tension: 0.4
+  //           }]
+  //         },
+  //         options: {
+  //           responsive: true,
+  //           maintainAspectRatio: false,
+  //           scales: {
+  //             y: {
+  //               beginAtZero: false,
+  //               min: minY,
+  //               max: maxY,
+  //               ticks: {
+  //                 stepSize: 0.2
+  //               }
+  //             }
+  //           }
+  //         }
+  //       });
+  //     }
+  //   }
+  // }
 
 
   if (performanceChartRef.value) {
