@@ -1082,32 +1082,6 @@ const getStatusButtonClass = (status) => {
   }
 }
 
-// const updateStatus = async (newStatus) => {
-//   if (!selectedPrediction.value || !selectedPrediction.value.id) return
-
-//   const docId = selectedPrediction.value.id
-
-//   try {
-//     await api.post(`/crop/recommendations/${docId}/status`, null, {
-//       params: { status: newStatus }
-//     })
-
-//     // ✅ Update local state
-//     selectedPrediction.value.status = newStatus
-
-//     // ✅ If you're showing it in a table too:
-//     const index = predictions.value.findIndex(p => p.id === docId)
-//     if (index !== -1) {
-//       predictions.value[index].status = newStatus
-//     }
-
-//     toastr.success('Crop status updated!')
-//   } catch (error) {
-//     console.error('Error updating status:', error)
-//     toastr.error('Failed to update crop status.')
-//   }
-// }
-
 const closeDetailsModal = () => {
   showDetailsModal.value = false
   selectedPrediction.value = null
@@ -1138,7 +1112,6 @@ const saveChanges = async () => {
     toastr.error('Failed to save changes')
   }
 }
-
 </script>
 
 <style>

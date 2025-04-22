@@ -292,7 +292,6 @@
                   </div>
 
                   <!-- 7-Day Forecast -->
-
                   <div>
                     <h4 class="text-xs font-semibold mb-2 text-gray-900">7-Day Forecast</h4>
                     <div class="grid grid-cols-7 gap-1">
@@ -317,8 +316,6 @@
                       </div>
                     </div>
                   </div>
-
-
 
                 </div>
               </div>
@@ -536,9 +533,9 @@
                         <span class="text-3xl font-bold text-orange-600">{{ soilpH ?? '0.0' }}</span>
                         <span
                           class="ml-2 text-sm font-medium"
-                          :class="getPhStatus(todayReading?.soilpH).color"
+                          :class="getPhStatus(todayReading?.soilPh).color"
                         >
-                          {{ getPhStatus(todayReading?.soilpH).label }}
+                          {{ getPhStatus(todayReading?.soilPh).label }}
                         </span>
                       </div>
                       <div class="flex items-center mt-1" v-if="soilPhChange">
@@ -675,7 +672,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import { Chart, registerables } from 'chart.js';
 import { 
   Sprout,
@@ -700,11 +697,13 @@ import {
 } from 'lucide-vue-next';
 import Sidebar from '../layout/Sidebar.vue'
 import api from '../../api/index'
+import { eventBus } from '../../eventBus';
+import { sendPushNotification } from '../../utils/notify';
 
 Chart.register(...registerables);
 
 const lineChartRefs = ref([]);
-const waterLevel = ref(40);
+const waterLevel = ref(0);
 
 // Refs for chart instances
 const soilMoistureChartInstance = ref(null);
@@ -805,6 +804,38 @@ const metrics = [
     }
   }
 ];
+
+watch(waterLevel, (newVal) => {
+  if (newVal === 50) {
+    eventBus.emit('notify', {
+      title: "Water Level Notice",
+      message: "Water level is currently at 50%.",
+      type: "water"
+    });
+    sendPushNotification("Water level is currently at 50%.")
+  } else if (newVal < 50 && newVal > 30) {
+    eventBus.emit('notify', {
+      title: "Water Level Low",
+      message: "Water level is below 50%. Please check the tank.",
+      type: "water"
+    });
+    sendPushNotification("Water level is below 50%. Please check the tank.")
+  } else if (newVal < 30 && newVal >15){
+    eventBus.emit('notify', {
+      title: "Water Level Warning",
+      message: "Water level has only 30%. Please check the tank.",
+      type: "water"
+    });
+    sendPushNotification("Water level has only 30%. Please check the tank.")
+  } else if (newVal <= 15 && newVal >= 10) {
+    eventBus.emit('notify', {
+      title: "Critical Water Level",
+      message: "Water level is critically low! Immediate action required.",
+      type: "water"
+    });
+    sendPushNotification("Water level is critically low! Immediate action required.")
+  }
+});
 
 // const latestNpk = computed(() => sensorReadings.value.length > 0 ? sensorReadings.value[0] : {});
 
@@ -973,11 +1004,26 @@ onMounted(() => {
       nitrogen.value = data.nitrogen
       phosphorus.value = data.phosphorus
       potassium.value = data.potassium
-      soilpH.value = data.soilpH
+      soilpH.value = data.soilPh
       temperature.value = data.temperature
       humidity.value = data.humidity
       soilMoisture.value = data.soilMoisture
     }
+
+  const eventWaterSource = new EventSource('http://localhost:8000/api/water-stream')
+
+  eventWaterSource.onmessage = (event) => {
+    const data = JSON.parse(event.data)
+
+    if (data.type === 'water') {
+      waterLevel.value = data.data.waterLevel
+      console.log("💧 Updated Water Level:", waterLevel.value + "%")
+    }
+  }
+
+eventSource.onerror = (e) => {
+  console.error("❌ SSE Error:", e)
+}
   
   fetchSensorData();
 })
@@ -986,11 +1032,88 @@ const fetchSensorData = async () => {
   try {
     const res = await api.get('/sensor/readings')
     sensorReadings.value = res.data
+    console.log(sensorReadings)
+    await nextTick();
     initAllCharts()
+    initSoilPhChart()
   } catch (err) {
     console.error("Error fetching sensor data:", err)
   }
 }
+
+const initSoilPhChart = () => {
+  if (!soilPhChartRef.value) {
+    console.warn("⛔ soilPhChartRef is not available");
+    return;
+  }
+
+  const readings = sensorReadings.value.slice(0, 6).reverse();
+  const validPoints = readings.filter(r => r.soilPh !== null && r.soilPh !== undefined);
+
+  const data = validPoints.map(r => r.soilPh);
+  const labels = validPoints.map(r =>
+    new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  );
+
+  console.log("✅ Soil pH labels:", labels);
+  console.log("✅ Soil pH data:", data);
+
+  if (data.length === 0) {
+    console.warn("⛔ No Soil pH data found");
+    return;
+  }
+
+  const minY = Math.floor(Math.min(...data) * 10) / 10;
+  const maxY = Math.ceil(Math.max(...data) * 10) / 10;
+
+  // Ensure min and max are not the same (Chart.js won't render flatline)
+  const yMin = minY === maxY ? minY - 0.5 : minY;
+  const yMax = minY === maxY ? maxY + 0.5 : maxY;
+
+  const ctx = soilPhChartRef.value.getContext('2d');
+  if (ctx) {
+    if (soilPhChartInstance.value) {
+      soilPhChartInstance.value.destroy();
+    }
+
+    soilPhChartInstance.value = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Soil pH',
+          data,
+          borderColor: '#f97316',
+          backgroundColor: 'rgba(249, 115, 22, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#f97316'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: false,
+            min: yMin,
+            max: yMax,
+            ticks: {
+              stepSize: 0.2
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: true
+          }
+        }
+      }
+    });
+  }
+};
 
 
 const initAllCharts = () => {
@@ -1097,40 +1220,55 @@ const initAllCharts = () => {
   }
 
 
-  if (soilPhChartRef.value) {
-    const data = extract('soilpH');
-    const maxY = Math.ceil(Math.max(...data) * 10) / 10;
-    const minY = Math.floor(Math.min(...data) * 10) / 10;
+  // if (soilPhChartRef.value) {
+  //   const readings = sensorReadings.value.slice(0, 6).reverse();
+  //   const validPoints = readings.filter(r => r.soilPh !== null && r.soilPh !== undefined);
 
-    soilPhChartInstance.value = new Chart(soilPhChartRef.value.getContext('2d'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Soil pH',
-          data,
-          borderColor: '#f97316',
-          backgroundColor: 'rgba(249, 115, 22, 0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: false,
-            min: minY,
-            max: maxY,
-            ticks: {
-              stepSize: 0.2
-            }
-          }
-        }
-      }
-    });
-  }
+  //   const data = validPoints.map(r => r.soilPh);
+  //   const labels = validPoints.map((r, i) =>
+  //     new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || `T${i + 1}`
+  //   );
+
+  //   console.log("✅ Soil pH labels:", labels);
+  //   console.log("✅ Soil pH data:", data);
+
+  //   if (data.length > 0 && soilPhChartRef.value) {
+  //     const maxY = Math.ceil(Math.max(...data) * 10) / 10;
+  //     const minY = Math.floor(Math.min(...data) * 10) / 10;
+
+  //     const ctx = soilPhChartRef.value.getContext('2d');
+  //     if (ctx) {
+  //       soilPhChartInstance.value = new Chart(ctx, {
+  //         type: 'line',
+  //         data: {
+  //           labels,
+  //           datasets: [{
+  //             label: 'Soil pH',
+  //             data,
+  //             borderColor: '#f97316',
+  //             backgroundColor: 'rgba(249, 115, 22, 0.1)',
+  //             fill: true,
+  //             tension: 0.4
+  //           }]
+  //         },
+  //         options: {
+  //           responsive: true,
+  //           maintainAspectRatio: false,
+  //           scales: {
+  //             y: {
+  //               beginAtZero: false,
+  //               min: minY,
+  //               max: maxY,
+  //               ticks: {
+  //                 stepSize: 0.2
+  //               }
+  //             }
+  //           }
+  //         }
+  //       });
+  //     }
+  //   }
+  // }
 
 
   if (performanceChartRef.value) {
@@ -1267,7 +1405,7 @@ const temperatureChange = computed(() => {
 });
 
 const soilPhChange = computed(() => {
-  return getChange(todayReading.value?.soilpH, yesterdayReading.value?.soilpH);
+  return getChange(todayReading.value?.soilPh, yesterdayReading.value?.soilPh);
 });
 
 
@@ -1384,9 +1522,6 @@ const getWeatherIcon = (temperature) => {
     return CloudLightning; // extreme cold/storm
   }
 };
-
-
-
 
 // Add new helper function for detail icon colors
 const getDetailIconColor = (label) => {
