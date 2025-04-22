@@ -6,3 +6,10 @@ forecast_log.txt
 __pycache__/
 *.pyc
 
+# Ignore secret keys
+# Secret keys
+backend/firebase-key.json
+backend/hindiItoApiKey.json
+.env
+
+
