@@ -672,7 +672,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import { Chart, registerables } from 'chart.js';
 import { 
   Sprout,
@@ -697,6 +697,8 @@ import {
 } from 'lucide-vue-next';
 import Sidebar from '../layout/Sidebar.vue'
 import api from '../../api/index'
+import { eventBus } from '../../eventBus';
+import { sendPushNotification } from '../../utils/notify';
 
 Chart.register(...registerables);
 
@@ -802,6 +804,38 @@ const metrics = [
     }
   }
 ];
+
+watch(waterLevel, (newVal) => {
+  if (newVal === 50) {
+    eventBus.emit('notify', {
+      title: "Water Level Notice",
+      message: "Water level is currently at 50%.",
+      type: "water"
+    });
+    sendPushNotification("Water level is currently at 50%.")
+  } else if (newVal < 50 && newVal > 30) {
+    eventBus.emit('notify', {
+      title: "Water Level Low",
+      message: "Water level is below 50%. Please check the tank.",
+      type: "water"
+    });
+    sendPushNotification("Water level is below 50%. Please check the tank.")
+  } else if (newVal < 30 && newVal >15){
+    eventBus.emit('notify', {
+      title: "Water Level Warning",
+      message: "Water level has only 30%. Please check the tank.",
+      type: "water"
+    });
+    sendPushNotification("Water level has only 30%. Please check the tank.")
+  } else if (newVal <= 15 && newVal >= 10) {
+    eventBus.emit('notify', {
+      title: "Critical Water Level",
+      message: "Water level is critically low! Immediate action required.",
+      type: "water"
+    });
+    sendPushNotification("Water level is critically low! Immediate action required.")
+  }
+});
 
 // const latestNpk = computed(() => sensorReadings.value.length > 0 ? sensorReadings.value[0] : {});
 

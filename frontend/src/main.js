@@ -13,3 +13,10 @@ const app = createApp(App);
 app.use(router);
 app.use(vuetify);
 app.mount('#app');
+
+if ('Notification' in window && Notification.permission !== 'granted') {
+    Notification.requestPermission().then((permission) => {
+      console.log('Notification permission:', permission)
+    })
+  }
+  

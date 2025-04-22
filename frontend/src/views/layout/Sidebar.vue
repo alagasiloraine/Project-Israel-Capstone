@@ -380,7 +380,7 @@
     BarChart,
     Cog
   } from 'lucide-vue-next'
-  
+  import { eventBus } from '../../eventBus'
   
   const route = useRoute()
   const router = useRouter()
@@ -395,64 +395,28 @@
   const notificationAnimation = ref('scale-95 opacity-0')
   
   // Sample notifications data
-  const notifications = ref([
-    {
-      id: 1,
-      type: 'alert',
-      title: 'Soil Moisture Alert',
-      message: 'Soil moisture level is critically low in Zone A.',
-      time: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
-      read: false
-    },
-    {
-      id: 2,
-      type: 'warning',
-      title: 'Weather Alert',
-      message: 'Heavy rain expected in the next 24 hours.',
-      time: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
-      read: false
-    },
-    {
-      id: 3,
-      type: 'info',
-      title: 'System Update',
-      message: 'System successfully updated to version 2.4.0.',
-      time: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
-      read: false
-    },
-    {
-      id: 4,
-      type: 'success',
-      title: 'Irrigation Completed',
-      message: 'Scheduled irrigation completed successfully.',
-      time: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-      read: true
-    },
-    {
-      id: 5,
-      type: 'water',
-      title: 'Water Level Low',
-      message: 'Water reservoir level is below 30%.',
-      time: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-      read: true
-    },
-    {
-      id: 6,
-      type: 'system',
-      title: 'Maintenance Required',
-      message: 'Pump system requires maintenance check.',
-      time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      read: true
-    },
-    {
-      id: 7,
-      type: 'data',
-      title: 'Data Analysis Complete',
-      message: 'Crop yield prediction analysis is ready to view.',
-      time: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-      read: true
-    }
-  ])
+  const notifications = ref([])
+
+
+function addNotification({ title, message, type }) {
+  notifications.value.unshift({
+    id: Date.now(),
+    title,
+    message,
+    type,
+    time: new Date(),
+    read: false
+  });
+}
+
+
+onMounted(() => {
+  eventBus.on('notify', addNotification);
+});
+
+onBeforeUnmount(() => {
+  eventBus.off('notify', addNotification);
+});
   
   const isWebSocketConnected = ref(false)
   const wsLatency = ref(0)
@@ -520,6 +484,22 @@
 
   })
 
+
+  const sendNotificationToBackend = async (notification) => {
+    try {
+      await fetch("http://localhost:8000/notifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Add your auth token here if needed
+        },
+        body: JSON.stringify(notification),
+      });
+      console.log("Notification sent to backend");
+    } catch (error) {
+      console.error("Failed to send notification to backend", error);
+    }
+  };
 
 
   // Get signal strength class based on percentage
@@ -645,49 +625,6 @@
     }
   }
   
-  // Simulate connection status changes (in a real app, this would be based on actual connections)
-//   const simulateConnectionChanges = () => {
-//     // Randomly toggle WebSocket connection status every 30-60 seconds
-//     setInterval(() => {
-//       if (Math.random() > 0.8) { // 20% chance to toggle
-//         isWebSocketConnected.value = !isWebSocketConnected.value
-        
-//         // Update WebSocket latency
-//         if (isWebSocketConnected.value) {
-//           wsLatency.value = Math.floor(10 + Math.random() * 50) // 10-60ms
-          
-//           // Calculate uptime
-//           const hours = Math.floor(Math.random() * 12)
-//           const minutes = Math.floor(Math.random() * 60)
-//           wsUptime.value = `${hours}h ${minutes}m`
-//         }
-//       } else if (isWebSocketConnected.value) {
-//         // Just update latency occasionally
-//         wsLatency.value = Math.floor(10 + Math.random() * 50) // 10-60ms
-//       }
-//     }, 30000 + Math.random() * 30000)
-    
-//     // Randomly change WiFi strength every 15-30 seconds
-//     setInterval(() => {
-//       if (Math.random() > 0.7) { // 30% chance to change
-//         // Random value between 0 and 100, with higher probability for good connection
-//         wifiStrength.value = Math.random() > 0.2 ? 
-//           Math.floor(70 + Math.random() * 30) : // 70-100% (good)
-//           Math.floor(Math.random() * 70) // 0-70% (poor to moderate)
-          
-//         // Occasionally change network name if disconnected/reconnected
-//         if (Math.random() > 0.9) {
-//           const networks = ['RODA_2002', 'ProjectIsrael_5G', 'Farm_Network', 'Guest_WiFi']
-//           wifiNetwork.value = networks[Math.floor(Math.random() * networks.length)]
-          
-//           // Generate random IP
-//           const ip1 = Math.floor(Math.random() * 255)
-//           const ip2 = Math.floor(Math.random() * 255)
-//           ipAddress.value = `192.168.${ip1}.${ip2}`
-//         }
-//       }
-//     }, 15000 + Math.random() * 15000)
-//   }
   
   const menuItems = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
