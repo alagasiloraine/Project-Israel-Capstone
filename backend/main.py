@@ -401,7 +401,7 @@ from apscheduler.triggers.cron import CronTrigger
 
 # Custom module imports
 from app.services.firebase_service import firebase_admin
-from app.routers import crop_router, auth_router, forecast_router, sensor_data
+from app.routers import crop_router, auth_router, forecast_router, sensor_data, notif, motor_status
 from app.ml.weather_ml.forecast.forecast import main as run_forecast
 from app.ml.weather_ml.forecast.get_dataset import main as update_dataset
 
@@ -440,6 +440,9 @@ app.include_router(auth_router.router, prefix="/api/auth", tags=["auth"])
 app.include_router(forecast_router.router, prefix="/api/weather", tags=["weather"])
 # app.include_router(npk_router.router, prefix="/api/npk", tags=["npk"])
 app.include_router(sensor_data.router)
+app.include_router(notif.router)
+app.include_router(motor_status.router)
+
 
 # ======== MIDDLEWARE FOR WS =========
 @app.middleware("http")

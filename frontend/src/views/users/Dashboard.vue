@@ -698,7 +698,7 @@ import {
 import Sidebar from '../layout/Sidebar.vue'
 import api from '../../api/index'
 import { eventBus } from '../../eventBus';
-import { sendPushNotification } from '../../utils/notify';
+// import { sendPushNotification } from '../../utils/notify';
 
 Chart.register(...registerables);
 
@@ -805,37 +805,37 @@ const metrics = [
   }
 ];
 
-watch(waterLevel, (newVal) => {
-  if (newVal === 50) {
-    eventBus.emit('notify', {
-      title: "Water Level Notice",
-      message: "Water level is currently at 50%.",
-      type: "water"
-    });
-    sendPushNotification("Water level is currently at 50%.")
-  } else if (newVal < 50 && newVal > 30) {
-    eventBus.emit('notify', {
-      title: "Water Level Low",
-      message: "Water level is below 50%. Please check the tank.",
-      type: "water"
-    });
-    sendPushNotification("Water level is below 50%. Please check the tank.")
-  } else if (newVal < 30 && newVal >15){
-    eventBus.emit('notify', {
-      title: "Water Level Warning",
-      message: "Water level has only 30%. Please check the tank.",
-      type: "water"
-    });
-    sendPushNotification("Water level has only 30%. Please check the tank.")
-  } else if (newVal <= 15 && newVal >= 10) {
-    eventBus.emit('notify', {
-      title: "Critical Water Level",
-      message: "Water level is critically low! Immediate action required.",
-      type: "water"
-    });
-    sendPushNotification("Water level is critically low! Immediate action required.")
-  }
-});
+// watch(waterLevel, (newVal) => {
+//   if (newVal === 50) {
+//     eventBus.emit('notify', {
+//       title: "Water Level Notice",
+//       message: "Water level is currently at 50%.",
+//       type: "water"
+//     });
+//     sendPushNotification("Water level is currently at 50%.")
+//   } else if (newVal < 50 && newVal > 30) {
+//     eventBus.emit('notify', {
+//       title: "Water Level Low",
+//       message: "Water level is below 50%. Please check the tank.",
+//       type: "water"
+//     });
+//     sendPushNotification("Water level is below 50%. Please check the tank.")
+//   } else if (newVal < 30 && newVal >15){
+//     eventBus.emit('notify', {
+//       title: "Water Level Warning",
+//       message: "Water level has only 30%. Please check the tank.",
+//       type: "water"
+//     });
+//     sendPushNotification("Water level has only 30%. Please check the tank.")
+//   } else if (newVal <= 15 && newVal >= 10) {
+//     eventBus.emit('notify', {
+//       title: "Critical Water Level",
+//       message: "Water level is critically low! Immediate action required.",
+//       type: "water"
+//     });
+//     sendPushNotification("Water level is critically low! Immediate action required.")
+//   }
+// });
 
 // const latestNpk = computed(() => sensorReadings.value.length > 0 ? sensorReadings.value[0] : {});
 
@@ -971,7 +971,7 @@ const toggleMotorStatus = () => {
 
 onMounted(() => {
   const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-  const host = 'localhost:8000'
+  const host = 'localhost:800'
   const socket = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
 
   socket.onopen = () => {
@@ -998,7 +998,7 @@ onMounted(() => {
     console.warn('[Weather WS] Disconnected')
   }
 
-  const eventSource = new EventSource('http://localhost:8000/api/stream')
+  const eventSource = new EventSource('http://localhost:800/api/stream')
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data)
       nitrogen.value = data.nitrogen
@@ -1010,7 +1010,7 @@ onMounted(() => {
       soilMoisture.value = data.soilMoisture
     }
 
-  const eventWaterSource = new EventSource('http://localhost:8000/api/water-stream')
+  const eventWaterSource = new EventSource('http://localhost:800/api/water-stream')
 
   eventWaterSource.onmessage = (event) => {
     const data = JSON.parse(event.data)
@@ -1218,57 +1218,6 @@ const initAllCharts = () => {
       }
     });
   }
-
-
-  // if (soilPhChartRef.value) {
-  //   const readings = sensorReadings.value.slice(0, 6).reverse();
-  //   const validPoints = readings.filter(r => r.soilPh !== null && r.soilPh !== undefined);
-
-  //   const data = validPoints.map(r => r.soilPh);
-  //   const labels = validPoints.map((r, i) =>
-  //     new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || `T${i + 1}`
-  //   );
-
-  //   console.log("✅ Soil pH labels:", labels);
-  //   console.log("✅ Soil pH data:", data);
-
-  //   if (data.length > 0 && soilPhChartRef.value) {
-  //     const maxY = Math.ceil(Math.max(...data) * 10) / 10;
-  //     const minY = Math.floor(Math.min(...data) * 10) / 10;
-
-  //     const ctx = soilPhChartRef.value.getContext('2d');
-  //     if (ctx) {
-  //       soilPhChartInstance.value = new Chart(ctx, {
-  //         type: 'line',
-  //         data: {
-  //           labels,
-  //           datasets: [{
-  //             label: 'Soil pH',
-  //             data,
-  //             borderColor: '#f97316',
-  //             backgroundColor: 'rgba(249, 115, 22, 0.1)',
-  //             fill: true,
-  //             tension: 0.4
-  //           }]
-  //         },
-  //         options: {
-  //           responsive: true,
-  //           maintainAspectRatio: false,
-  //           scales: {
-  //             y: {
-  //               beginAtZero: false,
-  //               min: minY,
-  //               max: maxY,
-  //               ticks: {
-  //                 stepSize: 0.2
-  //               }
-  //             }
-  //           }
-  //         }
-  //       });
-  //     }
-  //   }
-  // }
 
 
   if (performanceChartRef.value) {
