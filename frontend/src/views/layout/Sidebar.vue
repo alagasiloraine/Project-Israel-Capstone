@@ -162,7 +162,15 @@
                       <h3 class="font-medium">Notifications</h3>
                     </div>
                     <div class="flex items-center gap-2">
-                      <span class="text-xs px-1.5 py-0.5 bg-white/20 rounded-full">{{ notifications.filter(n => !n.read).length }} new</span>
+                      <!-- <span class="text-xs px-1.5 py-0.5 bg-white/20 rounded-full">{{ notifications.filter(n => !n.read).length }} new</span> -->
+                      <span 
+                        v-if="notifications && notifications.length"
+                        class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white"
+                      >
+                        {{ notifications.filter(n => !n.read).length }}
+                      </span>
+
+
                       <button 
                         @click.stop="markAllAsRead"
                         class="text-xs px-1.5 py-0.5 bg-white/10 hover:bg-white/20 rounded-md transition-colors"
@@ -353,7 +361,7 @@
 </template>
   
 <script setup>
-  import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+  import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { 
     LayoutDashboard,
@@ -381,6 +389,8 @@
     Cog
   } from 'lucide-vue-next'
   import { eventBus } from '../../eventBus'
+  import { sendPushNotification } from '../../utils/notify.js'
+  import api from '../../api/index.js'
   
   const route = useRoute()
   const router = useRouter()
@@ -393,31 +403,7 @@
   // Notifications
   const showNotifications = ref(false)
   const notificationAnimation = ref('scale-95 opacity-0')
-  
-  // Sample notifications data
-  const notifications = ref([])
 
-
-function addNotification({ title, message, type }) {
-  notifications.value.unshift({
-    id: Date.now(),
-    title,
-    message,
-    type,
-    time: new Date(),
-    read: false
-  });
-}
-
-
-onMounted(() => {
-  eventBus.on('notify', addNotification);
-});
-
-onBeforeUnmount(() => {
-  eventBus.off('notify', addNotification);
-});
-  
   const isWebSocketConnected = ref(false)
   const wsLatency = ref(0)
   const wsUptime = ref('0m')
@@ -425,6 +411,123 @@ onBeforeUnmount(() => {
   const wifiStrength = ref(100)
   const wifiNetwork = ref('Unknown')
   const ipAddress = ref('')
+
+  // Sample notifications data
+  const notifications = ref([])
+  const waterLevel = ref(0);
+  const nitrogen = ref(null)
+  const phosphorus = ref(null)
+  const potassium = ref(null)
+  const soilpH = ref(null)
+  const temperature = ref(null)
+  const humidity = ref(null)
+  const soilMoisture = ref(null)
+  const sensorReadings = ref([]);
+
+  watch(waterLevel, (newVal) => {
+    const timestamp = new Date().toISOString()
+    const baseId = Date.now().toString() // unique ID per notification
+
+    if (newVal === 50) {
+      const notification = {
+        id: baseId,
+        title: "Water Level Notice",
+        message: "Water level is currently at 50%.",
+        type: "water",
+        timestamp
+      }
+      eventBus.emit('notify', notification)
+      sendPushNotification(notification.message)
+      sendNotificationToBackend(notification)
+      // saveToLocalStorage(notification)
+
+
+    } else if (newVal < 50 && newVal > 30) {
+      const notification = {
+        id: baseId,
+        title: "Water Level Low",
+        message: "Water level is below 50%. Please check the tank.",
+        type: "water",
+        timestamp
+      }
+      eventBus.emit('notify', notification)
+      sendPushNotification(notification.message)
+      sendNotificationToBackend(notification)
+      // saveToLocalStorage(notification)
+
+
+    } else if (newVal < 30 && newVal > 15) {
+      const notification = {
+        id: baseId,
+        title: "Water Level Warning",
+        message: "Water level has only 30%. Please check the tank.",
+        type: "water",
+        timestamp
+      }
+      eventBus.emit('notify', notification)
+      sendPushNotification(notification.message)
+      sendNotificationToBackend(notification)
+      // saveToLocalStorage(notification)
+
+
+    } else if (newVal <= 15 && newVal >= 10) {
+      const notification = {
+        id: baseId,
+        title: "Critical Water Level",
+        message: "Water level is critically low! Immediate action required.",
+        type: "water",
+        timestamp
+      }
+      eventBus.emit('notify', notification)
+      sendPushNotification(notification.message)
+      sendNotificationToBackend(notification)
+      // saveToLocalStorage(notification)
+
+    }
+  })
+
+  function addNotification({ title, message, type }) {
+    notifications.value.unshift({
+      id: Date.now(),
+      title,
+      message,
+      type,
+      time: new Date(),
+      read: false
+    });
+  }
+
+  const fetchSensorData = async () => {
+    try {
+      const res = await api.get('/sensor/readings')
+      sensorReadings.value = res.data
+      console.log(sensorReadings)
+      await nextTick();
+      // initAllCharts()
+    } catch (err) {
+      console.error("Error fetching sensor data:", err)
+    }
+  }
+
+  onMounted(() => {
+    eventBus.on('notify', addNotification);
+    fetchSensorData();
+    // saveToLocalStorage()
+  });
+
+  onBeforeUnmount(() => {
+    eventBus.off('notify', addNotification);
+  });
+
+  const saveToLocalStorage = (notification) => {
+    const existing = JSON.parse(localStorage.removeItem('notifications') || '[]')
+    // Prevent duplicates based on ID
+    const exists = existing.find(n => n.id === notification.id)
+    if (!exists) {
+      existing.push(notification)
+      localStorage.setItem('notifications', JSON.stringify(existing))
+    }
+  }
 
   onMounted(async () => {
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
@@ -452,9 +555,9 @@ onBeforeUnmount(() => {
       isWebSocketConnected.value = false
     }
 
-  // Optional: latency ping-pong logic (if supported by backend)
+    // Optional: latency ping-pong logic (if supported by backend)
     ws.onmessage = (e) => {
-      const timeSent = Date.now()
+    const timeSent = Date.now()
       wsLatency.value = timeSent - JSON.parse(e.data)?.timestamp || 30
     }
 
@@ -466,20 +569,56 @@ onBeforeUnmount(() => {
 
     // Estimate WiFi type (not always accurate) and listen for changes
     if ('connection' in navigator) {
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
-    const updateWifiInfo = () => {
+      const updateWifiInfo = () => {
         wifiStrength.value = conn.downlinkMax ? Math.min(conn.downlinkMax * 10, 100) : 70;
         wifiNetwork.value = conn.effectiveType || 'WiFi';
-    };
+      };
 
-    // Initial set
-    updateWifiInfo();
+      // Initial set
+      updateWifiInfo();
 
-    // Watch for network changes (like switching Wi-Fi)
-    if (conn.addEventListener) {
+      // Watch for network changes (like switching Wi-Fi)
+      if (conn.addEventListener) {
         conn.addEventListener('change', updateWifiInfo);
+      }
     }
+
+    const eventSource = new EventSource('http://localhost:800/api/stream')
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+      nitrogen.value = data.nitrogen
+      phosphorus.value = data.phosphorus
+      potassium.value = data.potassium
+      soilpH.value = data.soilPh
+      temperature.value = data.temperature
+      humidity.value = data.humidity
+      soilMoisture.value = data.soilMoisture
+    }
+
+    const eventWaterSource = new EventSource('http://localhost:800/api/water-stream')
+
+    eventWaterSource.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+
+      if (data.type === 'water') {
+        waterLevel.value = data.data.waterLevel
+        console.log("💧 Updated Water Level:", waterLevel.value + "%")
+      }
+    }
+
+    const saved = localStorage.getItem('notifications')
+    if (saved) {
+      notifications.value = JSON.parse(saved)
+    }
+
+    try {
+      const res = await api.get("/get-notifications");
+      notifications.value = res.data;
+      console.log(notifications)
+    } catch (error) {
+      console.error("Failed to fetch notifications from backend", error);
     }
 
   })
@@ -487,19 +626,41 @@ onBeforeUnmount(() => {
 
   const sendNotificationToBackend = async (notification) => {
     try {
-      await fetch("http://localhost:8000/notifications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Add your auth token here if needed
-        },
-        body: JSON.stringify(notification),
-      });
+      await api.post("/notifications", notification); // This is enough
+      console.log(notification)
       console.log("Notification sent to backend");
     } catch (error) {
       console.error("Failed to send notification to backend", error);
+      console.log(notification)
     }
   };
+
+  // Mark one as read
+  const markAsRead = async (id) => {
+    const notification = notifications.value.find(n => n.id === id)
+    if (notification && !notification.read) {
+      try {
+        await api.post(`/notifications/${id}/read`)
+        notification.read = true
+        updateLocalStorage()
+      } catch (error) {
+        console.error("Failed to mark as read:", error)
+      }
+    }
+  }
+
+  // Mark all as read
+  const markAllAsRead = async () => {
+    try {
+      await api.post("/notifications/read-all")
+      notifications.value.forEach(notification => {
+        notification.read = true
+      })
+      updateLocalStorage()
+    } catch (error) {
+      console.error("Failed to mark all as read:", error)
+    }
+  }
 
 
   // Get signal strength class based on percentage
@@ -543,21 +704,7 @@ onBeforeUnmount(() => {
       notificationAnimation.value = 'scale-95 opacity-0'
     }
   }
-  
-  // Mark notification as read
-  const markAsRead = (id) => {
-    const notification = notifications.value.find(n => n.id === id)
-    if (notification) {
-      notification.read = true
-    }
-  }
-  
-  // Mark all notifications as read
-  const markAllAsRead = () => {
-    notifications.value.forEach(notification => {
-      notification.read = true
-    })
-  }
+
   
   // Format time for notifications
   const formatTime = (time) => {
@@ -624,7 +771,6 @@ onBeforeUnmount(() => {
         }
     }
   }
-  
   
   const menuItems = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
