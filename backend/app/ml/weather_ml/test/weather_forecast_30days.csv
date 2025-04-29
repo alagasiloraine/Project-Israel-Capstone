@@ -1,0 +1,4 @@
+date,temperature_c,temperature_f,humidity,wind_speed_kph,pressure_hpa,cloud_cover_percent,weather_condition,rain_mm
+2025-03-19,26.5,79.6,75,18.7,1014.0,22,Patchy rain nearby,0.64
+2025-03-20,26.3,79.3,74,25.9,1015.0,67,Patchy rain nearby,0.61
+2025-03-21,26.0,78.8,71,21.6,1015.0,73,Patchy rain nearby,0.33

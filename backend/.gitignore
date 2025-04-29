@@ -1,0 +1,15 @@
+venv
+serviceAccountKey.json
+.env
+data
+forecast_log.txt
+__pycache__/
+*.pyc
+
+# Ignore secret keys
+# Secret keys
+firebase-key.json
+hindiItoApiKey.json
+.env
+
+
