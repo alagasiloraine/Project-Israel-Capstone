@@ -607,34 +607,66 @@ const totalPages = computed(() => {
   return Math.max(1, Math.ceil(sortedData.value.length / itemsPerPage.value))
 })
 
-// Displayed pages for pagination
+// Displayed pages for pagination with ellipsis
 const displayedPages = computed(() => {
   const total = totalPages.value
   const current = currentPage.value
   const pages = []
-
-  if (total <= 7) {
-    // If 7 or fewer pages, show all
+  
+  // Maximum number of page buttons to show (excluding ellipsis)
+  const maxVisiblePages = 5
+  
+  if (total <= maxVisiblePages) {
+    // If fewer pages than our maximum, show all pages
     for (let i = 1; i <= total; i++) {
       pages.push(i)
     }
   } else {
-    // Always show first page
+    // Always include first page
     pages.push(1)
-
+    
     if (current <= 3) {
-      // If near start, show 2-5 then ellipsis
-      pages.push(2, 3, 4, 5, '...', total)
+      // Near start: show 1, 2, 3, 4, 5, ..., last
+      for (let i = 2; i <= Math.min(5, total - 1); i++) {
+        pages.push(i)
+      }
+      if (total > 6) {
+        pages.push('...')
+      }
+      if (total > 5) {
+        pages.push(total)
+      }
     } else if (current >= total - 2) {
-      // If near end, show ellipsis then last 4
-      pages.push('...', total - 4, total - 3, total - 2, total - 1, total)
+      // Near end: show first, ..., last-4, last-3, last-2, last-1, last
+      if (total > 6) {
+        pages.push('...')
+      }
+      const startPage = Math.max(2, total - 4)
+      for (let i = startPage; i < total; i++) {
+        pages.push(i)
+      }
+      if (pages[pages.length - 1] !== total) {
+        pages.push(total)
+      }
     } else {
-      // Otherwise show ellipsis, current -1, current, current + 1, ellipsis
-      pages.push('...', current - 1, current, current + 1, '...', total)
+      // Middle: show first, ..., current-1, current, current+1, ..., last
+      pages.push('...')
+      for (let i = current - 1; i <= current + 1; i++) {
+        if (i > 1 && i < total) {
+          pages.push(i)
+        }
+      }
+      if (current + 2 < total) {
+        pages.push('...')
+      }
+      if (pages[pages.length - 1] !== total) {
+        pages.push(total)
+      }
     }
   }
-
-  return pages
+  
+  // Remove any duplicate entries (important fix)
+  return [...new Set(pages)]
 })
 
 // Pagination methods

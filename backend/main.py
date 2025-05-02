@@ -399,11 +399,21 @@ from dotenv import load_dotenv
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-# Custom module imports
+# ======== Firebase & Forecast Imports =========
 from app.services.firebase_service import firebase_admin
-from app.routers import crop_router, auth_router, forecast_router, sensor_data
 from app.ml.weather_ml.forecast.forecast import main as run_forecast
 from app.ml.weather_ml.forecast.get_dataset import main as update_dataset
+
+# ======== Router Imports =========
+from app.routers import (
+    crop_router,
+    auth_router,
+    forecast_router,
+    sensor_data,
+    notif,
+    motor_status,
+    watering_schedule_router  # ✅ NEW ROUTER
+)
 
 # ======== ENV & LOG SETUP =========
 load_dotenv()
@@ -438,12 +448,14 @@ app.add_middleware(
 app.include_router(crop_router.router, prefix="/api/crop", tags=["crop"])
 app.include_router(auth_router.router, prefix="/api/auth", tags=["auth"])
 app.include_router(forecast_router.router, prefix="/api/weather", tags=["weather"])
-# app.include_router(npk_router.router, prefix="/api/npk", tags=["npk"])
 app.include_router(sensor_data.router)
+app.include_router(notif.router)
+app.include_router(motor_status.router)
+app.include_router(watering_schedule_router.router, tags=["schedule"])  # ✅ Include new router
 
 # ======== MIDDLEWARE FOR WS =========
 @app.middleware("http")
-async def allow_websocket_cors(request, call_next):
+async def allow_websocket_cors(request: Request, call_next):
     if request.scope["type"] == "websocket":
         return await sensor_data.websocket_endpoint(request)
     return await call_next(request)
@@ -521,17 +533,6 @@ async def get_weather():
         "last_updated": weather_data["current"].get("last_updated")
     }
 
-# ======== SENSOR DATA ROUTE (for ESP32) =========
-# @app.post("/sensor-data")
-# async def receive_sensor_data(request: Request):
-#     try:
-#         data = await request.json()
-#         print("✅ Sensor data received from ESP32:", data)
-#         return {"message": "Data received successfully"}
-#     except Exception as e:
-#         print("❌ Error parsing sensor data:", str(e))
-#         raise HTTPException(status_code=400, detail="Invalid JSON")
-    
 # ======== STARTUP HOOK =========
 @app.on_event("startup")
 async def on_startup():

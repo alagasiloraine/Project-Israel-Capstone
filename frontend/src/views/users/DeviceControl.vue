@@ -14,310 +14,513 @@
               <div class="flex items-center text-sm text-gray-500">
                 <span class="text-green-600">Device Setup</span>
                 <ChevronRight class="h-4 w-4 mx-1" />
-                <span>Overview</span>
+                <span>{{ currentView === 'history' ? 'Schedule History' : 'Overview' }}</span>
               </div>
             </div>
           </div>
           
           <!-- Content Wrapper -->
           <div class="p-6 md:p-8">
-            <!-- System Controls Section - KEEPING ORIGINAL 3-COLUMN GRID -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <!-- Motor Control Card - Left Position (COMPLETELY UNTOUCHED) -->
-              <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
-                <div class="flex items-center justify-between mb-6">
-                  <div class="flex items-center gap-2">
-                    <!-- Changed icon color from purple to green -->
-                    <div class="text-green-500">
-                      <Droplet class="w-5 h-5" />
-                    </div>
-                    <h2 class="text-lg font-medium text-gray-800">Motor Control</h2>
-                  </div>
-                </div>
-                
-                <!-- Motor Status and Toggle - Ultra Modern Design -->
-                <div class="mt-6">
-                  <div class="flex items-center justify-between mb-4">
-                    <span class="text-sm font-medium text-gray-700">Motor Status</span>
+            <!-- Main View Switcher -->
+            <div v-if="currentView === 'overview'">
+              <!-- System Controls Section - KEEPING ORIGINAL 3-COLUMN GRID -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Motor Control Card - Left Position (COMPLETELY UNTOUCHED) -->
+                <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+                  <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-2">
-                      <div class="w-2.5 h-2.5 rounded-full" :class="waterPumpActive ? 'bg-green-500' : 'bg-gray-300'"></div>
-                      <span 
-                        class="text-xs font-medium tracking-wider px-2 py-1 rounded-full"
-                        :class="waterPumpActive ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'"
-                      >
-                        {{ waterPumpActive ? 'ACTIVE' : 'INACTIVE' }}
-                      </span>
+                      <!-- Changed icon color from purple to green -->
+                      <div class="text-green-500">
+                        <Droplet class="w-5 h-5" />
+                      </div>
+                      <h2 class="text-lg font-medium text-gray-800">Motor Control</h2>
                     </div>
                   </div>
                   
-                  <!-- Ultra Modern Power Button - FIXED CLICKABLE AREA -->
-                  <div class="flex justify-center mb-8">
-                    <!-- Entire button container is now clickable -->
-                    <div 
-                      class="relative w-48 h-48 cursor-pointer"
-                      @click="showToggleConfirmation()"
-                    >
-                      <!-- Outer glow effect -->
-                      <div 
-                        class="absolute inset-0 rounded-full blur-xl transition-all duration-500 pointer-events-none"
-                        :class="waterPumpActive ? 'bg-green-300 opacity-40' : 'bg-orange-300 opacity-30'"
-                      ></div>
-                      
-                      <!-- Subtle background pattern -->
-                      <div class="absolute inset-0 rounded-full overflow-hidden opacity-10 pointer-events-none">
-                        <div class="absolute inset-0 bg-gradient-to-br from-white to-transparent"></div>
-                        <div v-for="i in 8" :key="`pattern-${i}`" class="absolute w-full h-0.5 bg-white opacity-30"
-                          :style="{
-                            transform: `rotate(${i * 22.5}deg)`,
-                            top: '50%'
-                          }"
-                        ></div>
+                  <!-- Motor Status and Toggle - Ultra Modern Design -->
+                  <div class="mt-6">
+                    <div class="flex items-center justify-between mb-4">
+                      <span class="text-sm font-medium text-gray-700">Motor Status</span>
+                      <div class="flex items-center gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full" :class="waterPumpActive ? 'bg-green-500' : 'bg-gray-300'"></div>
+                        <span 
+                          class="text-xs font-medium tracking-wider px-2 py-1 rounded-full"
+                          :class="waterPumpActive ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'"
+                        >
+                          {{ waterPumpActive ? 'ACTIVE' : 'INACTIVE' }}
+                        </span>
                       </div>
-                      
-                      <!-- Outer ring with subtle gradient -->
+                    </div>
+                    
+                    <!-- Ultra Modern Power Button - FIXED CLICKABLE AREA -->
+                    <div class="flex justify-center mb-8">
+                      <!-- Entire button container is now clickable -->
                       <div 
-                        class="absolute inset-0 rounded-full border-2 transition-all duration-500 pointer-events-none"
-                        :class="waterPumpActive ? 'border-green-300 opacity-80' : 'border-orange-300 opacity-60'"
+                        class="relative w-48 h-48 cursor-pointer"
+                        @click="showToggleConfirmation()"
                       >
-                        <div class="absolute inset-0 rounded-full bg-gradient-to-b from-white to-transparent opacity-30"></div>
-                      </div>
-                      
-                      <!-- Tick marks around the button - Properly positioned -->
-                      <div class="absolute inset-0 pointer-events-none">
-                        <div v-for="i in 12" :key="`tick-${i}`" 
-                          class="absolute w-1 h-3 rounded-full transition-all duration-300" 
-                          :class="waterPumpActive ? 'bg-green-200' : 'bg-orange-200'"
-                          :style="{
-                            transform: `rotate(${i * 30}deg) translateY(-22px)`,
-                            left: 'calc(50% - 0.5px)',
-                            top: '50%',
-                            transformOrigin: 'center calc(100% + 22px)',
-                            opacity: i % 3 === 0 ? '0.8' : '0.4'
-                          }"
-                        ></div>
-                      </div>
-                      
-                      <!-- Main button with glass morphism effect -->
-                      <div 
-                        class="absolute inset-6 rounded-full overflow-hidden transition-all duration-500 z-10 glass-button pointer-events-none"
-                        :class="waterPumpActive ? 'active-button' : 'inactive-button'"
-                      >
-                        <!-- Background gradient -->
+                        <!-- Outer glow effect -->
                         <div 
-                          class="absolute inset-0 transition-all duration-500"
-                          :class="waterPumpActive ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-orange-400 to-orange-600'"
+                          class="absolute inset-0 rounded-full blur-xl transition-all duration-500 pointer-events-none"
+                          :class="waterPumpActive ? 'bg-green-300 opacity-40' : 'bg-orange-300 opacity-30'"
                         ></div>
                         
-                        <!-- Glass effect overlay -->
-                        <div class="absolute inset-0 bg-white opacity-10"></div>
-                        <div class="absolute inset-0 bg-gradient-to-b from-white to-transparent opacity-20"></div>
+                        <!-- Subtle background pattern -->
+                        <div class="absolute inset-0 rounded-full overflow-hidden opacity-10 pointer-events-none">
+                          <div class="absolute inset-0 bg-gradient-to-br from-white to-transparent"></div>
+                          <div v-for="i in 8" :key="`pattern-${i}`" class="absolute w-full h-0.5 bg-white opacity-30"
+                            :style="{
+                              transform: `rotate(${i * 22.5}deg)`,
+                              top: '50%'
+                            }"
+                          ></div>
+                        </div>
                         
-                        <!-- Highlight effect -->
-                        <div class="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white to-transparent opacity-30 rounded-t-full"></div>
+                        <!-- Outer ring with subtle gradient -->
+                        <div 
+                          class="absolute inset-0 rounded-full border-2 transition-all duration-500 pointer-events-none"
+                          :class="waterPumpActive ? 'border-green-300 opacity-80' : 'border-orange-300 opacity-60'"
+                        >
+                          <div class="absolute inset-0 rounded-full bg-gradient-to-b from-white to-transparent opacity-30"></div>
+                        </div>
                         
-                        <!-- Center content with modern icon -->
-                        <div class="absolute inset-0 flex items-center justify-center">
-                          <div class="text-center z-20">
-                            <!-- Power icon with glow effect -->
-                            <div class="relative">
-                              <Power class="w-12 h-12 text-white drop-shadow-lg" :class="waterPumpActive ? 'power-icon-on' : 'power-icon-off'" />
-                            </div>
-                            
-                            <!-- Status text with modern font -->
-                            <div class="mt-2">
-                              <span class="text-2xl font-bold text-white drop-shadow-lg tracking-wider">
-                                {{ waterPumpActive ? 'ON' : 'OFF' }}
-                              </span>
+                        <!-- Tick marks around the button - Properly positioned -->
+                        <div class="absolute inset-0 pointer-events-none">
+                          <div v-for="i in 12" :key="`tick-${i}`" 
+                            class="absolute w-1 h-3 rounded-full transition-all duration-300" 
+                            :class="waterPumpActive ? 'bg-green-200' : 'bg-orange-200'"
+                            :style="{
+                              transform: `rotate(${i * 30}deg) translateY(-22px)`,
+                              left: 'calc(50% - 0.5px)',
+                              top: '50%',
+                              transformOrigin: 'center calc(100% + 22px)',
+                              opacity: i % 3 === 0 ? '0.8' : '0.4'
+                            }"
+                          ></div>
+                        </div>
+                        
+                        <!-- Main button with glass morphism effect -->
+                        <div 
+                          class="absolute inset-6 rounded-full overflow-hidden transition-all duration-500 z-10 glass-button pointer-events-none"
+                          :class="waterPumpActive ? 'active-button' : 'inactive-button'"
+                        >
+                          <!-- Background gradient -->
+                          <div 
+                            class="absolute inset-0 transition-all duration-500"
+                            :class="waterPumpActive ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-orange-400 to-orange-600'"
+                          ></div>
+                          
+                          <!-- Glass effect overlay -->
+                          <div class="absolute inset-0 bg-white opacity-10"></div>
+                          <div class="absolute inset-0 bg-gradient-to-b from-white to-transparent opacity-20"></div>
+                          
+                          <!-- Highlight effect -->
+                          <div class="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white to-transparent opacity-30 rounded-t-full"></div>
+                          
+                          <!-- Center content with modern icon -->
+                          <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center z-20">
+                              <!-- Power icon with glow effect -->
+                              <div class="relative">
+                                <Power class="w-12 h-12 text-white drop-shadow-lg" :class="waterPumpActive ? 'power-icon-on' : 'power-icon-off'" />
+                              </div>
+                              
+                              <!-- Status text with modern font -->
+                              <div class="mt-2">
+                                <span class="text-2xl font-bold text-white drop-shadow-lg tracking-wider">
+                                  {{ waterPumpActive ? 'ON' : 'OFF' }}
+                                </span>
+                              </div>
                             </div>
                           </div>
+                          
+                          <!-- Animated pulse effect when active -->
+                          <div 
+                            v-if="waterPumpActive" 
+                            class="absolute inset-0 bg-white opacity-0 pulse-animation"
+                          ></div>
                         </div>
                         
-                        <!-- Animated pulse effect when active -->
+                        <!-- Inner ring glow -->
                         <div 
-                          v-if="waterPumpActive" 
-                          class="absolute inset-0 bg-white opacity-0 pulse-animation"
+                          class="absolute pointer-events-none"
+                          :class="waterPumpActive ? 'inset-5 rounded-full border border-green-200 opacity-60' : 'inset-5 rounded-full border border-orange-200 opacity-40'"
                         ></div>
                       </div>
-                      
-                      <!-- Inner ring glow -->
-                      <div 
-                        class="absolute pointer-events-none"
-                        :class="waterPumpActive ? 'inset-5 rounded-full border border-green-200 opacity-60' : 'inset-5 rounded-full border border-orange-200 opacity-40'"
-                      ></div>
+                    </div>
+                    
+                    <!-- Motor Activity History - Modern Clean Design with scrolling -->
+                    <div class="mt-6 space-y-3">
+                      <h3 class="text-sm font-medium text-gray-700">Recent Activity</h3>
+                      <div class="max-h-[200px] overflow-y-auto pr-1 space-y-2">
+                        <!-- Loading state -->
+                        <div v-if="isLoadingActivities" class="py-8 flex flex-col items-center justify-center">
+                          <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                          <p class="text-sm text-gray-500">Loading activities...</p>
+                        </div>
+                        
+                        <!-- Empty state -->
+                        <div v-else-if="filteredMotorActivities.length === 0" class="flex flex-col items-center justify-center py-4 text-center">
+                          <p class="text-gray-400 text-sm">No recent activities</p>
+                        </div>
+                        
+                        <!-- Activities list -->
+                        <div 
+                          v-else
+                          v-for="(activity, index) in filteredMotorActivities" 
+                          :key="index" 
+                          class="flex items-center justify-between bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
+                        >
+                          <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full" :class="activity.status ? 'bg-green-500' : 'bg-gray-400'"></div>
+                            <span class="text-xs text-gray-600">{{ activity.timestamp }}</span>
+                          </div>
+                          <span 
+                            class="text-xs font-medium px-2 py-1 rounded-full"
+                            :class="activity.status ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-600'"
+                          >
+                            {{ activity.status ? 'Turned ON' : 'Turned OFF' }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Saved Schedules Card - Expanded to take 2/3 of the space (col-span-2) -->
+                <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 md:col-span-2">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                      <div class="text-green-500">
+                        <CalendarClock class="w-5 h-5" />
+                      </div>
+                      <h2 class="text-lg font-medium text-gray-800">Saved Schedules</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <!-- View History Button -->
+                      <button 
+                        @click="viewScheduleHistory()" 
+                        class="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-full px-4 py-2 transition-all duration-300 shadow-sm hover:shadow-md text-sm"
+                      >
+                        <History class="w-4 h-4" />
+                        <span>View History</span>
+                      </button>
+                      <!-- Add Schedule Button - Slightly larger but not too large -->
+                      <button 
+                        @click="openScheduleModal()" 
+                        class="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white font-medium rounded-full px-4 py-2 transition-all duration-300 shadow-sm hover:shadow-md text-sm"
+                      >
+                        <Plus class="w-4 h-4" />
+                        <span>Add Schedule</span>
+                      </button>
                     </div>
                   </div>
                   
-                  <!-- Motor Activity History - Modern Clean Design with scrolling -->
-                  <div class="mt-6 space-y-3">
-                    <h3 class="text-sm font-medium text-gray-700">Recent Activity</h3>
-                    <div class="max-h-[200px] overflow-y-auto pr-1 space-y-2">
-                      <!-- Loading state -->
-                      <div v-if="isLoadingActivities" class="py-8 flex flex-col items-center justify-center">
-                        <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-                        <p class="text-sm text-gray-500">Loading activities...</p>
+                  <!-- "Upcoming Waterings" text positioned below the heading -->
+                  <div class="text-xs text-gray-500 mb-4">
+                    Upcoming Waterings
+                  </div>
+                  
+                  <!-- Next Scheduled Watering - Enhanced with modern design -->
+                  <div class="mb-5 bg-green-50 rounded-xl p-4 flex items-center justify-between border border-green-100 shadow-sm">
+                    <div class="flex items-center gap-2">
+                      <div class="bg-green-100 p-1.5 rounded-full">
+                        <CalendarClock class="w-4 h-4 text-green-600" />
                       </div>
-                      
-                      <!-- Empty state -->
-                      <div v-else-if="filteredMotorActivities.length === 0" class="flex flex-col items-center justify-center py-4 text-center">
-                        <p class="text-gray-400 text-sm">No recent activities</p>
+                      <span class="text-sm text-gray-700">Next scheduled watering</span>
+                    </div>
+                    <span 
+                      v-if="isLoadingNextWatering" 
+                      class="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full flex items-center gap-2"
+                    >
+                      <div class="w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                      Loading...
+                    </span>
+                    <span 
+                      v-else 
+                      class="text-sm font-medium text-green-700 bg-green-100 px-3 py-1 rounded-full"
+                    >
+                      {{ nextWateringTime }}
+                    </span>
+                  </div>
+                  
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="text-sm text-gray-500">All scheduled waterings:</div>
+                    <div class="h-0.5 flex-grow mx-4 bg-gray-100"></div>
+                  </div>
+                  
+                  <!-- Saved Schedules List - Enhanced with better spacing and modern design -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-1 mb-4">
+                    <div v-if="upcomingSchedules.length === 0" class="flex flex-col items-center justify-center py-12 text-center md:col-span-2 lg:col-span-3">
+                      <div class="bg-gray-50 p-6 rounded-full mb-4">
+                        <CalendarClock class="w-16 h-16 text-gray-200" />
                       </div>
+                      <p class="text-gray-400 font-medium">No upcoming schedules</p>
+                      <p class="text-xs text-gray-400 mt-2">Add a schedule to see it here</p>
+                    </div>
+                    
+                    <div 
+                      v-for="(schedule, index) in upcomingSchedules" 
+                      :key="index"
+                      class="bg-white rounded-xl p-5 border border-gray-100 hover:border-green-200 transition-all duration-300 hover:shadow-md group relative overflow-hidden"
+                    >
+                      <!-- Decorative accent -->
+                      <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-green-500"></div>
                       
-                      <!-- Activities list -->
-                      <div 
-                        v-else
-                        v-for="(activity, index) in filteredMotorActivities" 
-                        :key="index" 
-                        class="flex items-center justify-between bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
-                      >
+                      <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center gap-2">
-                          <div class="w-2 h-2 rounded-full" :class="activity.status ? 'bg-green-500' : 'bg-gray-400'"></div>
-                          <span class="text-xs text-gray-600">{{ activity.timestamp }}</span>
+                          <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                          <span class="text-sm font-medium text-gray-700">{{ schedule.dateTime }}</span>
                         </div>
+                        <div class="flex items-center gap-1">
+                          <!-- Edit button -->
+                          <button 
+                            @click="editSchedule(getOriginalIndex(schedule.id))" 
+                            class="text-gray-300 group-hover:text-green-500 transition-colors p-1 rounded-full hover:bg-green-50"
+                            title="Edit schedule"
+                          >
+                            <Edit2 class="w-4 h-4" />
+                          </button>
+                          <!-- Delete button -->
+                          <button 
+                            @click="removeSchedule(getOriginalIndex(schedule.id))" 
+                            class="text-gray-300 group-hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50"
+                            title="Delete schedule"
+                          >
+                            <Trash2 class="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div class="flex items-center gap-4 text-xs text-gray-500 mt-3">
+                        <div class="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1.5 rounded-full border border-gray-100">
+                          <Clock class="w-3.5 h-3.5 text-green-500" />
+                          <span>{{ schedule.duration }} min</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1.5 rounded-full border border-gray-100">
+                          <Calendar class="w-3.5 h-3.5 text-green-500" />
+                          <span>{{ schedule.mode }}</span>
+                        </div>
+                      </div>
+                      
+                      <div v-if="schedule.mode === 'weekly'" class="flex flex-wrap gap-1.5 mt-4">
                         <span 
-                          class="text-xs font-medium px-2 py-1 rounded-full"
-                          :class="activity.status ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-600'"
+                          v-for="(day, dayIndex) in weekDays" 
+                          :key="dayIndex"
+                          :class="[
+                            'text-xs px-2 py-1 rounded-md transition-colors',
+                            schedule.days[dayIndex] 
+                              ? 'bg-green-100 text-green-700 border border-green-200' 
+                              : 'bg-gray-50 text-gray-400 border border-gray-100'
+                          ]"
                         >
-                          {{ activity.status ? 'Turned ON' : 'Turned OFF' }}
+                          {{ day.substring(0, 3) }}
                         </span>
+                      </div>
+                      
+                      <!-- Additional settings indicators -->
+                      <div class="flex items-center gap-2 mt-3">
+                        <div v-if="schedule.skipIfRain" class="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                          <CloudRain class="w-3 h-3" />
+                          <span>Skip if rain</span>
+                        </div>
+                        <div v-if="schedule.notifyWatering" class="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                          <Bell class="w-3 h-3" />
+                          <span>Notify</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Saved Schedules Card - Expanded to take 2/3 of the space (col-span-2) -->
-              <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 md:col-span-2">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="flex items-center gap-2">
-                    <div class="text-green-500">
-                      <CalendarClock class="w-5 h-5" />
-                    </div>
-                    <h2 class="text-lg font-medium text-gray-800">Saved Schedules</h2>
+            <!-- Schedule History View -->
+            <div v-else-if="currentView === 'history'" class="animate-fadeIn">
+              <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                  <div class="bg-gray-100 p-2 rounded-full">
+                    <History class="w-5 h-5 text-gray-600" />
                   </div>
-                  <!-- Add Schedule Button - Slightly larger but not too large -->
-                  <button 
-                    @click="openScheduleModal()" 
-                    class="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white font-medium rounded-full px-4 py-2 transition-all duration-300 shadow-sm hover:shadow-md text-sm"
-                  >
-                    <Plus class="w-4 h-4" />
-                    <span>Add Schedule</span>
-                  </button>
+                  <h2 class="text-xl font-medium text-gray-800">Schedule History</h2>
                 </div>
-                
-                <!-- "Upcoming Waterings" text positioned below the heading -->
-                <div class="text-xs text-gray-500 mb-4">
-                  Upcoming Waterings
-                </div>
-                
-                <!-- Next Scheduled Watering - Enhanced with modern design -->
-                <div class="mb-5 bg-green-50 rounded-xl p-4 flex items-center justify-between border border-green-100 shadow-sm">
-                  <div class="flex items-center gap-2">
-                    <div class="bg-green-100 p-1.5 rounded-full">
-                      <CalendarClock class="w-4 h-4 text-green-600" />
+                <button 
+                  @click="backToOverview()" 
+                  class="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-full px-4 py-2 transition-all duration-300 shadow-sm hover:shadow-md text-sm"
+                >
+                  <ArrowLeft class="w-4 h-4" />
+                  <span>Back to Overview</span>
+                </button>
+              </div>
+
+              <!-- History Filters -->
+              <div class="bg-white rounded-xl p-4 border border-gray-200 mb-6">
+                <div class="flex flex-wrap items-center gap-4">
+                  <div class="flex-1 min-w-[200px]">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Date Range</label>
+                    <div class="flex items-center gap-2">
+                      <div class="relative flex-1">
+                        <input 
+                          type="date" 
+                          v-model="historyFilters.startDate" 
+                          class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+                        />
+                        <Calendar class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
+                      <span class="text-gray-400">to</span>
+                      <div class="relative flex-1">
+                        <input 
+                          type="date" 
+                          v-model="historyFilters.endDate" 
+                          class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+                        />
+                        <Calendar class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
-                    <span class="text-sm text-gray-700">Next scheduled watering</span>
                   </div>
-                  <span 
-                    v-if="isLoadingNextWatering" 
-                    class="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full flex items-center gap-2"
-                  >
-                    <div class="w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-                    Loading...
-                  </span>
-                  <span 
-                    v-else 
-                    class="text-sm font-medium text-green-700 bg-green-100 px-3 py-1 rounded-full"
-                  >
-                    {{ nextWateringTime }}
-                  </span>
-                </div>
-                
-                <div class="flex items-center justify-between mb-4">
-                  <div class="text-sm text-gray-500">All scheduled waterings:</div>
-                  <div class="h-0.5 flex-grow mx-4 bg-gray-100"></div>
-                </div>
-                
-                <!-- Saved Schedules List - Enhanced with better spacing and modern design -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-1 mb-4">
-                  <div v-if="savedSchedules.length === 0" class="flex flex-col items-center justify-center py-12 text-center md:col-span-2 lg:col-span-3">
-                    <div class="bg-gray-50 p-6 rounded-full mb-4">
-                      <CalendarClock class="w-16 h-16 text-gray-200" />
-                    </div>
-                    <p class="text-gray-400 font-medium">No schedules saved yet</p>
-                    <p class="text-xs text-gray-400 mt-2">Add a schedule to see it here</p>
+                  <div class="w-[150px]">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Schedule Type</label>
+                    <select 
+                      v-model="historyFilters.scheduleType" 
+                      class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+                    >
+                      <option value="all">All Types</option>
+                      <option value="one-time">One-time</option>
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="custom">Custom</option>
+                    </select>
                   </div>
-                  
+                  <div class="w-[150px]">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Duration</label>
+                    <select 
+                      v-model="historyFilters.duration" 
+                      class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+                    >
+                      <option value="all">All Durations</option>
+                      <option value="short">Short (< 10 min)</option>
+                      <option value="medium">Medium (10-30 min)</option>
+                      <option value="long">Long (> 30 min)</option>
+                    </select>
+                  </div>
+                  <div class="flex items-end">
+                    <button 
+                      @click="applyHistoryFilters" 
+                      class="bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg px-4 py-2 transition-all duration-300 text-sm flex items-center gap-1.5"
+                    >
+                      <Filter class="w-4 h-4" />
+                      <span>Apply Filters</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- History Table -->
+              <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <!-- Table Header -->
+                <div class="bg-gray-50 border-b border-gray-200 grid grid-cols-12 gap-4 px-6 py-3">
+                  <div class="col-span-3 font-medium text-gray-600 text-sm">Date & Time</div>
+                  <div class="col-span-2 font-medium text-gray-600 text-sm">Duration</div>
+                  <div class="col-span-2 font-medium text-gray-600 text-sm">Schedule Type</div>
+                  <div class="col-span-2 font-medium text-gray-600 text-sm">Status</div>
+                  <div class="col-span-3 font-medium text-gray-600 text-sm">Additional Info</div>
+                </div>
+
+                <!-- Loading State -->
+                <div v-if="isLoadingHistory" class="py-20 flex flex-col items-center justify-center">
+                  <div class="w-10 h-10 border-2 border-green-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                  <p class="text-gray-500">Loading schedule history...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div v-else-if="filteredPastSchedules.length === 0" class="py-20 flex flex-col items-center justify-center">
+                  <div class="bg-gray-50 p-6 rounded-full mb-4">
+                    <History class="w-16 h-16 text-gray-200" />
+                  </div>
+                  <p class="text-gray-400 font-medium">No past schedules found</p>
+                  <p class="text-xs text-gray-400 mt-2">Completed schedules will appear here</p>
+                </div>
+
+                <!-- Table Content -->
+                <div v-else class="divide-y divide-gray-100 max-h-[500px] overflow-y-auto">
                   <div 
-                    v-for="(schedule, index) in savedSchedules" 
+                    v-for="(schedule, index) in filteredPastSchedules" 
                     :key="index"
-                    class="bg-white rounded-xl p-5 border border-gray-100 hover:border-green-200 transition-all duration-300 hover:shadow-md group relative overflow-hidden"
+                    class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition-colors"
                   >
-                    <!-- Decorative accent -->
-                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-green-500"></div>
-                    
-                    <div class="flex items-center justify-between mb-3">
-                      <div class="flex items-center gap-2">
-                        <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
-                        <span class="text-sm font-medium text-gray-700">{{ schedule.dateTime }}</span>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <!-- Edit button -->
-                        <button 
-                          @click="editSchedule(index)" 
-                          class="text-gray-300 group-hover:text-green-500 transition-colors p-1 rounded-full hover:bg-green-50"
-                          title="Edit schedule"
-                        >
-                          <Edit2 class="w-4 h-4" />
-                        </button>
-                        <!-- Delete button -->
-                        <button 
-                          @click="removeSchedule(index)" 
-                          class="text-gray-300 group-hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50"
-                          title="Delete schedule"
-                        >
-                          <Trash2 class="w-4 h-4" />
-                        </button>
-                      </div>
+                    <!-- Date & Time -->
+                    <div class="col-span-3 flex items-center gap-2">
+                      <div class="w-2 h-2 rounded-full bg-gray-400"></div>
+                      <span class="text-sm text-gray-700">{{ schedule.dateTime }}</span>
                     </div>
                     
-                    <div class="flex items-center gap-4 text-xs text-gray-500 mt-3">
-                      <div class="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1.5 rounded-full border border-gray-100">
-                        <Clock class="w-3.5 h-3.5 text-green-500" />
-                        <span>{{ schedule.duration }} min</span>
-                      </div>
-                      
-                      <div class="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1.5 rounded-full border border-gray-100">
-                        <Calendar class="w-3.5 h-3.5 text-green-500" />
-                        <span>{{ schedule.mode }}</span>
-                      </div>
+                    <!-- Duration -->
+                    <div class="col-span-2 flex items-center gap-1.5">
+                      <Clock class="w-4 h-4 text-gray-400" />
+                      <span class="text-sm text-gray-600">{{ schedule.duration }} minutes</span>
                     </div>
                     
-                    <div v-if="schedule.mode === 'weekly'" class="flex flex-wrap gap-1.5 mt-4">
-                      <span 
-                        v-for="(day, dayIndex) in weekDays" 
-                        :key="dayIndex"
-                        :class="[
-                          'text-xs px-2 py-1 rounded-md transition-colors',
-                          schedule.days[dayIndex] 
-                            ? 'bg-green-100 text-green-700 border border-green-200' 
-                            : 'bg-gray-50 text-gray-400 border border-gray-100'
-                        ]"
-                      >
-                        {{ day.substring(0, 3) }}
+                    <!-- Schedule Type -->
+                    <div class="col-span-2 flex items-center gap-1.5">
+                      <Calendar class="w-4 h-4 text-gray-400" />
+                      <span class="text-sm text-gray-600 capitalize">{{ schedule.mode }}</span>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="col-span-2">
+                      <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-200 text-gray-700">
+                        Completed
                       </span>
                     </div>
                     
-                    <!-- Additional settings indicators -->
-                    <div class="flex items-center gap-2 mt-3">
+                    <!-- Additional Info -->
+                    <div class="col-span-3 flex items-center gap-2 flex-wrap">
                       <div v-if="schedule.skipIfRain" class="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
                         <CloudRain class="w-3 h-3" />
-                        <span>Skip if rain</span>
+                        <span>Rain skip enabled</span>
                       </div>
                       <div v-if="schedule.notifyWatering" class="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
                         <Bell class="w-3 h-3" />
-                        <span>Notify</span>
+                        <span>Notification sent</span>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="bg-gray-50 border-t border-gray-200 px-6 py-3 flex items-center justify-between">
+                  <div class="text-sm text-gray-500">
+                    Showing <span class="font-medium">{{ paginationStart }}</span> to <span class="font-medium">{{ paginationEnd }}</span> of <span class="font-medium">{{ filteredPastSchedules.length }}</span> entries
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button 
+                      @click="prevPage" 
+                      :disabled="currentPage === 1"
+                      :class="[
+                        'px-3 py-1 rounded-md text-sm border',
+                        currentPage === 1 
+                          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
+                          : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                      ]"
+                    >
+                      <ChevronLeft class="w-4 h-4" />
+                    </button>
+                    <div class="text-sm text-gray-600 font-medium">
+                      Page {{ currentPage }} of {{ totalPages }}
+                    </div>
+                    <button 
+                      @click="nextPage" 
+                      :disabled="currentPage === totalPages"
+                      :class="[
+                        'px-3 py-1 rounded-md text-sm border',
+                        currentPage === totalPages 
+                          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
+                          : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                      ]"
+                    >
+                      <ChevronRight class="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -880,7 +1083,10 @@ import {
   Edit2,
   Trash2,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  History,
+  ArrowLeft,
+  Filter
 } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
 import {
@@ -900,15 +1106,35 @@ import {
   deleteDoc,
   where
 } from 'firebase/firestore'
+import axios from 'axios'
 
 // Get Firestore instance - using the existing instance from your backend
 const db = getFirestore()
+
+// View state
+const currentView = ref('overview')
 
 // System control values
 const waterPumpActive = ref(false)
 const motorActivities = ref([])
 const isLoadingActivities = ref(true)
 const isLoadingNextWatering = ref(true)
+const isLoadingHistory = ref(false)
+
+// Pagination for history view
+const itemsPerPage = 10
+const currentPage = ref(1)
+const totalPages = computed(() => Math.ceil(filteredPastSchedules.value.length / itemsPerPage))
+const paginationStart = computed(() => ((currentPage.value - 1) * itemsPerPage) + 1)
+const paginationEnd = computed(() => Math.min(currentPage.value * itemsPerPage, filteredPastSchedules.value.length))
+
+// History filters
+const historyFilters = ref({
+  startDate: '',
+  endDate: '',
+  scheduleType: 'all',
+  duration: 'all'
+})
 
 // Filter activities to only show those from the last 7 days
 const filteredMotorActivities = computed(() => {
@@ -921,6 +1147,59 @@ const filteredMotorActivities = computed(() => {
     // Only include activities from the last 7 days
     return activityDate >= sevenDaysAgo;
   });
+});
+
+// NEW: Computed properties to separate upcoming and past schedules
+const upcomingSchedules = computed(() => {
+  const now = new Date().getTime();
+  return savedSchedules.value.filter(schedule => {
+    // Check if the schedule has a scheduledTime property and it's in the future
+    return schedule.scheduledTime && schedule.scheduledTime > now;
+  });
+});
+
+const pastSchedules = computed(() => {
+  const now = new Date().getTime();
+  return savedSchedules.value.filter(schedule => {
+    // Check if the schedule has a scheduledTime property and it's in the past
+    return schedule.scheduledTime && schedule.scheduledTime <= now;
+  });
+});
+
+// NEW: Filtered past schedules based on history filters
+const filteredPastSchedules = computed(() => {
+  let filtered = [...pastSchedules.value];
+  
+  // Apply date range filter
+  if (historyFilters.value.startDate) {
+    const startDate = new Date(historyFilters.value.startDate).getTime();
+    filtered = filtered.filter(schedule => schedule.scheduledTime >= startDate);
+  }
+  
+  if (historyFilters.value.endDate) {
+    const endDate = new Date(historyFilters.value.endDate);
+    endDate.setHours(23, 59, 59, 999); // End of the day
+    const endTime = endDate.getTime();
+    filtered = filtered.filter(schedule => schedule.scheduledTime <= endTime);
+  }
+  
+  // Apply schedule type filter
+  if (historyFilters.value.scheduleType !== 'all') {
+    filtered = filtered.filter(schedule => schedule.mode === historyFilters.value.scheduleType);
+  }
+  
+  // Apply duration filter
+  if (historyFilters.value.duration !== 'all') {
+    if (historyFilters.value.duration === 'short') {
+      filtered = filtered.filter(schedule => schedule.duration < 10);
+    } else if (historyFilters.value.duration === 'medium') {
+      filtered = filtered.filter(schedule => schedule.duration >= 10 && schedule.duration <= 30);
+    } else if (historyFilters.value.duration === 'long') {
+      filtered = filtered.filter(schedule => schedule.duration > 30);
+    }
+  }
+  
+  return filtered;
 });
 
 // Helper function to parse activity timestamps into Date objects
@@ -1040,6 +1319,50 @@ const savedSchedules = ref([])
 const isLoadingSchedules = ref(false)
 const nextWateringTime = ref('No schedules set')
 
+// NEW: Helper function to get the original index from the savedSchedules array
+const getOriginalIndex = (scheduleId) => {
+  return savedSchedules.value.findIndex(schedule => schedule.id === scheduleId);
+};
+
+// NEW: Function to view schedule history
+const viewScheduleHistory = () => {
+  currentView.value = 'history';
+  // Initialize date filters to last 30 days by default
+  const today = new Date();
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(today.getDate() - 30);
+  
+  historyFilters.value.startDate = thirtyDaysAgo.toISOString().split('T')[0];
+  historyFilters.value.endDate = today.toISOString().split('T')[0];
+  
+  // Reset pagination
+  currentPage.value = 1;
+};
+
+// NEW: Function to go back to overview
+const backToOverview = () => {
+  currentView.value = 'overview';
+};
+
+// NEW: Function to apply history filters
+const applyHistoryFilters = () => {
+  // Reset pagination when filters change
+  currentPage.value = 1;
+};
+
+// NEW: Pagination functions
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+  }
+};
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
+};
+
 // NEW: Function to show toggle confirmation dialog
 const showToggleConfirmation = () => {
   // Only show confirmation dialog if user is trying to change the current state
@@ -1048,76 +1371,79 @@ const showToggleConfirmation = () => {
 
 // NEW: Function to confirm and execute water pump toggle
 const confirmToggleWaterPump = async () => {
-  try {
-    // Toggle the state
-    waterPumpActive.value = !waterPumpActive.value
-    
-    console.log('Toggling water pump to:', waterPumpActive.value ? 'ON' : 'OFF')
-    
-    // Get current timestamp
-    const now = new Date()
-    const formattedTime = now.toLocaleString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    })
-    
-    // Create the status document with all required fields
-    const statusData = {
-      status: waterPumpActive.value,
-      timestamp: serverTimestamp(), // Use serverTimestamp for consistent server-side timestamps
-      device_id: 'main_motor',
-      user: 'system',
-      formattedTime: formattedTime
-    }
-    
-    console.log('Saving data to Firebase motor_status collection:', statusData)
-    
-    // Save current status to a specific document
-    await setDoc(doc(db, 'motor_status', 'current'), statusData)
-    console.log('Successfully saved current status to Firebase')
-    
-    // Also add to history collection
-    const historyRef = collection(db, 'motor_status', 'history', 'logs')
-    await addDoc(historyRef, statusData)
-    console.log('Successfully added to history logs')
-    
-    // Update the activity log in the UI
-    const newActivity = {
-      status: waterPumpActive.value,
-      timestamp: `Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-    }
-    
-    // Add to the beginning of the array
-    motorActivities.value.unshift(newActivity)
-    
-    // Keep only the most recent activities (no need to limit here as we'll filter in the computed property)
-    
-    // Show success toast
-    showToastMessage(`Motor turned ${waterPumpActive.value ? 'ON' : 'OFF'} successfully`)
-    
-    // Close the confirmation dialog
-    showToggleConfirmationDialog.value = false
-    
-  } catch (error) {
-    console.error('Error saving motor status to Firebase:', error)
-    // Show detailed error information for debugging
-    console.error('Error details:', {
-      code: error.code,
-      message: error.message,
-      stack: error.stack
-    })
-    
-    // Revert the state if there was an error
-    waterPumpActive.value = !waterPumpActive.value
-    showToastMessage('Error saving motor status. Please check console for details.')
-    
-    // Close the confirmation dialog
-    showToggleConfirmationDialog.value = false
+try {
+  // Toggle the state
+  waterPumpActive.value = !waterPumpActive.value
+
+  console.log('Toggling water pump to:', waterPumpActive.value ? 'ON' : 'OFF')
+
+  // Get current timestamp
+  const now = new Date()
+  const formattedTime = now.toLocaleString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  })
+
+  // Create the status document
+  const statusData = {
+    status: waterPumpActive.value,
+    timestamp: serverTimestamp(),
+    device_id: 'main_motor',
+    user: 'system',
+    formattedTime: formattedTime
   }
+
+  console.log('Saving data to Firebase motor_status collection:', statusData)
+
+  // Save to Firebase
+  await setDoc(doc(db, 'motor_status', 'current'), statusData)
+  console.log('Successfully saved current status to Firebase')
+
+  const historyRef = collection(db, 'motor_status', 'history', 'logs')
+  await addDoc(historyRef, statusData)
+  console.log('Successfully added to history logs')
+
+  // Add to UI activity log
+  const newActivity = {
+    status: waterPumpActive.value,
+    timestamp: `Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+  }
+  motorActivities.value.unshift(newActivity)
+
+  // Show toast
+  showToastMessage(`Motor turned ${waterPumpActive.value ? 'ON' : 'OFF'} successfully`)
+  showToggleConfirmationDialog.value = false
+
+  // ✅ Send motor status to FastAPI backend here
+  try {
+    const response = await axios.post('http://localhost:8000/api/motor_status/', {
+      status: waterPumpActive.value,
+      device_id: 'main_motor',      user: 'system',
+      timestamp: now.toISOString(),
+      formatted_time: formattedTime
+    })
+
+    console.log('Motor status sent to FastAPI backend:', response.data)
+  } catch (error) {
+    console.error('Error sending motor status to FastAPI:', error)
+  }
+
+} catch (error) {
+  console.error('Error saving motor status to Firebase:', error)
+  console.error('Error details:', {
+    code: error.code,
+    message: error.message,
+    stack: error.stack
+  })
+
+  waterPumpActive.value = !waterPumpActive.value
+  showToastMessage('Error saving motor status. Please check console for details.')
+  showToggleConfirmationDialog.value = false
+}
 }
 
 // Function to fetch motor status from Firebase
@@ -1227,7 +1553,7 @@ const fetchWateringSchedules = async () => {
   }
 }
 
-// Function to calculate the next watering time from the database
+// MODIFIED: Function to calculate the next watering time from the database
 const calculateNextWateringTime = async () => {
   try {
     if (savedSchedules.value.length === 0) {
@@ -1256,140 +1582,17 @@ const calculateNextWateringTime = async () => {
         const nextWateringData = nextWateringDoc.data()
         
         // Use the dateTime field which contains the formatted date and time
-        nextWateringTime.value = nextWateringData.dateTime
-      } else {
-        // If no future schedules found, check for recurring schedules that need to be adjusted
-        let closestSchedule = null
-        let nextDate = null
-        
-        // Process each schedule to find the next occurrence
-        savedSchedules.value.forEach(schedule => {
-          let scheduleDate = null
-          
-          // Extract time from the dateTime field
-          const timeMatch = schedule.dateTime.match(/(\d+):(\d+)\s+(AM|PM)/)
-          if (!timeMatch) return
-          
-          let hour = parseInt(timeMatch[1])
-          const minute = parseInt(timeMatch[2])
-          const ampm = timeMatch[3]
-          
-          // Convert to 24-hour format
-          if (ampm === 'PM' && hour < 12) hour += 12
-          if (ampm === 'AM' && hour === 12) hour = 0
-          
-          // Handle different schedule modes
-          if (schedule.mode === 'daily') {
-            // For daily schedules, set to tomorrow if today's time has passed
-            scheduleDate = new Date()
-            scheduleDate.setHours(hour, minute, 0, 0)
-            
-            if (scheduleDate < now) {
-              scheduleDate.setDate(scheduleDate.getDate() + 1)
-            }
-          } else if (schedule.mode === 'weekly' && schedule.days) {
-            // For weekly schedules, find the next occurrence
-            const currentDay = now.getDay() // 0 = Sunday, 1 = Monday, etc.
-            const adjustedCurrentDay = currentDay === 0 ? 6 : currentDay - 1 // Convert to 0 = Monday, 6 = Sunday
-            
-            // Check if there's a watering day enabled
-            if (!schedule.days.some(day => day)) return
-            
-            // Find the next watering day
-            let daysToAdd = 0
-            let foundNextDay = false
-            
-            for (let i = 0; i < 7; i++) {
-              const checkDay = (adjustedCurrentDay + i) % 7
-              if (schedule.days[checkDay]) {
-                daysToAdd = i
-                foundNextDay = true
-                break
-              }
-            }
-            
-            if (!foundNextDay) return
-            
-            scheduleDate = new Date()
-            scheduleDate.setDate(now.getDate() + daysToAdd)
-            scheduleDate.setHours(hour, minute, 0, 0)
-            
-            // If today is the day but time has passed, find the next occurrence
-            if (daysToAdd === 0 && scheduleDate < now) {
-              // Look for the next enabled day
-              for (let i = 1; i < 7; i++) {
-                const checkDay = (adjustedCurrentDay + i) % 7
-                if (schedule.days[checkDay]) {
-                  scheduleDate.setDate(now.getDate() + i)
-                  break
-                }
-              }
-            }
-          } else if (schedule.mode === 'custom' && schedule.interval) {
-            // For custom schedules, calculate the next occurrence based on interval
-            const dateMatch = schedule.dateTime.match(/([A-Za-z]+),\s+([A-Za-z]+)\s+(\d+)/)
-            if (!dateMatch) return
-            
-            const monthName = dateMatch[2]
-            const day = parseInt(dateMatch[3])
-            
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-            const monthIndex = months.findIndex(m => m === monthName)
-            
-            if (monthIndex === -1) return
-            
-            // Start with the base date from the schedule
-            scheduleDate = new Date(new Date().getFullYear(), monthIndex, day, hour, minute, 0, 0)
-            
-            // If the date is in the past, add intervals until it's in the future
-            while (scheduleDate < now) {
-              if (schedule.interval.unit === 'hours') {
-                scheduleDate.setHours(scheduleDate.getHours() + schedule.interval.value)
-              } else if (schedule.interval.unit === 'days') {
-                scheduleDate.setDate(scheduleDate.getDate() + schedule.interval.value)
-              } else if (schedule.interval.unit === 'weeks') {
-                scheduleDate.setDate(scheduleDate.getDate() + (schedule.interval.value * 7))
-              }
-            }
-          } else if (schedule.mode === 'one-time') {
-            // For one-time schedules, parse the date
-            const dateMatch = schedule.dateTime.match(/([A-Za-z]+),\s+([A-Za-z]+)\s+(\d+)/)
-            if (!dateMatch) return
-            
-            const monthName = dateMatch[2]
-            const day = parseInt(dateMatch[3])
-            
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-            const monthIndex = months.findIndex(m => m === monthName)
-            
-            if (monthIndex === -1) return
-            
-            scheduleDate = new Date(new Date().getFullYear(), monthIndex, day, hour, minute, 0, 0)
-            
-            // Skip if it's in the past
-            if (scheduleDate < now) return
-          }
-          
-          // Update the closest schedule if this one is sooner
-          if (scheduleDate && (!nextDate || scheduleDate < nextDate)) {
-            nextDate = scheduleDate
-            closestSchedule = schedule
-          }
-        })
-        
-        if (nextDate) {
-          // Format the date for display
-          nextWateringTime.value = nextDate.toLocaleString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-          })
+        if (nextWateringData.dateTime) {
+          nextWateringTime.value = nextWateringData.dateTime
+          console.log('Next watering time set from database:', nextWateringData.dateTime)
         } else {
           nextWateringTime.value = 'No upcoming waterings'
+          console.log('Next watering document found but no dateTime field')
         }
+      } else {
+        // If no future schedules found in the database, set to "No upcoming waterings"
+        nextWateringTime.value = 'No upcoming waterings'
+        console.log('No upcoming waterings found in database')
       }
     } catch (error) {
       console.error('Error querying next watering schedule:', error)
@@ -2038,6 +2241,14 @@ onMounted(() => {
   fetchMotorStatus()
   // Fetch watering schedules from Firebase
   fetchWateringSchedules()
+  
+  // Initialize history date filters to last 30 days by default
+  const today = new Date()
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(today.getDate() - 30)
+  
+  historyFilters.value.startDate = thirtyDaysAgo.toISOString().split('T')[0]
+  historyFilters.value.endDate = today.toISOString().split('T')[0]
 })
 
 onUnmounted(() => {
@@ -2134,5 +2345,21 @@ onUnmounted(() => {
 
 .pulse-animation {
   animation: pulse-animation 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Animation for page transitions */
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
