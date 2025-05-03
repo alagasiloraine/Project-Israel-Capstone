@@ -437,7 +437,7 @@ app.add_middleware(
 # ======== ROUTERS =========
 app.include_router(crop_router.router, prefix="/api/crop", tags=["crop"])
 app.include_router(auth_router.router, prefix="/api/auth", tags=["auth"])
-app.include_router(forecast_router.router, prefix="/api/weather", tags=["weather"])
+# app.include_router(forecast_router.router, prefix="/api/weather", tags=["weather"])
 # app.include_router(npk_router.router, prefix="/api/npk", tags=["npk"])
 app.include_router(sensor_data.router)
 app.include_router(notif.router)

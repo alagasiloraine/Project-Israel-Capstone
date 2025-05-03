@@ -61,7 +61,7 @@
                       <Waves class="h-6 w-6 text-teal-500 mr-3" />
                       <span class="text-sm font-medium text-teal-700">Pressure</span>
                     </div>
-                    <span class="text-lg font-semibold text-teal-800">{{ weather?.pressure_hpa }}</span>
+                    <span class="text-lg font-semibold text-teal-800">{{ weather?.pressure }}</span>
                   </div>
                   
                   <!-- Humidity - Cyan/blue color scheme -->
@@ -79,7 +79,7 @@
                       <Wind class="h-6 w-6 text-green-500 mr-3" />
                       <span class="text-sm font-medium text-green-700">Wind Speed</span>
                     </div>
-                    <span class="text-lg font-semibold text-green-800">{{ weather?.wind_speed_kph }} km/h</span>
+                    <span class="text-lg font-semibold text-green-800">{{ weather?.wind_speed }} km/h</span>
                   </div>
                   
                   <!-- UV Index - Amber/yellow color scheme -->
@@ -88,57 +88,10 @@
                       <Sun class="h-6 w-6 text-amber-500 mr-3" />
                       <span class="text-sm font-medium text-amber-700">UV Index</span>
                     </div>
-                    <span class="text-lg font-semibold text-amber-800">{{ weather?.uv }}</span>
+                    <span class="text-lg font-semibold text-amber-800">{{ weather?.uv_index }}</span>
                   </div>
                 </div>
               </div>
-              
-              <!-- Interactive Map Card - Enhanced with 3D effect -->
-              <!-- <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl overflow-hidden shadow-sm relative group hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
-                <div class="absolute inset-0 bg-grid-emerald-500/5"></div>
-                <div class="relative h-full p-6">
-                  <div class="flex justify-between items-start mb-4">
-                    <div class="bg-white px-3 py-1 rounded-full shadow-sm flex items-center">
-                      <Map class="w-3.5 h-3.5 text-emerald-600 mr-1" />
-                      <h2 class="text-sm font-bold text-emerald-700">Weather Map</h2>
-                    </div>
-                    <div class="flex space-x-2">
-                      <button class="bg-white p-1.5 rounded-full shadow-sm hover:bg-emerald-50 transition-colors">
-                        <RefreshCw class="h-3.5 w-3.5 text-emerald-600" />
-                      </button>
-                      <button class="bg-white p-1.5 rounded-full shadow-sm hover:bg-emerald-50 transition-colors">
-                        <MoreVertical class="h-3.5 w-3.5 text-emerald-600" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <!-- Map placeholder with enhanced styling --
-                  <div class="mt-4 h-[calc(100%-3rem)] rounded-xl bg-white/40 backdrop-blur-sm border border-white/60 shadow-inner flex items-center justify-center overflow-hidden relative">
-                    <!-- Map grid lines ->
-                    <div class="absolute inset-0 bg-grid-emerald-500/10"></div>
-                    
-                    <!-- Map content --
-                    <div class="text-center z-10">
-                      <div class="relative">
-                        <Map class="h-16 w-16 mx-auto mb-2 text-emerald-400" />
-                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-emerald-500 rounded-full animate-ping opacity-75"></div>
-                      </div>
-                      <p class="text-sm text-emerald-700 font-medium">Interactive Weather Map</p>
-                      <p class="text-xs text-emerald-600 mt-1">Click to explore weather patterns</p>
-                    </div>
-                    
-                    <!-- Map controls --
-                    <div class="absolute bottom-3 right-3 flex space-x-2">
-                      <button class="bg-white p-1.5 rounded-full shadow-sm hover:bg-emerald-50 transition-colors">
-                        <Plus class="h-3.5 w-3.5 text-emerald-600" />
-                      </button>
-                      <button class="bg-white p-1.5 rounded-full shadow-sm hover:bg-emerald-50 transition-colors">
-                        <Minus class="h-3.5 w-3.5 text-emerald-600" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div> -->
               
               <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl overflow-hidden shadow-sm relative group hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
                 <div class="absolute inset-0 bg-grid-emerald-500/5"></div>
@@ -165,7 +118,6 @@
                 </div>
               </div>
 
-
               <!-- Popular Cities Card - Enhanced with hover effects -->
               <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-center mb-4">
@@ -173,10 +125,10 @@
                     <Globe class="w-5 h-5 mr-2 text-emerald-500" />
                     Popular Cities
                   </h2>
-                  <button class="text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors flex items-center">
+                  <!-- <button class="text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors flex items-center">
                     View more
                     <ChevronRight class="w-3.5 h-3.5 ml-0.5" />
-                  </button>
+                  </button> -->
                 </div>
                 
                 <div class="space-y-1">
@@ -213,30 +165,44 @@
                     Forecast
                   </h2>
                   <div class="flex rounded-full bg-gray-100 p-0.5">
-                    <button class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500 text-white shadow-sm">7 Days</button>
-                    <button class="px-3 py-1 rounded-full text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors">10 Days</button>
+                    <button
+                      class="px-3 py-1 rounded-full text-xs font-medium"
+                      :class="selectedDays === 7 ? 'bg-emerald-500 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200'"
+                      @click="selectedDays = 7"
+                    >
+                      7 Days
+                    </button>
+                    <button
+                      class="px-3 py-1 rounded-full text-xs font-medium"
+                      :class="selectedDays === 10 ? 'bg-emerald-500 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200'"
+                      @click="selectedDays = 10"
+                    >
+                      10 Days
+                    </button>
                   </div>
                 </div>
-                
+
                 <div class="space-y-3 mt-4">
-                  <div v-for="day in forecast" :key="day.date" 
-                       class="flex items-center justify-between p-3 rounded-xl hover:bg-emerald-50 transition-all duration-200 cursor-pointer border border-transparent hover:border-emerald-100">
+                  <div
+                    v-for="day in forecast.slice(0, selectedDays)"
+                    :key="day.date"
+                    class="flex items-center justify-between p-3 rounded-xl hover:bg-emerald-50 transition-all duration-200 cursor-pointer border border-transparent hover:border-emerald-100"
+                  >
                     <div class="flex items-center">
                       <div class="bg-white rounded-full p-2 shadow-sm mr-3">
-                        <component :is="getWeatherIcon(day.condition)" class="h-5 w-5 text-emerald-600" />
+                        <component :is="getWeatherIcon(day.condition_code)" class="h-5 w-5 text-emerald-600" />
                       </div>
                       <div class="text-sm font-medium text-gray-800">
                         {{ Number(day.temperature_max).toFixed(1) }}° / {{ Number(day.temperature_min).toFixed(1) }}°
                       </div>
-
                     </div>
                     <div class="text-xs text-gray-600">
                       {{ new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}
                     </div>
-
                   </div>
                 </div>
               </div>
+
               
               <!-- Today's Forecast Card with Tab Functionality -->
               <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 lg:col-span-3">
@@ -244,7 +210,7 @@
                 <div class="flex justify-between items-center mb-3">
                   <div class="flex items-center">
                     <h2 class="text-lg font-bold text-gray-800">Today's Forecast</h2>
-                    <span class="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">Sat 29</span>
+                    <span class="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{{ currentDate }}</span>
                   </div>
                   <div class="flex rounded-full bg-gray-100 p-0.5">
                     <button 
@@ -273,57 +239,57 @@
                 
                 <!-- Summary View -->
                 <div v-if="activeTab === 'summary'" class="h-full">
-                  <!-- Temperature display at top -->
-                  <div class="flex justify-between mb-1 px-1">
-                    <div v-for="temp in hourlyTemps" :key="temp" class="text-xs font-medium text-emerald-700">
-                      {{ temp }}
-                    </div>
-                  </div>
                   
                   <!-- Temperature Chart -->
-                  <div class="relative h-[38%] bg-gradient-to-b from-emerald-50/50 to-white rounded-xl overflow-hidden border border-emerald-100 mb-4">
+                  <div class="relative w-full h-52">
                     <svg class="w-full h-full" viewBox="0 0 1000 200" preserveAspectRatio="none">
                       <!-- Grid lines -->
                       <line x1="0" y1="50" x2="1000" y2="50" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="5,5" />
                       <line x1="0" y1="100" x2="1000" y2="100" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="5,5" />
                       <line x1="0" y1="150" x2="1000" y2="150" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="5,5" />
-                      
-                      <!-- Temperature path with animation -->
-                      <path 
-                        d="M0,100 C50,80 100,60 150,70 C200,80 250,90 300,100 C350,110 400,120 450,110 C500,100 550,90 600,80 C650,70 700,60 750,70 C800,80 850,90 900,80 C950,70 1000,60 1000,60" 
-                        fill="none" 
-                        stroke="url(#lineGradient)" 
+
+                      <!-- Temperature line path -->
+                      <path
+                        :d="temperaturePath"
+                        fill="none"
+                        stroke="url(#lineGradient)"
                         stroke-width="3"
                         stroke-linecap="round"
-                        class="temperature-path"
+                        ref="pathRef"
                       />
-                      
-                      <!-- Area fill under the curve -->
-                      <path 
-                        d="M0,100 C50,80 100,60 150,70 C200,80 250,90 300,100 C350,110 400,120 450,110 C500,100 550,90 600,80 C650,70 700,60 750,70 C800,80 850,90 900,80 C950,70 1000,60 1000,60 L1000,200 L0,200 Z" 
-                        fill="url(#areaGradient)" 
-                        class="temperature-area"
+
+                      <!-- Area under curve -->
+                      <path
+                        :d="areaPath"
+                        fill="url(#areaGradient)"
                       />
-                      
-                      <!-- Gradient definitions -->
+
+                      <!-- Gradient defs -->
                       <defs>
                         <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                           <stop offset="0%" stop-color="#10b981" />
                           <stop offset="50%" stop-color="#059669" />
                           <stop offset="100%" stop-color="#10b981" />
                         </linearGradient>
-                        
                         <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                           <stop offset="0%" stop-color="rgba(16, 185, 129, 0.3)" />
                           <stop offset="100%" stop-color="rgba(16, 185, 129, 0.05)" />
                         </linearGradient>
                       </defs>
                     </svg>
-                    
-                    <!-- Temperature points with tooltips -->
-                    <div class="absolute top-0 left-0 w-full h-full flex justify-between px-4 items-center pointer-events-none">
-                      <div v-for="(hour, index) in hourlyForecast.slice(0, 10)" :key="`point-${index}`" 
-                           class="relative flex flex-col items-center">
+
+                    <!-- Tooltips and points -->
+                    <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+                      <div
+                        v-for="(temp, index) in hourlyTemps"
+                        :key="index"
+                        class="absolute flex flex-col items-center"
+                        :style="{
+                          left: `calc(${(index / (hourlyTemps.length - 1)) * 100}% - 6px)`,
+                          bottom: `${((temp - minTemp) / (maxTemp - minTemp)) * 80 + 10}%`
+                        }"
+                      >
+                        <div class="text-[10px] mb-1 text-emerald-600 font-semibold">{{ temp }}°C</div>
                         <div class="w-2.5 h-2.5 rounded-full bg-white border-2 border-emerald-500 shadow-md"></div>
                       </div>
                     </div>
@@ -369,7 +335,7 @@
                         <div class="bg-white rounded-full p-2 shadow-sm">
                           <component :is="getWeatherIcon(hour.condition)" class="h-6 w-6" :class="getWeatherIconColor(hour.condition)" />
                         </div>
-                        <div class="text-sm font-medium text-gray-800">{{ hour.temperature }}°C</div>
+                        <div class="text-sm font-medium text-gray-800">{{ hour.temp }}°C</div>
                       </div>
                       <div class="flex items-center space-x-6">
                         <div class="flex items-center">
@@ -391,8 +357,9 @@
                 <!-- Details View -->
                 <div v-else-if="activeTab === 'details'" class="h-full">
                   <div class="grid grid-cols-2 gap-4">
-                    <!-- Left column - Weather details -->
+                    <!-- Left column -->
                     <div class="space-y-4">
+                      <!-- Precipitation -->
                       <div class="bg-emerald-50/50 rounded-xl p-4">
                         <h3 class="text-sm font-semibold text-emerald-800 mb-3 flex items-center">
                           <CloudRain class="h-4 w-4 mr-2 text-emerald-600" />
@@ -400,20 +367,23 @@
                         </h3>
                         <div class="space-y-2">
                           <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-600">Total Today</span>
-                            <span class="text-sm font-medium text-gray-800">12.4 mm</span>
+                            <span class="text-xs text-gray-600">Hourly Value</span>
+                            <span class="text-sm font-medium text-gray-800">
+                              {{ weather.precipitation?.toFixed(1) ?? '--' }} mm
+                            </span>
                           </div>
                           <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Chance of Rain</span>
-                            <span class="text-sm font-medium text-gray-800">76%</span>
+                            <span class="text-sm font-medium text-gray-800">{{ hourlyForecast[0].rainChance }}%</span>
                           </div>
                           <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Humidity</span>
-                            <span class="text-sm font-medium text-gray-800">92%</span>
+                            <span class="text-sm font-medium text-gray-800">{{ weather.humidity ?? '--' }}%</span>
                           </div>
                         </div>
                       </div>
-                      
+
+                      <!-- Wind -->
                       <div class="bg-emerald-50/50 rounded-xl p-4">
                         <h3 class="text-sm font-semibold text-emerald-800 mb-3 flex items-center">
                           <Wind class="h-4 w-4 mr-2 text-emerald-600" />
@@ -422,43 +392,43 @@
                         <div class="space-y-2">
                           <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Speed</span>
-                            <span class="text-sm font-medium text-gray-800">6 km/h</span>
+                            <span class="text-sm font-medium text-gray-800">{{ weather.wind_speed ?? '--' }} km/h</span>
                           </div>
                           <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Direction</span>
-                            <span class="text-sm font-medium text-gray-800">NE</span>
-                          </div>
-                          <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-600">Gusts</span>
-                            <span class="text-sm font-medium text-gray-800">12 km/h</span>
+                            <span class="text-sm font-medium text-gray-800">{{ getCompassDirection(weather.wind_direction ?? '--') }}</span>
                           </div>
                         </div>
                       </div>
                     </div>
-                    
-                    <!-- Right column - More weather details -->
+
+                    <!-- Right column -->
                     <div class="space-y-4">
+                      <!-- Sun & Moon (placeholder values since not provided by Open-Meteo) -->
                       <div class="bg-emerald-50/50 rounded-xl p-4">
                         <h3 class="text-sm font-semibold text-emerald-800 mb-3 flex items-center">
                           <Sun class="h-4 w-4 mr-2 text-emerald-600" />
                           Sun & Moon
                         </h3>
                         <div class="space-y-2">
+                          
                           <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Sunrise</span>
-                            <span class="text-sm font-medium text-gray-800">6:12 AM</span>
+                            <span class="text-sm font-medium text-gray-800">
+                              {{ sunriseDisplay }}
+                            </span>
                           </div>
                           <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Sunset</span>
-                            <span class="text-sm font-medium text-gray-800">7:48 PM</span>
+                            <span class="text-sm font-medium text-gray-800">
+                              {{ sunsetDisplay }}
+                            </span>
                           </div>
-                          <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-600">UV Index</span>
-                            <span class="text-sm font-medium text-gray-800">3 (Moderate)</span>
-                          </div>
+
                         </div>
                       </div>
-                      
+
+                      <!-- Temperature -->
                       <div class="bg-emerald-50/50 rounded-xl p-4">
                         <h3 class="text-sm font-semibold text-emerald-800 mb-3 flex items-center">
                           <Thermometer class="h-4 w-4 mr-2 text-emerald-600" />
@@ -466,22 +436,22 @@
                         </h3>
                         <div class="space-y-2">
                           <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-600">Feels Like</span>
-                            <span class="text-sm font-medium text-gray-800">22°C</span>
+                            <span class="text-xs text-gray-600">Current</span>
+                            <span class="text-sm font-medium text-gray-800">{{ weather.temperature_c ?? '--' }}°C</span>
                           </div>
                           <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">High / Low</span>
-                            <span class="text-sm font-medium text-gray-800">25° / 19°</span>
+                            <span class="text-sm font-medium text-gray-800">{{ forecast[0].temperature_max }}° / {{ forecast[0].temperature_min }}°</span>
                           </div>
                           <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-600">Pressure</span>
-                            <span class="text-sm font-medium text-gray-800">1013 hPa</span>
+                            <span class="text-sm font-medium text-gray-800">{{ weather.pressure ?? '--' }} hPa</span>
                           </div>
                         </div>
                       </div>
                     </div>
-                    
-                    <!-- Full width - Air Quality -->
+
+                    <!-- Air Quality Card -->
                     <div class="col-span-2 bg-emerald-50/50 rounded-xl p-4">
                       <h3 class="text-sm font-semibold text-emerald-800 mb-3 flex items-center">
                         <Wind class="h-4 w-4 mr-2 text-emerald-600" />
@@ -489,21 +459,31 @@
                       </h3>
                       <div class="flex items-center justify-between">
                         <div>
-                          <div class="text-2xl font-bold text-emerald-700">42</div>
-                          <div class="text-xs text-emerald-600">Good</div>
+                          <!-- Display PM2.5 concentration -->
+                          <div class="text-2xl font-bold text-emerald-700">
+                            {{ airQual?.pm2_5.toFixed(1) }} µg/m³
+                          </div>
+                          <div class="text-xs text-emerald-600">
+                            PM₂.₅ Concentration
+                          </div>
                         </div>
-                        
-                        <!-- Air Quality Bar -->
+
+                        <!-- Progress bar: assuming 0–50µg/m³ is "good" -->
                         <div class="w-3/4 h-3 bg-gray-200 rounded-full overflow-hidden">
-                          <div class="h-full bg-gradient-to-r from-emerald-500 to-emerald-300 w-[42%]"></div>
+                          <div
+                            class="h-full bg-gradient-to-r from-emerald-500 to-emerald-300"
+                            :style="{ width: `${Math.min((airQual?.pm2_5 / 50) * 100, 100)}%` }"
+                          ></div>
                         </div>
                       </div>
                       <div class="mt-2 text-xs text-gray-600">
-                        Air quality is considered satisfactory, and air pollution poses little or no risk.
+                        Air quality index based on PM₂.₅ levels.
                       </div>
                     </div>
                   </div>
                 </div>
+
+                
               </div>
             </div>
           </div>
@@ -514,7 +494,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { 
   Calendar as CalendarIcon,
   CalendarDays,
@@ -535,53 +515,119 @@ import {
   Sun,
   Thermometer,
   Waves,
-  Wind
+  Wind,
+  CloudSnow,     // for snow (71, 73, 75)
 } from 'lucide-vue-next'
-
+import { getWeatherData, getWeatherDataForPopularCities, mapWeatherCode  } from '../../utils/weather';
 import Sidebar from '../layout/Sidebar.vue'
 import api from '../../api/index.js'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
-// Active tab state
 const activeTab = ref('summary')
+const popularCities = ref([]);
+const hourlyForecast = ref([])
+const weather = ref(null)
+const forecast = ref([])
+const selectedDays = ref(7);
+const sunData = ref([])
+const airQual = ref([])
+const hourlyTemps = computed(() => hourlyForecast.value.map(h => h.temp))
+const sunriseDisplay = computed(() => formatTimeHM(sunData.value?.sunrise))
+const sunsetDisplay  = computed(() => formatTimeHM(sunData.value?.sunset))
 
-// Popular cities data with added temperature and time
-const popularCities = ref([
-  { name: 'Delhi', condition: 'Partly Cloudy', temperature: 32, time: '6:30 PM' },
-  { name: 'Mumbai', condition: 'Drizzle Rain', temperature: 28, time: '6:25 PM' },
-  { name: 'Hyderabad', condition: 'Heavy Rain', temperature: 24, time: '6:25 PM' },
-  { name: 'Bangalore', condition: 'Light Thunders', temperature: 26, time: '6:25 PM' },
-  { name: 'Kolkata', condition: 'Mostly Sunny', temperature: 33, time: '6:55 PM' }
-])
+const svgWidth = 1000
+const svgHeight = 200
+const paddingTop = 10
+const paddingBottom = 10
 
-// 7-day forecast data
-//const forecast = ref([
-//  { date: '25 Jul, Thu', highTemp: 24, lowTemp: 22, condition: 'Heavy Rain' },
-//  { date: '26 Jul, Fri', highTemp: 24, lowTemp: 22, condition: 'Partly Cloudy' },
-//  { date: '27 Jul, Sat', highTemp: 24, lowTemp: 22, condition: 'Heavy Rain' },
-//  { date: '28 Jul, Sun', highTemp: 24, lowTemp: 22, condition: 'Heavy Rain' },
-//  { date: '29 Jul, Mon', highTemp: 25, lowTemp: 23, condition: 'Light Rain' },
-//  { date: '30 Jul, Tue', highTemp: 26, lowTemp: 22, condition: 'Partly Cloudy' },
-//  { date: '31 Jul, Wed', highTemp: 27, lowTemp: 23, condition: 'Mostly Sunny' }
-//])
+// Calculate min and max temperatures
+const minTemp = computed(() =>
+  hourlyTemps.value.length ? Math.min(...hourlyTemps.value) : 0
+)
+const maxTemp = computed(() =>
+  hourlyTemps.value.length ? Math.max(...hourlyTemps.value) : 1
+)
 
-// Hourly forecast data
-const hourlyForecast = ref([
-  { time: 'Now', temperature: 22, condition: 'Heavy Rain', rainChance: 70 },
-  { time: '7 PM', temperature: 20, condition: 'Heavy Rain', rainChance: 79 },
-  { time: '9 PM', temperature: 22, condition: 'Heavy Rain', rainChance: 76 },
-  { time: '11 PM', temperature: 19, condition: 'Heavy Rain', rainChance: 81 },
-  { time: '1 AM', temperature: 21, condition: 'Heavy Rain', rainChance: 76 },
-  { time: '3 AM', temperature: 22, condition: 'Heavy Rain', rainChance: 78 },
-  { time: '5 AM', temperature: 23, condition: 'Light Rain', rainChance: 68 },
-  { time: '7 AM', temperature: 24, condition: 'Light Rain', rainChance: 61 },
-  { time: '9 AM', temperature: 25, condition: 'Light Rain', rainChance: 69 },
-  { time: '11 AM', temperature: 23, condition: 'Partly Cloudy', rainChance: 70 }
-])
+// Map temperature to Y coordinate
+const temperatureToYpx = (temp) => {
+  if (maxTemp.value === minTemp.value) return svgHeight / 2
+  return (
+    svgHeight - paddingBottom -
+    ((temp - minTemp.value) / (maxTemp.value - minTemp.value)) *
+    (svgHeight - paddingTop - paddingBottom)
+  )
+}
 
-// Temperature values for the chart
-const hourlyTemps = ref(['22°', '20°', '22°', '19°', '21°', '22°', '23°', '24°', '25°', '23°'])
+// Create SVG path for line
+const temperaturePath = computed(() => {
+  const points = hourlyTemps.value.map((t, i) => {
+    const x = (i / (hourlyTemps.value.length - 1)) * svgWidth
+    const y = temperatureToYpx(t)
+    return [x, y]
+  })
+
+  if (points.length < 2) return ''
+
+  let path = `M${points[0][0]},${points[0][1]}`
+  for (let i = 1; i < points.length; i++) {
+    const [x1, y1] = points[i - 1]
+    const [x2, y2] = points[i]
+    const cx = (x1 + x2) / 2
+    path += ` Q${x1},${y1} ${cx},${(y1 + y2) / 2}`
+  }
+  const [lastX, lastY] = points[points.length - 1]
+  path += ` T${lastX},${lastY}`
+  return path
+})
+
+// Create path for area under the curve
+const areaPath = computed(() => {
+  const points = hourlyTemps.value.map((t, i) => {
+    const x = (i / (hourlyTemps.value.length - 1)) * svgWidth
+    const y = temperatureToYpx(t)
+    return [x, y]
+  })
+  if (points.length < 2) return ''
+
+  let path = `M${points[0][0]},${svgHeight} L${points[0][0]},${points[0][1]}`
+  for (let i = 1; i < points.length; i++) {
+    const [x1, y1] = points[i - 1]
+    const [x2, y2] = points[i]
+    const cx = (x1 + x2) / 2
+    path += ` Q${x1},${y1} ${cx},${(y1 + y2) / 2}`
+  }
+  const [lastX, lastY] = points[points.length - 1]
+  path += ` T${lastX},${lastY}`
+  path += ` L${lastX},${svgHeight} Z`
+  return path
+})
+
+function getCompassDirection(degree) {
+  const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  const index = Math.round(degree / 45) % 8;
+  return directions[index];
+}
+
+// Animate path
+const pathRef = ref(null)
+onMounted(() => {
+  if (pathRef.value) {
+    const length = pathRef.value.getTotalLength()
+    pathRef.value.style.strokeDasharray = length
+    pathRef.value.style.strokeDashoffset = length
+    pathRef.value.getBoundingClientRect() // force reflow
+    pathRef.value.style.transition = 'stroke-dashoffset 1s ease-in-out'
+    pathRef.value.style.strokeDashoffset = '0'
+  }
+})
+
+const currentDate = computed(() => {
+  const today = new Date()
+  const weekday = today.toLocaleDateString('en-US', { weekday: 'short' })  // "Sat"
+  const day = today.getDate()                                              // 3
+  return `${weekday} ${day}`
+})
 
 // Function to set the active tab
 const setActiveTab = (tab) => {
@@ -589,27 +635,41 @@ const setActiveTab = (tab) => {
 }
 
 // Function to return the appropriate weather icon based on condition
-const getWeatherIcon = (temperature) => {
-  const temp = typeof temperature === 'number' ? temperature : parseFloat(temperature);
-
-  if (isNaN(temp)) return Cloud; // fallback if invalid
-
-  if (temp >= 32) {
-    return Sun; // very hot
-  } else if (temp >= 26 && temp < 32) {
-    return CloudSun; // warm and partly cloudy
-  } else if (temp >= 20 && temp < 26) {
-    return Cloud; // moderate
-  } else if (temp >= 15 && temp < 20) {
-    return CloudDrizzle; // cool and damp
-  } else if (temp >= 5 && temp < 15) {
-    return CloudRain; // cold rain
-  } else if (temp >= -5 && temp < 5) {
-    return Snowflake; // cold
-  } else {
-    return CloudLightning; // extreme cold/storm
+const getWeatherIcon = (condition) => {
+  switch (condition) {
+    case 'Clear':
+    case 'Mainly Clear':
+      return Sun
+    case 'Partly Cloudy':
+      return CloudSun
+    case 'Overcast':
+      return Cloud
+    case 'Fog':
+    case 'Depositing Rime Fog':
+      return Fog
+    case 'Light Drizzle':
+    case 'Moderate Drizzle':
+    case 'Dense Drizzle':
+      return CloudDrizzle
+    case 'Light Rain':
+    case 'Moderate Rain':
+    case 'Heavy Rain':
+    case 'Rain Showers':
+    case 'Heavy Rain Showers':
+    case 'Violent Rain Showers':
+      return CloudRain
+    case 'Light Snowfall':
+    case 'Moderate Snowfall':
+    case 'Heavy Snowfall':
+      return CloudSnow
+    case 'Thunderstorm':
+    case 'Thunderstorm with Hail':
+    case 'Severe Thunderstorm':
+      return CloudLightning
+    default:
+      return Cloud  // fallback
   }
-};
+}
 
 // Function to get text color based on weather condition
 const getConditionColor = (condition) => {
@@ -646,53 +706,40 @@ const getWeatherIconColor = (condition) => {
   }
 }
 
-
 // Helper function to generate random wind speed for hourly view
 const getRandomWindSpeed = () => {
   return Math.floor(Math.random() * 8) + 4
 }
 
-const weather = ref(null)
-const forecast = ref([])
+function formatTimeHM(iso) {
+  if (!iso) return '--:--'
+  const parts = iso.split('T')
+  if (parts.length !== 2) return '--:--'
+  const [hour, minute] = parts[1].split(':')
+  let hours = parseInt(hour)
+  const isAM = hours < 12
+  hours = hours % 12 || 12 // Convert 0-23 to 1-12 format
+  const ampm = isAM ? 'AM' : 'PM'
+  return `${hours}:${minute.padStart(2, '0')} ${ampm}`
+}
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_API 
 
 onMounted(async () => {
-  // Animation for temperature path could be initialized here if needed
-  // try {
-  //   const res = await api.get('/weather/forecast')
-  //   forecast.value = res.data.forecast
-  // } catch (err) {
-  //   console.error('Error fetching forecast:', err)
-  // }
+  const data = await getWeatherData();
+  console.log("Weather Data:", data)
+  weather.value = data.current;
+  forecast.value = data.forecast;
+  sunData.value = data.sunData;
+  airQual.value = data.airQuality;
+  hourlyForecast.value = data.hourlyForecast.slice(0, 10)
 
-  const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-  const host = 'localhost:8000'
-  const socket = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
-
-  socket.onopen = () => {
-    console.log('[Weather WS] Connected')
+  if (data && data.hourlyForecast && Array.isArray(data.hourlyForecast)) {
+    hourlyForecast.value = data.hourlyForecast.slice(0, 10)
+  } else {
+    console.error("hourlyForecast is missing or not an array", data)
   }
-
-  socket.onmessage = (event) => {
-    const data = JSON.parse(event.data)
-    console.log('[Weather WS] Data received:', data)
-
-    weather.value = data.current_weather
-    forecast.value = data.forecast_7_days.map(day => ({
-      ...day,
-      temp: parseFloat(day.temperature_max),
-      condition: day.condition || 'Clear'  // optional: adjust if CSV has this
-    }))
-  }
-
-  socket.onerror = (err) => {
-    console.error('[Weather WS] Error:', err)
-  }
-
-  socket.onclose = () => {
-    console.warn('[Weather WS] Disconnected')
-  }
+  popularCities.value = await getWeatherDataForPopularCities();
 
   const map = new maplibregl.Map({
     container: 'weather-map',
@@ -708,7 +755,6 @@ onMounted(async () => {
     .setPopup(new maplibregl.Popup().setText('📍 Your Location'))
     .addTo(map)
 })
-
 
 </script>
 
@@ -754,6 +800,7 @@ onMounted(async () => {
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;
   animation: dash 2s ease-in-out forwards;
+  stroke-linecap: round;
 }
 
 .temperature-area {

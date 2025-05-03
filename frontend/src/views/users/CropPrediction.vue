@@ -17,10 +17,19 @@
                   <ChartBarIcon class="h-5 w-5 text-purple-500" />
                   <span class="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded-full">Total</span>
                 </div>
-                <div class="text-xl font-bold text-purple-700">1,248</div>
+                <div class="text-xl font-bold text-purple-700">{{ totalRecommendations }}</div>
                 <div class="flex items-center mt-1">
-                  <ArrowUpIcon class="w-3 h-3 text-green-500 mr-1" />
-                  <span class="text-xs text-green-600">+12.5% increase</span>
+                  <component
+                    :is="isIncrease ? ArrowUpIcon : ArrowDownIcon"
+                    class="w-3 h-3 mr-1"
+                    :class="isIncrease ? 'text-green-500' : 'text-red-500'"
+                  />
+                  <span
+                    class="text-xs"
+                    :class="isIncrease ? 'text-green-600' : 'text-red-600'"
+                  >
+                    {{ isIncrease ? '+' : '-' }}{{ percentageChange }}% {{ isIncrease ? 'increase' : 'decrease' }}
+                  </span>
                 </div>
               </div>
 
@@ -30,10 +39,19 @@
                   <SproutIcon class="h-5 w-5 text-green-500" />
                   <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">Planted</span>
                 </div>
-                <div class="text-xl font-bold text-green-700">856</div>
+                <div class="text-xl font-bold text-green-700">{{ plantedCount }}</div>
                 <div class="flex items-center mt-1">
-                  <ArrowUpIcon class="w-3 h-3 text-green-500 mr-1" />
-                  <span class="text-xs text-green-600">+5.2% increase</span>
+                  <component
+                    :is="plantedIsIncrease ? ArrowUpIcon : ArrowDownIcon"
+                    class="w-3 h-3 mr-1"
+                    :class="plantedIsIncrease ? 'text-green-500' : 'text-red-500'"
+                  />
+                  <span
+                    class="text-xs"
+                    :class="plantedIsIncrease ? 'text-green-600' : 'text-red-600'"
+                  >
+                    {{ plantedIsIncrease ? '+' : '' }}{{ plantedPercentageChange }}% {{ plantedIsIncrease ? 'increase' : 'decrease' }}
+                  </span>
                 </div>
               </div>
 
@@ -43,10 +61,19 @@
                   <ActivityIcon class="h-5 w-5 text-blue-500" />
                   <span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Rate</span>
                 </div>
-                <div class="text-xl font-bold text-blue-700">92.4%</div>
+                <div class="text-xl font-bold text-blue-700">{{ successRate }}%</div>
                 <div class="flex items-center mt-1">
-                  <ArrowUpIcon class="w-3 h-3 text-green-500 mr-1" />
-                  <span class="text-xs text-green-600">+3.1% increase</span>
+                  <component
+                    :is="isIncrease ? ArrowUpIcon : ArrowDownIcon"
+                    class="w-3 h-3 mr-1"
+                    :class="isIncrease ? 'text-green-500' : 'text-red-500'"
+                  />
+                  <span
+                    class="text-xs"
+                    :class="isIncrease ? 'text-green-600' : 'text-red-600'"
+                  >
+                    {{ isIncrease ? '+' : '-' }}{{ percentageChange }}% {{ isIncrease ? 'increase' : 'decrease' }}
+                  </span>
                 </div>
               </div>
 
@@ -56,10 +83,19 @@
                   <ClipboardListIcon class="h-5 w-5 text-red-500" />
                   <span class="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded-full">Active</span>
                 </div>
-                <div class="text-xl font-bold text-red-700">234</div>
+                <div class="text-xl font-bold text-red-700">{{ ongoingCount }}</div>
                 <div class="flex items-center mt-1">
-                  <ArrowDownIcon class="w-3 h-3 text-red-500 mr-1" />
-                  <span class="text-xs text-red-600">-8.2% decrease</span>
+                  <component
+                    :is="ongoingIsIncrease ? ArrowUpIcon : ArrowDownIcon"
+                    class="w-3 h-3 mr-1"
+                    :class="ongoingIsIncrease ? 'text-green-500' : 'text-red-500'"
+                  />
+                  <span
+                    class="text-xs"
+                    :class="ongoingIsIncrease ? 'text-green-600' : 'text-red-600'"
+                  >
+                    {{ ongoingIsIncrease ? '+' : '' }}{{ ongoingPercentageChange }}% {{ ongoingIsIncrease ? 'increase' : 'decrease' }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -843,6 +879,24 @@ import Sidebar from '../layout/Sidebar.vue'
 // import Pagination from '../layout/Pagination.vue'
 import api from '../../api/index.js'
 import toastr from 'toastr'
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    orderBy,
+    limit,
+    doc,
+    setDoc,
+    Timestamp,
+    serverTimestamp,
+    getDoc,
+    updateDoc,
+    deleteDoc,
+    where
+  } from 'firebase/firestore'
+const db = getFirestore()
 
 // Initialize all sensor data as reactive refs
 const nitrogen = ref(0)
@@ -852,6 +906,43 @@ const soilpH = ref(0)
 const soilMoisture = ref(0)
 const temperature = ref(0)
 const humidity = ref(0)
+
+const showModal = ref(false)
+const recommendedCrop = ref('')
+const successRate = ref(0)
+const soilCompatibility = ref(0)
+const growthRate = ref(0)
+const yieldPotential = ref(0)
+const alternativeOptions = ref([])
+
+const predictions = ref([])
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
+const activeFilter = ref('All')
+
+const showDetailsModal = ref(false)
+const selectedPrediction = ref(null)
+const alternativeCrops = ref([])
+const recommendedFertilizers = ref([])
+const editedStatus = ref(null)
+
+const totalRecommendations = ref(0)
+const previousRecommendationCount = ref(0)
+const percentageChange = ref(0)
+const isIncrease = ref(true)
+
+const plantedCount = ref(0)
+const plantedPercentageChange = ref(0)
+const plantedIsIncrease = ref(true)
+
+const harvestSuccessRate = ref(0)
+const harvestedCount = ref(0)
+const previousSuccessRate = ref(0)
+
+const ongoingCount = ref(0) // Ongoing Count
+const ongoingPercentageChange = ref(0) // Ongoing Percentage Change
+const ongoingIsIncrease = ref(true) // Ongoing Increase or Decrease
 
 // Greenhouse data - now all parameters are dynamic
 const greenhouse1Data = ref({
@@ -875,26 +966,165 @@ const greenhouse2Data = ref({
 })
 
 onMounted(async () => {
-  // Connect to ESP32 data stream
+  await fetchLatestSensorDataFromFirebase()
+
+  // Step 2: Start listening for real-time updates
   const eventSource = new EventSource('http://localhost:8000/api/stream')
+
   eventSource.onmessage = (event) => {
     const data = JSON.parse(event.data)
-    
-    // Update all sensor data from ESP32
+
     nitrogen.value = data.nitrogen
     phosphorus.value = data.phosphorus
     potassium.value = data.potassium
     soilpH.value = data.soilPh
-    // soilMoisture.value = data.soilMoisture
-    soilMoisture.value = 70.0
     temperature.value = data.temperature
     humidity.value = data.humidity
-    
+    soilMoisture.value = data.soilMoisture
+
+    console.log("🔁 Real-time data:", data)
   }
 
   fetchSavedRecommendations()
+  fetchRecommendationStats()
 
 })
+
+const fetchLatestSensorDataFromFirebase = async () => {
+  try {
+    const q = query(collection(db, "sensor_readings"), orderBy("timestamp", "desc"), limit(1))
+    const snapshot = await getDocs(q)
+
+    if (!snapshot.empty) {
+      const latestDoc = snapshot.docs[0]
+      const latestData = latestDoc.data()
+
+      // ✅ Convert Firestore timestamp to JS Date
+      const timestamp = latestData.timestamp
+      latestData.timestamp = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp.seconds * 1000)
+
+      // Now assign the values
+      nitrogen.value = latestData.nitrogen
+      phosphorus.value = latestData.phosphorus
+      potassium.value = latestData.potassium
+      soilpH.value = latestData.soilPh
+      temperature.value = latestData.temperature
+      humidity.value = latestData.humidity
+      soilMoisture.value = latestData.soilMoisture
+
+      console.log("📥 Latest Firebase Data with Date:", latestData)
+    }
+  } catch (err) {
+    console.error("❌ Error fetching from Firebase:", err)
+  }
+}
+
+// const fetchRecommendationStats = async () => {
+//   try {
+//     const now = new Date()
+//     const oneWeekAgo = getDateDaysAgo(7)
+//     const twoWeeksAgo = getDateDaysAgo(14)
+
+//     // 🔹 Fetch this week's recommendations
+//     const thisWeekQuery = query(
+//       collection(db, 'crop_recommendations'),
+//       where('timestamp', '>=', oneWeekAgo)
+//     )
+//     const thisWeekSnap = await getDocs(thisWeekQuery)
+//     cropRecommendationCount.value = thisWeekSnap.size
+
+//     // 🔹 Fetch last week's recommendations
+//     const lastWeekQuery = query(
+//       collection(db, 'crop_recommendations'),
+//       where('timestamp', '>=', twoWeeksAgo),
+//       where('timestamp', '<', oneWeekAgo)
+//     )
+//     const lastWeekSnap = await getDocs(lastWeekQuery)
+//     previousRecommendationCount.value = lastWeekSnap.size
+
+//     // 🔹 Calculate percentage change
+//     if (previousRecommendationCount.value > 0) {
+//       const change = cropRecommendationCount.value - previousRecommendationCount.value
+//       percentageChange.value = ((change / previousRecommendationCount.value) * 100).toFixed(1)
+//       isIncrease.value = change >= 0
+//     } else {
+//       percentageChange.value = 100
+//       isIncrease.value = true
+//     }
+
+//   } catch (error) {
+//     console.error("❌ Error fetching recommendation stats:", error)
+//   }
+// }
+
+// Function to calculate percentage change between two periods
+
+const calculatePercentageChange = (docs, status = '') => {
+  let percentageChange = 0
+  let isIncrease = true
+
+  // Ensure there's more than one data point to calculate change
+  if (docs.length > 1) {
+    const firstDocCount = docs[0].length
+    const lastDocCount = docs[docs.length - 1].length
+
+    // Avoid division by zero
+    if (firstDocCount === 0) {
+      percentageChange = 0
+      isIncrease = true
+    } else {
+      const change = lastDocCount - firstDocCount
+      percentageChange = ((change / firstDocCount) * 100).toFixed(1)
+      isIncrease = change >= 0
+    }
+  }
+
+  // Return the percentage change and whether it increased or decreased
+  return { percentageChange: isNaN(percentageChange) ? 0 : parseFloat(percentageChange), isIncrease }
+}
+
+const fetchRecommendationStats = async () => {
+  try {
+    // Fetch all crop recommendation records
+    const snapshot = await getDocs(collection(db, 'crop_recommendations'))
+    const allDocs = snapshot.docs.map(doc => doc.data())
+
+    totalRecommendations.value = allDocs.length // Total count of all recommendations
+
+    // Calculate Harvested Count and Success Rate
+    harvestedCount.value = allDocs.filter(doc => doc.status === 'Harvested').length
+    harvestSuccessRate.value = totalRecommendations.value > 0
+      ? ((harvestedCount.value / totalRecommendations.value) * 100).toFixed(1)
+      : 0
+
+    // Calculate Planted Count and Percentage Change
+    const plantedDocs = allDocs.filter(doc => doc.status === 'Planted')
+    plantedCount.value = plantedDocs.length
+
+    // Calculate the percentage change for Planted recommendations
+    const plantedChanges = calculatePercentageChange(plantedDocs, 'Planted')
+
+    plantedPercentageChange.value = plantedChanges.percentageChange
+    plantedIsIncrease.value = plantedChanges.isIncrease
+
+    // Calculate Ongoing Count and Percentage Change
+    const ongoingDocs = allDocs.filter(doc => doc.status === 'Ongoing')
+    ongoingCount.value = ongoingDocs.length
+
+    const ongoingChanges = calculatePercentageChange(ongoingDocs, 'Ongoing')
+
+    ongoingPercentageChange.value = ongoingChanges.percentageChange
+    ongoingIsIncrease.value = ongoingChanges.isIncrease
+
+    // Calculate the percentage change for all recommendations
+    const recommendationChanges = calculatePercentageChange(allDocs)
+    percentageChange.value = recommendationChanges.percentageChange
+    isIncrease.value = recommendationChanges.isIncrease
+
+  } catch (error) {
+    console.error("❌ Error fetching recommendation stats:", error)
+  }
+}
 
 const selectedGreenhouse = ref(1)
 
@@ -905,14 +1135,6 @@ const currentGreenhouseData = computed(() => {
 const selectGreenhouse = (greenhouse) => {
   selectedGreenhouse.value = greenhouse
 }
-
-const showModal = ref(false)
-const recommendedCrop = ref('')
-const successRate = ref(0)
-const soilCompatibility = ref(0)
-const growthRate = ref(0)
-const yieldPotential = ref(0)
-const alternativeOptions = ref([])
 
 const submitForm = async () => {
   const payload = {
@@ -974,11 +1196,6 @@ const saveRecommendation = async () => {
 const closeModal = () => {
   showModal.value = false
 }
-const predictions = ref([])
-const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = ref(5)
-const activeFilter = ref('All')
 
 const filters = [
   { name: 'All' },
@@ -1040,12 +1257,6 @@ const getStatusClass = (status) => {
   }
   return classes[status]
 }
-
-const showDetailsModal = ref(false)
-const selectedPrediction = ref(null)
-const alternativeCrops = ref([])
-const recommendedFertilizers = ref([])
-const editedStatus = ref(null)
 
 const showDetails = (prediction) => {
   selectedPrediction.value = prediction

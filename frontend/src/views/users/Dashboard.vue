@@ -1,6 +1,8 @@
 <template>
   <div class="h-screen flex bg-gradient-to-br from-green-50 to-emerald-100 font-poppins overflow-hidden">
-    <Sidebar />
+    <keep-alive>
+      <Sidebar />
+    </keep-alive>
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-screen pt-32">
       <!-- Container Wrapper with proper spacing -->
@@ -265,10 +267,10 @@
                   <div class="flex items-center justify-between mb-4">
                     <div>
                       <div class="flex items-end space-x-1">
-                        <p class="text-4xl font-bold text-gray-900">{{ weather?.temperature_c }}</p>
+                        <p class="text-4xl font-bold text-gray-900">{{ weather?.temperature_c ?? '0' }}</p>
                         <p class="text-xl font-semibold text-gray-600 mb-1">°C</p>
                       </div>
-                      <p class="text-base mt-1 text-gray-600">{{ weather?.weather_condition }}</p>
+                      <p class="text-base mt-1 text-gray-600">{{ weather?.weather_condition ?? '--' }}</p>
                     </div>
                     <div class="weather-icon-wrapper">
                       <component 
@@ -306,12 +308,12 @@
 
                         <!-- Use actual condition if available -->
                         <component 
-                          :is="getWeatherIcon(day.temp || 'Clear')" 
+                          :is="getWeatherIcon(day.temperature_max || 'Clear')" 
                           class="h-6 w-6 mb-1 text-yellow-500"
                         />
 
                         <span class="text-xs font-bold text-gray-900">
-                          {{ typeof day.temp === 'number' ? `${day.temp.toFixed(1)}°` : 'N/A' }}
+                          {{ typeof day.temperature_max === 'number' ? `${day.temperature_max.toFixed(1)}°` : 'N/A' }}
                         </span>
                       </div>
                     </div>
@@ -696,10 +698,27 @@ import {
   FlaskConical
 } from 'lucide-vue-next';
 import Sidebar from '../layout/Sidebar.vue'
+import { getWeatherData } from '../../utils/weather';
 import api from '../../api/index'
 import { eventBus } from '../../eventBus';
-// import { sendPushNotification } from '../../utils/notify';
-
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    orderBy,
+    limit,
+    doc,
+    setDoc,
+    Timestamp,
+    serverTimestamp,
+    getDoc,
+    updateDoc,
+    deleteDoc,
+    where
+  } from 'firebase/firestore'
+const db = getFirestore()
 Chart.register(...registerables);
 
 const lineChartRefs = ref([]);
@@ -743,15 +762,17 @@ const soilMoisture = ref(null)
 const sensorReadings = ref([]);
 
 
-const weeklyData = [
-  { label: 'M', percentage: 70 },
-  { label: 'T', percentage: 65 },
-  { label: 'W', percentage: 80 },
-  { label: 'T', percentage: 55 },
-  { label: 'F', percentage: 75 },
-  { label: 'S', percentage: 50 },
-  { label: 'S', percentage: 65 },
-];
+// const weeklyData = [
+//   { label: 'M', percentage: 70 },
+//   { label: 'T', percentage: 65 },
+//   { label: 'W', percentage: 80 },
+//   { label: 'T', percentage: 55 },
+//   { label: 'F', percentage: 75 },
+//   { label: 'S', percentage: 50 },
+//   { label: 'S', percentage: 65 },
+// ];
+
+const weeklyData = ref([])
 
 const metrics = [
   {
@@ -968,49 +989,61 @@ const toggleMotorStatus = () => {
   motorStatus.value = !motorStatus.value;
 };
 
+onMounted(async () => {
+  // const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+  // const host = 'localhost:8000'
+  // const socket = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
 
-onMounted(() => {
-  const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-  const host = 'localhost:800'
-  const socket = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
+  // socket.onopen = () => {
+  //   console.log('[Weather WS] Connected')
+  // }
 
-  socket.onopen = () => {
-    console.log('[Weather WS] Connected')
-  }
+  // socket.onmessage = (event) => {
+  //   const data = JSON.parse(event.data)
+  //   console.log('[Weather WS] Data received:', data)
 
-  socket.onmessage = (event) => {
+  //   weather.value = data.current_weather
+  //   forecast.value = data.forecast_7_days.map(day => ({
+  //     ...day,
+  //     temp: parseFloat(day.temperature_max),
+  //     condition: day.condition || 'Clear'  // optional: adjust if CSV has this
+  //   }))
+  // }
+
+  // socket.onerror = (err) => {
+  //   console.error('[Weather WS] Error:', err)
+  // }
+
+  // socket.onclose = () => {
+  //   console.warn('[Weather WS] Disconnected')
+  // }
+
+  const data = await getWeatherData();
+  weather.value = data.current;
+  forecast.value = data.forecast.slice(0, 7); // 7-day forecast
+
+  await fetchLatestSensorDataFromFirebase()
+
+  // Step 2: Start listening for real-time updates
+  const eventSource = new EventSource('http://localhost:8000/api/stream')
+
+  eventSource.onmessage = (event) => {
     const data = JSON.parse(event.data)
-    console.log('[Weather WS] Data received:', data)
 
-    weather.value = data.current_weather
-    forecast.value = data.forecast_7_days.map(day => ({
-      ...day,
-      temp: parseFloat(day.temperature_max),
-      condition: day.condition || 'Clear'  // optional: adjust if CSV has this
-    }))
+    nitrogen.value = data.nitrogen
+    phosphorus.value = data.phosphorus
+    potassium.value = data.potassium
+    soilpH.value = data.soilPh
+    temperature.value = data.temperature
+    humidity.value = data.humidity
+    soilMoisture.value = data.soilMoisture
+
+    console.log("🔁 Real-time data:", data)
   }
 
-  socket.onerror = (err) => {
-    console.error('[Weather WS] Error:', err)
-  }
+  await fetchLatestWaterLevel()
 
-  socket.onclose = () => {
-    console.warn('[Weather WS] Disconnected')
-  }
-
-  const eventSource = new EventSource('http://localhost:800/api/stream')
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      nitrogen.value = data.nitrogen
-      phosphorus.value = data.phosphorus
-      potassium.value = data.potassium
-      soilpH.value = data.soilPh
-      temperature.value = data.temperature
-      humidity.value = data.humidity
-      soilMoisture.value = data.soilMoisture
-    }
-
-  const eventWaterSource = new EventSource('http://localhost:800/api/water-stream')
+  const eventWaterSource = new EventSource('http://localhost:8000/api/water-stream')
 
   eventWaterSource.onmessage = (event) => {
     const data = JSON.parse(event.data)
@@ -1021,23 +1054,147 @@ onMounted(() => {
     }
   }
 
-eventSource.onerror = (e) => {
-  console.error("❌ SSE Error:", e)
-}
+  eventSource.onerror = (e) => {
+    console.error("❌ SSE Error:", e)
+  }
   
   fetchSensorData();
+  fetchMotorStatusData();
 })
 
 const fetchSensorData = async () => {
   try {
-    const res = await api.get('/sensor/readings')
-    sensorReadings.value = res.data
-    console.log(sensorReadings)
-    await nextTick();
+    const snapshot = await getDocs(collection(db, 'sensor_readings'))
+
+    sensorReadings.value = snapshot.docs.map(doc => {
+      const data = doc.data()
+      // Convert Firestore Timestamp to JS Date
+      const timestamp = data.timestamp
+      const jsDate = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp.seconds * 1000)
+
+      return {
+        id: doc.id,
+        ...data,
+        timestamp: jsDate,
+      }
+    })
+
+    console.log(sensorReadings.value)
+
+    await nextTick()
     initAllCharts()
     initSoilPhChart()
   } catch (err) {
-    console.error("Error fetching sensor data:", err)
+    console.error("Error fetching sensor data from Firebase:", err)
+  }
+}
+
+const fetchLatestWaterLevel = async () => {
+  try {
+    const q = query(
+      collection(db, "water_level_readings"), // replace with your actual collection name
+      orderBy("timestamp", "desc"),
+      limit(1)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      const latestDoc = snapshot.docs[0];
+      const data = latestDoc.data();
+
+      // Convert Firestore timestamp to JS Date
+      if (data.timestamp?.seconds) {
+        data.timestamp = new Date(data.timestamp.seconds * 1000);
+      }
+
+      waterLevel.value = data.waterLevel;
+      console.log("🆕 Latest Water Level from Firebase:", waterLevel.value, "at", data.timestamp?.toLocaleTimeString());
+    } else {
+      console.warn("⚠️ No water level data found in Firebase.");
+    }
+  } catch (error) {
+    console.error("❌ Error fetching latest water level from Firebase:", error);
+  }
+};
+
+const fetchLatestSensorDataFromFirebase = async () => {
+  try {
+    const q = query(collection(db, "sensor_readings"), orderBy("timestamp", "desc"), limit(1))
+    const snapshot = await getDocs(q)
+
+    if (!snapshot.empty) {
+      const latestDoc = snapshot.docs[0]
+      const latestData = latestDoc.data()
+
+      // ✅ Convert Firestore timestamp to JS Date
+      const timestamp = latestData.timestamp
+      latestData.timestamp = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp.seconds * 1000)
+
+      // Now assign the values
+      nitrogen.value = latestData.nitrogen
+      phosphorus.value = latestData.phosphorus
+      potassium.value = latestData.potassium
+      soilpH.value = latestData.soilPh
+      temperature.value = latestData.temperature
+      humidity.value = latestData.humidity
+      soilMoisture.value = latestData.soilMoisture
+
+      console.log("📥 Latest Firebase Data with Date:", latestData)
+    }
+  } catch (err) {
+    console.error("❌ Error fetching from Firebase:", err)
+  }
+}
+
+const fetchMotorStatusData = async () => {
+  try {
+    // Get current motor status
+    const currentDoc = await getDoc(doc(db, 'motor_status', 'current'))
+    if (currentDoc.exists()) {
+      const data = currentDoc.data()
+      motorStatus.value = data.status || false
+    }
+
+    // Get history logs
+    const historySnapshot = await getDocs(collection(db, 'motor_status', 'history', 'logs'))
+    const logs = []
+    historySnapshot.forEach(doc => logs.push(doc.data()))
+
+    // Filter this week's logs
+    const now = new Date()
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(now.getDate() - now.getDay()) // Sunday
+
+    const thisWeekLogs = logs.filter(log => {
+      const ts = log.timestamp?.toDate?.() || new Date(log.timestamp)
+      return ts >= startOfWeek
+    })
+
+    // Compute % of time ON per day
+    const dailyStatus = Array(7).fill(0)
+    const total = thisWeekLogs.length
+
+    thisWeekLogs.forEach(log => {
+      const ts = log.timestamp?.toDate?.() || new Date(log.timestamp)
+      const dayIndex = ts.getDay()
+      if (log.status === true) {
+        dailyStatus[dayIndex]++
+      }
+    })
+
+    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const percentages = dailyStatus.map((count, index) => ({
+      label: dayLabels[index],
+      percentage: total > 0 ? (count / total) * 100 : 0
+    }))
+
+
+    weeklyData.value = percentages
+    motorOnPercentage.value = (dailyStatus.reduce((a, b) => a + b, 0) / total) * 100 || 0
+
+  } catch (error) {
+    console.error('Error fetching motor status and history:', error)
   }
 }
 
@@ -1114,7 +1271,6 @@ const initSoilPhChart = () => {
     });
   }
 };
-
 
 const initAllCharts = () => {
   if (!sensorReadings.value.length) return;
@@ -1420,15 +1576,28 @@ onBeforeUnmount(() => {
     }
 })
 
-const weatherDetails = computed(() => {
-  if (!weather.value) return []
-  return [
-    { label: 'Humidity', value: weather.value.humidity + '%', icon: Droplets },
-    { label: 'Wind', value: weather.value.wind_speed_ms + ' m/s', icon: Wind },
-    { label: 'Precipitation', value: weather.value.rain_mm + ' mm', icon: CloudRain },
-    { label: 'UV Index', value: weather.value.uv, icon: Sun },
-  ]
-})
+const weatherDetails = computed(() => [
+  {
+    label: 'Humidity',
+    value: `${weather.value?.humidity}%`,
+    icon: Droplets, // Replace with your icon
+  },
+  {
+    label: 'Wind',
+    value: `${weather.value?.wind_speed} m/s`,
+    icon: Wind,
+  },
+  {
+    label: 'Precipitation',
+    value: `${weather.value?.precipitation} mm`,
+    icon: CloudRain,
+  },
+  {
+    label: 'UV Index',
+    value: weather.value?.uv_index?.toFixed(1),
+    icon: Sun,
+  },
+]);
 
 // Add new helper function for weather icon colors
 const getWeatherIconColor = (weather) => {
@@ -1450,27 +1619,41 @@ const getWeatherIconColor = (weather) => {
   }
 };
 
-const getWeatherIcon = (temperature) => {
-  const temp = typeof temperature === 'number' ? temperature : parseFloat(temperature);
-
-  if (isNaN(temp)) return Cloud; // fallback if invalid
-
-  if (temp >= 32) {
-    return Sun; // very hot
-  } else if (temp >= 26 && temp < 32) {
-    return CloudSun; // warm and partly cloudy
-  } else if (temp >= 20 && temp < 26) {
-    return Cloud; // moderate
-  } else if (temp >= 15 && temp < 20) {
-    return CloudDrizzle; // cool and damp
-  } else if (temp >= 5 && temp < 15) {
-    return CloudRain; // cold rain
-  } else if (temp >= -5 && temp < 5) {
-    return Snowflake; // cold
-  } else {
-    return CloudLightning; // extreme cold/storm
+const getWeatherIcon = (condition) => {
+  switch (condition) {
+    case 'Clear':
+    case 'Mainly Clear':
+      return Sun
+    case 'Partly Cloudy':
+      return CloudSun
+    case 'Overcast':
+      return Cloud
+    case 'Fog':
+    case 'Depositing Rime Fog':
+      return Fog
+    case 'Light Drizzle':
+    case 'Moderate Drizzle':
+    case 'Dense Drizzle':
+      return CloudDrizzle
+    case 'Light Rain':
+    case 'Moderate Rain':
+    case 'Heavy Rain':
+    case 'Rain Showers':
+    case 'Heavy Rain Showers':
+    case 'Violent Rain Showers':
+      return CloudRain
+    case 'Light Snowfall':
+    case 'Moderate Snowfall':
+    case 'Heavy Snowfall':
+      return CloudSnow
+    case 'Thunderstorm':
+    case 'Thunderstorm with Hail':
+    case 'Severe Thunderstorm':
+      return CloudLightning
+    default:
+      return Cloud  // fallback
   }
-};
+}
 
 // Add new helper function for detail icon colors
 const getDetailIconColor = (label) => {
