@@ -167,17 +167,17 @@ async def stream_sensor_data():
     subscribers.append(queue)
 
     async def event_generator():
-        # 🔁 Step 1: Try sending the latest saved data from Firebase first
-        try:
-            docs = db.collection("sensor_readings").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(1).stream()
-            for doc in docs:
-                latest_data = doc.to_dict()
-                if latest_data:
-                    yield f"data: {json.dumps(jsonable_encoder(latest_data))}\n\n"
+        # # 🔁 Step 1: Try sending the latest saved data from Firebase first
+        # try:
+        #     docs = db.collection("sensor_readings").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(1).stream()
+        #     for doc in docs:
+        #         latest_data = doc.to_dict()
+        #         if latest_data:
+        #             yield f"data: {json.dumps(jsonable_encoder(latest_data))}\n\n"
 
-                print(latest_data)
-        except Exception as e:
-            print("❌ Error fetching latest Firebase data:", e)
+        #         print(latest_data)
+        # except Exception as e:
+        #     print("❌ Error fetching latest Firebase data:", e)
 
         # 🔁 Step 2: Then continue with real-time data as it comes in
         try:
@@ -267,15 +267,15 @@ async def stream_sensor_data():
     subscribers.append(queue)
 
     async def event_generator():
-        try:
-            # Last water level
-            docs = db.collection("water_level_readings").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(1).stream()
-            for doc in docs:
-                latest = doc.to_dict()
-                if latest:
-                    yield f"data: {json.dumps(jsonable_encoder({'type': 'water', 'data': latest}))}\n\n"
-        except Exception as e:
-            print("❌ Error loading latest water data:", e)
+        # try:
+        #     # Last water level
+        #     docs = db.collection("water_level_readings").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(1).stream()
+        #     for doc in docs:
+        #         latest = doc.to_dict()
+        #         if latest:
+        #             yield f"data: {json.dumps(jsonable_encoder({'type': 'water', 'data': latest}))}\n\n"
+        # except Exception as e:
+        #     print("❌ Error loading latest water data:", e)
 
         try:
             while True:

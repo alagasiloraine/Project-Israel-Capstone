@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 router = APIRouter(
-    prefix="/api/motor-status",
+    prefix="/api",
     tags=["Motor Status"]
 )
 
@@ -14,7 +14,7 @@ class MotorStatus(BaseModel):
     timestamp: datetime
     formatted_time: str
 
-@router.post("/")
+@router.post("/motor-status")
 async def save_motor_status(status_data: MotorStatus):
     # Example logic to save to DB or log
     print("Received motor status:", status_data)

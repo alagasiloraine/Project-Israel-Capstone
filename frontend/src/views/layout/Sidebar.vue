@@ -146,10 +146,12 @@
               >
                 <Bell class="h-4 w-4" />
                 <!-- Notification Badge -->
-                <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">{{ notifications.filter(n => !n.read).length }}</span>
+                <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">
+                  {{ notifications.filter(n => n && !n.read).length }}
+                </span>
               </button>
               
-              <!-- Notification Panel (Shown when clicked) -->
+              <!-- Notification Panel -->
               <div 
                 v-show="showNotifications"
                 class="absolute right-0 top-full mt-2 w-80 origin-top-right bg-white rounded-lg shadow-lg overflow-hidden z-50 border border-gray-100 transform transition-all duration-200"
@@ -162,14 +164,12 @@
                       <h3 class="font-medium">Notifications</h3>
                     </div>
                     <div class="flex items-center gap-2">
-                      <!-- <span class="text-xs px-1.5 py-0.5 bg-white/20 rounded-full">{{ notifications.filter(n => !n.read).length }} new</span> -->
                       <span 
                         v-if="notifications && notifications.length"
                         class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white"
                       >
-                        {{ notifications.filter(n => !n.read).length }}
+                        {{ notifications.filter(n => n && !n.read).length }}
                       </span>
-
 
                       <button 
                         @click.stop="markAllAsRead"
@@ -181,24 +181,24 @@
                     </div>
                   </div>
                 </div>
-                
+
                 <div class="max-h-[350px] overflow-y-auto">
-                  <div v-if="notifications.length === 0" class="p-4 text-center text-gray-500">
+                  <div v-if="notifications.filter(n => n).length === 0" class="p-4 text-center text-gray-500">
                     <BellOff class="h-6 w-6 mx-auto mb-2 text-gray-400" />
                     <p class="text-sm">No notifications</p>
                   </div>
                   
                   <div v-else>
                     <!-- Today's Notifications -->
-                    <div v-if="todayNotifications.length > 0">
+                    <div v-if="todayNotifications.filter(n => n).length > 0">
                       <div class="px-3 py-1.5 bg-gray-50 border-y border-gray-100">
                         <span class="text-xs font-medium text-gray-500">Today</span>
                       </div>
                       <div 
-                        v-for="notification in todayNotifications" 
+                        v-for="notification in todayNotifications.filter(n => n)" 
                         :key="notification.id"
                         class="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-                        :class="{ 'bg-blue-50/50': !notification.read }"
+                        :class="{ 'bg-blue-50/50': notification && !notification.read }"
                         @click="markAsRead(notification.id)"
                       >
                         <div class="flex items-start gap-3">
@@ -216,7 +216,7 @@
                             <p class="text-xs text-gray-500 mb-1">{{ notification.message }}</p>
                             <div class="flex items-center justify-between">
                               <span class="text-xs text-gray-400">{{ formatTime(notification.time) }}</span>
-                              <div v-if="!notification.read" class="h-2 w-2 rounded-full bg-blue-500"></div>
+                              <div v-if="notification && !notification.read" class="h-2 w-2 rounded-full bg-blue-500"></div>
                             </div>
                           </div>
                         </div>
@@ -224,15 +224,15 @@
                     </div>
                     
                     <!-- Earlier Notifications -->
-                    <div v-if="earlierNotifications.length > 0">
+                    <div v-if="earlierNotifications.filter(n => n).length > 0">
                       <div class="px-3 py-1.5 bg-gray-50 border-y border-gray-100">
                         <span class="text-xs font-medium text-gray-500">Earlier</span>
                       </div>
                       <div 
-                        v-for="notification in earlierNotifications" 
+                        v-for="notification in earlierNotifications.filter(n => n)" 
                         :key="notification.id"
                         class="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-                        :class="{ 'bg-blue-50/50': !notification.read }"
+                        :class="{ 'bg-blue-50/50': notification && !notification.read }"
                         @click="markAsRead(notification.id)"
                       >
                         <div class="flex items-start gap-3">
@@ -250,7 +250,7 @@
                             <p class="text-xs text-gray-500 mb-1">{{ notification.message }}</p>
                             <div class="flex items-center justify-between">
                               <span class="text-xs text-gray-400">{{ formatTime(notification.time) }}</span>
-                              <div v-if="!notification.read" class="h-2 w-2 rounded-full bg-blue-500"></div>
+                              <div v-if="notification && !notification.read" class="h-2 w-2 rounded-full bg-blue-500"></div>
                             </div>
                           </div>
                         </div>
@@ -258,7 +258,7 @@
                     </div>
                   </div>
                 </div>
-                
+
                 <div class="p-2 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
                   <button class="text-xs text-[#00A572] font-medium hover:underline">
                     View all notifications
@@ -272,6 +272,7 @@
                 </div>
               </div>
             </div>
+
             
             <div class="relative ml-4">
               <div class="absolute inset-0 bg-gradient-to-r from-[#00A572] to-[#008F61] rounded-full blur-md opacity-0 group-hover:opacity-50 transition-opacity"></div>
@@ -390,8 +391,30 @@
   } from 'lucide-vue-next'
   import { eventBus } from '../../eventBus'
   import { sendPushNotification } from '../../utils/notify.js'
+  import { initWaterStream, onWaterLevelUpdate } from '../../utils/water.js'
   import api from '../../api/index.js'
-  
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    orderBy,
+    limit,
+    doc,
+    setDoc,
+    Timestamp,
+    serverTimestamp,
+    getDoc,
+    updateDoc,
+    deleteDoc,
+    where,
+    onSnapshot 
+  } from 'firebase/firestore'
+
+  const db = getFirestore()
+
+
   const route = useRoute()
   const router = useRouter()
   const user = ref(null)
@@ -415,14 +438,9 @@
   // Sample notifications data
   const notifications = ref([])
   const waterLevel = ref(0);
-  const nitrogen = ref(null)
-  const phosphorus = ref(null)
-  const potassium = ref(null)
-  const soilpH = ref(null)
-  const temperature = ref(null)
-  const humidity = ref(null)
-  const soilMoisture = ref(null)
   const sensorReadings = ref([]);
+
+
 
   watch(waterLevel, (newVal) => {
     const timestamp = new Date().toISOString()
@@ -509,11 +527,25 @@
     }
   }
 
+  let isEventBusRegistered = false
+
   onMounted(() => {
-    eventBus.on('notify', addNotification);
+    if (!isEventBusRegistered) {
+      eventBus.on('notify', addNotification)
+      isEventBusRegistered = true
+    }
+
+    initWaterStream()
+    onWaterLevelUpdate((level) => {
+      waterLevel.value = level
+      console.log("💧 Water Level:", level + "%")
+    })
+
     fetchSensorData();
     // saveToLocalStorage()
   });
+
+  let eventWaterSourceInitialized = false
 
   onBeforeUnmount(() => {
     eventBus.off('notify', addNotification);
@@ -530,36 +562,36 @@
   }
 
   onMounted(async () => {
-    const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-    const host = location.hostname + ':8000'
-    const ws = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
+    // const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+    // const host = location.hostname + ':800'
+    // const ws = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
 
 
-    ws.onopen = () => {
-      isWebSocketConnected.value = true
-      wsStartTime = Date.now()
-      setInterval(() => {
-        const elapsed = Date.now() - wsStartTime
-        const mins = Math.floor(elapsed / 60000)
-        const hours = Math.floor(mins / 60)
-        wsUptime.value = `${hours}h ${mins % 60}m`
-      }, 60000)
-    }
+    // ws.onopen = () => {
+    //   isWebSocketConnected.value = true
+    //   wsStartTime = Date.now()
+    //   setInterval(() => {
+    //     const elapsed = Date.now() - wsStartTime
+    //     const mins = Math.floor(elapsed / 60000)
+    //     const hours = Math.floor(mins / 60)
+    //     wsUptime.value = `${hours}h ${mins % 60}m`
+    //   }, 60000)
+    // }
 
-    ws.onclose = () => {
-      isWebSocketConnected.value = false
-      wsUptime.value = '0m'
-    }
+    // ws.onclose = () => {
+    //   isWebSocketConnected.value = false
+    //   wsUptime.value = '0m'
+    // }
 
-    ws.onerror = () => {
-      isWebSocketConnected.value = false
-    }
+    // ws.onerror = () => {
+    //   isWebSocketConnected.value = false
+    // }
 
-    // Optional: latency ping-pong logic (if supported by backend)
-    ws.onmessage = (e) => {
-    const timeSent = Date.now()
-      wsLatency.value = timeSent - JSON.parse(e.data)?.timestamp || 30
-    }
+    // // Optional: latency ping-pong logic (if supported by backend)
+    // ws.onmessage = (e) => {
+    // const timeSent = Date.now()
+    //   wsLatency.value = timeSent - JSON.parse(e.data)?.timestamp || 30
+    // }
 
 
     // Get IP address
@@ -585,28 +617,20 @@
       }
     }
 
-    const eventSource = new EventSource('http://localhost:800/api/stream')
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      nitrogen.value = data.nitrogen
-      phosphorus.value = data.phosphorus
-      potassium.value = data.potassium
-      soilpH.value = data.soilPh
-      temperature.value = data.temperature
-      humidity.value = data.humidity
-      soilMoisture.value = data.soilMoisture
-    }
+    // if (!eventWaterSourceInitialized) {
+    //   const eventWaterSource = new EventSource('http://localhost:8000/api/water-stream')
 
-    const eventWaterSource = new EventSource('http://localhost:800/api/water-stream')
+    //   eventWaterSource.onmessage = (event) => {
+    //     const data = JSON.parse(event.data)
 
-    eventWaterSource.onmessage = (event) => {
-      const data = JSON.parse(event.data)
+    //     if (data.type === 'water') {
+    //       waterLevel.value = data.data.waterLevel
+    //       console.log("💧 Updated Water Level:", waterLevel.value + "%")
+    //     }
+    //   }
 
-      if (data.type === 'water') {
-        waterLevel.value = data.data.waterLevel
-        console.log("💧 Updated Water Level:", waterLevel.value + "%")
-      }
-    }
+    //   eventWaterSourceInitialized = true
+    // }
 
     const saved = localStorage.getItem('notifications')
     if (saved) {
@@ -614,11 +638,13 @@
     }
 
     try {
-      const res = await api.get("/get-notifications");
-      notifications.value = res.data;
-      console.log(notifications)
-    } catch (error) {
-      console.error("Failed to fetch notifications from backend", error);
+      const querySnapshot = await getDocs(collection(db, "notifications"));
+      notifications.value = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (err) {
+      console.error("Error fetching notifications from Firebase:", err);
     }
 
   })
@@ -672,24 +698,48 @@
   
   // Filter notifications by date
   const todayNotifications = computed(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    return notifications.value.filter(notification => {
-      const notificationDate = new Date(notification.time)
-      return notificationDate >= today
-    })
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  return notifications.value.filter(notification => {
+    if (!notification || !notification.time) return false
+    const notificationDate = new Date(notification.time)
+    return notificationDate >= today
   })
-  
-  const earlierNotifications = computed(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    return notifications.value.filter(notification => {
-      const notificationDate = new Date(notification.time)
-      return notificationDate < today
-    })
+})
+
+const earlierNotifications = computed(() => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  return notifications.value.filter(notification => {
+    if (!notification || !notification.time) return false
+    const notificationDate = new Date(notification.time)
+    return notificationDate < today
   })
+})
+
+const formatTime = (time) => {
+  if (!time) return ''
+
+  const now = new Date()
+  const notificationTime = new Date(time)
+  const diffMs = now - notificationTime
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 60) {
+    return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`
+  } else if (diffHours < 24) {
+    return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
+  } else if (diffDays < 7) {
+    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
+  } else {
+    return notificationTime.toLocaleDateString()
+  }
+}
+
   
   // Toggle notifications panel
   const toggleNotifications = () => {
@@ -706,27 +756,7 @@
   }
 
   
-  // Format time for notifications
-  const formatTime = (time) => {
-    const now = new Date()
-    const notificationTime = new Date(time)
-    const diffMs = now - notificationTime
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
-    
-    if (diffMins < 60) {
-      return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`
-    } else if (diffHours < 24) {
-      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
-    } else if (diffDays < 7) {
-      return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
-    } else {
-      return notificationTime.toLocaleDateString()
-    }
-  }
-  
-  // Get notification type styling
+   // Get notification type styling
   const getNotificationTypeClass = (type) => {
     switch (type) {
       case 'alert':
