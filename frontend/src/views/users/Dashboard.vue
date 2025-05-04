@@ -761,6 +761,8 @@ const humidity = ref(null)
 const soilMoisture = ref(null)
 const sensorReadings = ref([]);
 
+let intervalId = null;
+
 
 // const weeklyData = [
 //   { label: 'M', percentage: 70 },
@@ -989,6 +991,16 @@ const toggleMotorStatus = () => {
   motorStatus.value = !motorStatus.value;
 };
 
+const loadWeather = async () => {
+  try {
+    const data = await getWeatherData();
+    weather.value = data.current;
+    forecast.value = data.forecast.slice(0, 7);
+  } catch (error) {
+    console.error('Failed to load weather:', error);
+  }
+};
+
 onMounted(async () => {
   // const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
   // const host = 'localhost:8000'
@@ -1018,13 +1030,11 @@ onMounted(async () => {
   //   console.warn('[Weather WS] Disconnected')
   // }
 
-  const data = await getWeatherData();
-  weather.value = data.current;
-  forecast.value = data.forecast.slice(0, 7); // 7-day forecast
+  await loadWeather(); 
+  intervalId = setInterval(loadWeather, 600000); 
 
   await fetchLatestSensorDataFromFirebase()
 
-  // Step 2: Start listening for real-time updates
   const eventSource = new EventSource('http://localhost:8000/api/stream')
 
   eventSource.onmessage = (event) => {
@@ -1574,6 +1584,8 @@ onBeforeUnmount(() => {
     } catch (e) {
       console.warn('Error while destroying chart:', e)
     }
+
+    clearInterval(intervalId);
 })
 
 const weatherDetails = computed(() => [

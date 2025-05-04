@@ -535,6 +535,7 @@ const airQual = ref([])
 const hourlyTemps = computed(() => hourlyForecast.value.map(h => h.temp))
 const sunriseDisplay = computed(() => formatTimeHM(sunData.value?.sunrise))
 const sunsetDisplay  = computed(() => formatTimeHM(sunData.value?.sunset))
+let intervalId = null;
 
 const svgWidth = 1000
 const svgHeight = 200
@@ -725,21 +726,31 @@ function formatTimeHM(iso) {
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_API 
 
-onMounted(async () => {
-  const data = await getWeatherData();
-  console.log("Weather Data:", data)
-  weather.value = data.current;
-  forecast.value = data.forecast;
-  sunData.value = data.sunData;
-  airQual.value = data.airQuality;
-  hourlyForecast.value = data.hourlyForecast.slice(0, 10)
-
-  if (data && data.hourlyForecast && Array.isArray(data.hourlyForecast)) {
+const loadWeather = async () => {
+  try {
+    const data = await getWeatherData();
+    console.log("Weather Data:", data)
+    weather.value = data.current;
+    forecast.value = data.forecast;
+    sunData.value = data.sunData;
+    airQual.value = data.airQuality;
     hourlyForecast.value = data.hourlyForecast.slice(0, 10)
-  } else {
-    console.error("hourlyForecast is missing or not an array", data)
+
+    
+    if (data && data.hourlyForecast && Array.isArray(data.hourlyForecast)) {
+      hourlyForecast.value = data.hourlyForecast.slice(0, 10)
+    } else {
+      console.error("hourlyForecast is missing or not an array", data)
+    }
+    popularCities.value = await getWeatherDataForPopularCities();
+  } catch (error) {
+    console.error('Failed to load weather:', error);
   }
-  popularCities.value = await getWeatherDataForPopularCities();
+};
+
+onMounted(async () => {
+  await loadWeather(); 
+  intervalId = setInterval(loadWeather, 600000);
 
   const map = new maplibregl.Map({
     container: 'weather-map',

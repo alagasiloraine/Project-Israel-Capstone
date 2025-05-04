@@ -18217,3 +18217,251 @@ google.auth.exceptions.TransportError: ('Connection aborted.', RemoteDisconnecte
 2025-05-03 23:14:02,415 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
 2025-05-03 23:14:03,299 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
 2025-05-03 23:14:10,003 - INFO - HTTP Request: GET http://api.weatherapi.com/v1/current.json?key=65965e31bf9749719d9233915252603&q=13.401977220608616%2C121.22464223345575&aqi=no "HTTP/1.1 200 OK"
+2025-05-03 23:52:26,082 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-03 23:52:26,083 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-03 23:52:26,083 - INFO - Added job "schedule_forecast_script" to job store "default"
+2025-05-03 23:52:26,084 - INFO - Added job "schedule_dataset_update" to job store "default"
+2025-05-03 23:52:26,084 - INFO - Scheduler started
+2025-05-03 23:52:26,089 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
+2025-05-04 00:00:00,043 - INFO - Running job "schedule_forecast_script (trigger: cron[day_of_week='sun', hour='0', minute='0'], next run at: 2025-05-04 00:00:00 +08)" (scheduled at 2025-05-04 00:00:00+08:00)
+2025-05-04 00:00:00,047 - INFO - \u23f3 Running scheduled weather forecasting...
+2025-05-04 00:00:00,058 - INFO - Running job "schedule_dataset_update (trigger: cron[hour='0', minute='0'], next run at: 2025-05-04 00:00:00 +08)" (scheduled at 2025-05-04 00:00:00+08:00)
+2025-05-04 00:00:00,063 - INFO - \u23f3 Running scheduled dataset update...
+2025-05-04 00:00:02,323 - INFO - \u2705 Dataset updated successfully.
+2025-05-04 00:00:02,325 - INFO - Job "schedule_dataset_update (trigger: cron[hour='0', minute='0'], next run at: 2025-05-05 00:00:00 +08)" executed successfully
+2025-05-04 00:05:45,294 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,300 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,303 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,306 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,309 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,313 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,318 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,321 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,323 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,324 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,557 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,561 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,670 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,675 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,728 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,731 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,735 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,736 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,928 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,933 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,937 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,949 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,953 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:45,954 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,138 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,141 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,143 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,145 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,150 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,155 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,158 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,162 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,164 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,166 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,428 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,431 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,436 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,441 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,444 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:46,445 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-05-04 00:05:55,472 - INFO - \u2705 Forecasting completed successfully.
+2025-05-04 00:05:55,472 - INFO - Job "schedule_forecast_script (trigger: cron[day_of_week='sun', hour='0', minute='0'], next run at: 2025-05-11 00:00:00 +08)" executed successfully
+2025-05-04 00:49:08,199 - ERROR - AuthMetadataPluginCallback "<google.auth.transport.grpc.AuthMetadataPlugin object at 0x000001C8DC156C50>" raised exception!
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 1386, in getresponse
+    response.begin()
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 325, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 294, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\util\retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 1386, in getresponse
+    response.begin()
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 325, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 294, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\requests.py", line 186, in __call__
+    response = self.session.request(
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\adapters.py", line 682, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\grpc\_plugin_wrapping.py", line 105, in __call__
+    self._metadata_plugin(
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\grpc.py", line 95, in __call__
+    callback(self._get_authorization_headers(context), None)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\grpc.py", line 81, in _get_authorization_headers
+    self._credentials.before_request(
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\credentials.py", line 239, in before_request
+    self._blocking_refresh(request)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\credentials.py", line 202, in _blocking_refresh
+    self.refresh(request)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\service_account.py", line 448, in refresh
+    access_token, expiry, _ = _client.jwt_grant(
+                              ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 299, in jwt_grant
+    response_data = _token_endpoint_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 259, in _token_endpoint_request
+    response_status_ok, response_data, retryable_error = _token_endpoint_request_no_throw(
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+               ^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\requests.py", line 192, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-05-04 01:46:04,820 - ERROR - AuthMetadataPluginCallback "<google.auth.transport.grpc.AuthMetadataPlugin object at 0x000001C8DC156C50>" raised exception!
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 1386, in getresponse
+    response.begin()
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 325, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 294, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\util\retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\urllib3\connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 1386, in getresponse
+    response.begin()
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 325, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "E:\Python64-3.11.7\Lib\http\client.py", line 294, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\requests.py", line 186, in __call__
+    response = self.session.request(
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\requests\adapters.py", line 682, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\grpc\_plugin_wrapping.py", line 105, in __call__
+    self._metadata_plugin(
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\grpc.py", line 95, in __call__
+    callback(self._get_authorization_headers(context), None)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\grpc.py", line 81, in _get_authorization_headers
+    self._credentials.before_request(
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\credentials.py", line 239, in before_request
+    self._blocking_refresh(request)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\credentials.py", line 202, in _blocking_refresh
+    self.refresh(request)
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\service_account.py", line 448, in refresh
+    access_token, expiry, _ = _client.jwt_grant(
+                              ^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 299, in jwt_grant
+    response_data = _token_endpoint_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 259, in _token_endpoint_request
+    response_status_ok, response_data, retryable_error = _token_endpoint_request_no_throw(
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\oauth2\_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+               ^^^^^^^^
+  File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\requests.py", line 192, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
