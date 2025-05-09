@@ -281,6 +281,18 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  where,
+  Timestamp
+} from 'firebase/firestore'
+
+const db = getFirestore()
 
 // Headers definition
 const headers = [
@@ -292,20 +304,9 @@ const headers = [
 ]
 
 // Data
-const data = ref([
-  { id: 1, status: 'HIGH', waterLevel: 85, date: '2024-05-17', time: '18:58:33' },
-  { id: 2, status: 'HIGH', waterLevel: 82, date: '2024-05-17', time: '18:58:48' },
-  { id: 3, status: 'HIGH', waterLevel: 80, date: '2024-05-17', time: '18:59:24' },
-  { id: 4, status: 'MEDIUM', waterLevel: 48, date: '2024-05-17', time: '19:00:25' },
-  { id: 5, status: 'LOW', waterLevel: 35, date: '2024-05-17', time: '19:01:25' },
-  { id: 6, status: 'HIGH', waterLevel: 92, date: '2024-05-17', time: '19:02:25' },
-  { id: 7, status: 'HIGH', waterLevel: 92, date: '2024-05-17', time: '19:02:25' },
-  { id: 8, status: 'HIGH', waterLevel: 92, date: '2024-05-17', time: '19:02:25' },
-])
-
-// Reactive state
+const data = ref([])
 const searchQuery = ref('')
-const itemsPerPage = ref(5) // Changed from 10 to 5 as requested
+const itemsPerPage = ref(10)
 const currentPage = ref(1)
 const activeDropdown = ref(null)
 const sortKey = ref('id')
@@ -320,8 +321,94 @@ const filters = ref({
   waterLevel: { min: '', max: '' }
 })
 
-// Changed from 'excel' to 'docs' as requested
 const exportFormats = ['csv', 'pdf', 'docs']
+
+// Function to determine water status based on level
+const calculateWaterStatus = (level) => {
+  if (level >= 70) return 'HIGH'
+  if (level >= 30 && level < 70) return 'MEDIUM'
+  return 'LOW'
+}
+
+// Fetch water level data function
+const fetchWaterLevelData = async () => {
+  try {
+    console.log('🚰 Starting to fetch water level data...');
+    // Create a query against the water_level_readings collection
+    const q = query(
+      collection(db, "water_level_readings"),
+      orderBy("timestamp", "desc")
+    );
+
+    console.log('📊 Executing Firestore query...');
+    // Get the documents
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      console.log('⚠️ No documents found in water_level_readings collection');
+      data.value = [];
+      return;
+    }
+
+    console.log('📥 Raw data:', querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    
+    // Process the data
+    data.value = querySnapshot.docs
+      .filter(doc => {
+        const docData = doc.data();
+        if (docData.waterLevel === undefined) {
+          console.log('⚠️ Document missing waterLevel:', doc.id);
+          return false;
+        }
+        return true;
+      })
+      .map((doc, index) => {
+        const docData = doc.data();
+        console.log('🔄 Processing document:', { id: doc.id, data: docData });
+
+        const timestamp = docData.timestamp instanceof Timestamp 
+          ? new Date(docData.timestamp.toMillis())
+          : new Date();
+
+        // Format date as "MMM DD, YYYY" (e.g., "May 09, 2024")
+        const date = timestamp.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: '2-digit'
+        });
+
+        // Format time as "HH:mm:ss" (e.g., "14:30:45")
+        const time = timestamp.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+
+        const waterLevel = Number(docData.waterLevel).toFixed(2);
+        const status = calculateWaterStatus(Number(docData.waterLevel));
+
+        const processedData = {
+          id: index + 1,
+          waterLevel: waterLevel,
+          status: status,
+          date: date,
+          time: time
+        };
+
+        console.log('✨ Processed entry:', processedData);
+        return processedData;
+      });
+
+    console.log('✅ Final processed water level data:', data.value);
+  } catch (error) {
+    console.error('❌ Error fetching water level data:', error);
+    if (error.code) {
+      console.error('Firebase error code:', error.code);
+    }
+    data.value = [];
+  }
+};
 
 // Computed properties
 const filteredData = computed(() => {
@@ -560,6 +647,7 @@ watch([searchQuery, activeFilters, itemsPerPage], () => {
 // Lifecycle hooks
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  fetchWaterLevelData() // Add this line to fetch data when component mounts
 })
 
 onUnmounted(() => {

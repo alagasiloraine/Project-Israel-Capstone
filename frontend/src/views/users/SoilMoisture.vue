@@ -145,32 +145,43 @@
                     <th class="w-[10%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       ID
                     </th>
-                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Soil Status
+                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-blue-600">Soil Moisture</div>
+                      <div class="text-gray-400 text-[10px]">PERCENTAGE (%)</div>
                     </th>
-                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Soil Moisture
+                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-emerald-600">Soil Status</div>
+                      <div class="text-gray-400 text-[10px]">CONDITION</div>
                     </th>
-                    <th class="w-[25%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
+                    <th class="w-[25%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-gray-600">Date</div>
+                      <div class="text-gray-400 text-[10px]">MMM DD, YYYY</div>
                     </th>
-                    <th class="w-[25%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Time
+                    <th class="w-[25%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-gray-600">Time</div>
+                      <div class="text-gray-400 text-[10px]">HH:MM:SS</div>
                     </th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                   <tr 
-                    v-for="(row, index) in soilMoistureData" 
+                    v-for="(row, index) in paginatedData" 
                     :key="index"
                     class="group transition-colors duration-150 hover:bg-gray-50"
                   >
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.id }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {{ row.id }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-blue-600 bg-blue-50/30 px-2 py-1 rounded-md inline-block text-center w-[80px]">
+                        {{ row.soilMoisture }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
                       <span 
                         :class="[
-                          'px-2 py-1 rounded-full text-sm font-medium',
-                          row.soilStatus === 'WET' ? 'bg-green-100 text-green-800' :
+                          'px-3 py-1 rounded-full text-sm font-medium',
+                          row.soilStatus === 'WET' ? 'bg-emerald-100 text-emerald-800' :
                           row.soilStatus === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
                           'bg-red-100 text-red-800'
                         ]"
@@ -178,13 +189,16 @@
                         {{ row.soilStatus }}
                       </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ row.soilMoisture }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.date }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.time }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {{ row.date }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {{ row.time }}
+                    </td>
                   </tr>
-                  <tr v-if="filteredAndSortedData.length === 0">
+                  <tr v-if="paginatedData.length === 0">
                     <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
-                      No data found matching your criteria
+                      No soil moisture data available
                     </td>
                   </tr>
                 </tbody>
@@ -203,10 +217,10 @@
                   class="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-colors"
                   @change="updatePagination"
                 >
-                  <option value="6">6</option>
                   <option value="10">10</option>
-                  <option value="20">20</option>
+                  <option value="25">25</option>
                   <option value="50">50</option>
+                  <option value="100">100</option>
                 </select>
                 <span class="hidden sm:inline">entries per page</span>
                 <span class="text-gray-400 mx-2">|</span>
@@ -270,45 +284,45 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
-import api from '../../api/index.js'
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  where,
+  Timestamp
+} from 'firebase/firestore'
+
+const db = getFirestore()
 
 // Headers definition - Removed motorStatus
 const headers = [
   { key: 'id', label: 'ID' },
+  { key: 'soilMoisture', label: 'Soil Moisture (%)' },
   { key: 'soilStatus', label: 'Soil Status' },
-  { key: 'soilMoisture', label: 'Soil Moisture' },
   { key: 'date', label: 'Date' },
   { key: 'time', label: 'Time' }
 ]
 
-// Data - Kept motorStatus in the data but it won't be displayed
-const data = ref([
-  { id: 1, soilStatus: 'WET', soilMoisture: 100, motorStatus: 'OFF', date: '2024-05-17', time: '18:58:33' },
-  { id: 2, soilStatus: 'MEDIUM', soilMoisture: 33, motorStatus: 'OFF', date: '2024-05-17', time: '18:58:48' },
-  { id: 3, soilStatus: 'MEDIUM', soilMoisture: 32, motorStatus: 'OFF', date: '2024-05-17', time: '18:59:24' },
-  { id: 4, soilStatus: 'DRY', soilMoisture: 30, motorStatus: 'ON',  date: '2024-05-17', time: '18:59:24' },
-  { id: 4, soilStatus: 'DRY', soilMoisture: 30, motorStatus: 'ON', date: '2024-05-17', time: '19:00:25' },
-  { id: 5, soilStatus: 'WET', soilMoisture: 89, motorStatus: 'OFF', date: '2024-05-17', time: '19:01:10' },
-  { id: 6, soilStatus: 'WET', soilMoisture: 95, motorStatus: 'OFF', date: '2024-05-17', time: '19:01:26' },
-  { id: 7, soilStatus: 'WET', soilMoisture: 94, motorStatus: 'OFF', date: '2024-05-17', time: '19:01:57' },
-  { id: 8, soilStatus: 'WET', soilMoisture: 94, motorStatus: 'OFF', date: '2024-05-17', time: '19:02:28' },
-])
-
-// Reactive state
+// Data
+const data = ref([])
 const searchQuery = ref('')
-const itemsPerPage = ref(6)
+const itemsPerPage = ref(10)
 const currentPage = ref(1)
 const activeDropdown = ref(null)
 const sortKey = ref('id')
 const sortDirection = ref('asc')
 const activeFilters = ref({})
+const soilMoistureData = ref([])
 
-// Removed motorStatus from filterFields
+// Filter fields
 const filterFields = [
-  { key: 'soilMoisture', label: 'Soil Moisture' }
+  { key: 'soilMoisture', label: 'Soil Moisture (%)' }
 ]
 
-// Removed motorStatus from filters
+// Filters
 const filters = ref({
   soilMoisture: { min: '', max: '' }
 })
@@ -317,7 +331,7 @@ const exportFormats = ['csv', 'pdf', 'docs']
 
 // Computed properties
 const filteredData = computed(() => {
-  let result = [...data.value]
+  let result = [...soilMoistureData.value]
   
   // Apply search filter
   if (searchQuery.value) {
@@ -371,10 +385,6 @@ const paginatedData = computed(() => {
   const startIndex = (currentPage.value - 1) * itemsPerPage.value
   const endIndex = startIndex + itemsPerPage.value
   return sortedData.value.slice(startIndex, endIndex)
-})
-
-const filteredAndSortedData = computed(() => {
-  return paginatedData.value
 })
 
 const totalPages = computed(() => {
@@ -560,44 +570,67 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-const soilMoistureData = ref([])
+// Function to determine soil status based on moisture level
+const calculateSoilStatus = (moisture) => {
+  if (moisture >= 70) return 'WET'
+  if (moisture >= 30 && moisture < 70) return 'MEDIUM'
+  return 'DRY'
+}
 
 const fetchSoilMoistureData = async () => {
   try {
-    const response = await api.get('/sensor/readings');
-    const allData = response.data;
-    console.log('🌱 Raw sensor data:', allData);
+    console.log('Fetching soil moisture data...');
+    // Create a query against the sensor_readings collection
+    const q = query(
+      collection(db, "sensor_readings"),
+      orderBy("timestamp", "desc")
+    );
 
-    soilMoistureData.value = allData
-      .filter(item => item.soilMoisture !== undefined)
-      .sort((a, b) => {
-        const timeA = a.timestamp?.seconds ? new Date(a.timestamp.seconds * 1000) : new Date();
-        const timeB = b.timestamp?.seconds ? new Date(b.timestamp.seconds * 1000) : new Date();
-        return timeB - timeA;
-      })
-      .map((item, index) => {
-        const timestamp = item.timestamp?.seconds
-          ? new Date(item.timestamp.seconds * 1000)
-          : new Date(); // fallback
+    // Get the documents
+    const querySnapshot = await getDocs(q);
+    console.log('Raw data:', querySnapshot.docs.map(doc => doc.data()));
+    
+    // Process the data
+    soilMoistureData.value = querySnapshot.docs
+      .filter(doc => doc.data().soilMoisture !== undefined)
+      .map((doc, index) => {
+        const data = doc.data();
+        const timestamp = data.timestamp instanceof Timestamp 
+          ? new Date(data.timestamp.toMillis())
+          : new Date();
+
+        // Format date as "MMM DD, YYYY" (e.g., "May 09, 2024")
+        const date = timestamp.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: '2-digit'
+        });
+
+        // Format time as "HH:mm:ss" (e.g., "14:30:45")
+        const time = timestamp.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+
+        const soilMoisture = Number(data.soilMoisture).toFixed(2);
+        const soilStatus = calculateSoilStatus(Number(data.soilMoisture));
 
         return {
           id: index + 1,
-          soilMoisture: item.soilMoisture,
-          soilStatus: item.soilStatus || 'N/A',
-          motorStatus: item.motorStatus || 'OFF',
-          date: timestamp.toLocaleDateString(),
-          time: timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          soilMoisture: soilMoisture,
+          soilStatus: soilStatus,
+          date: date,
+          time: time
         };
       });
 
-    console.log('✅ Processed soilMoistureData:', JSON.stringify(soilMoistureData.value, null, 2));
-
+    console.log('✅ Processed soil moisture data:', soilMoistureData.value);
   } catch (error) {
-    console.error("❌ Failed to fetch soil moisture data", error);
+    console.error('❌ Failed to fetch soil moisture data:', error);
   }
 };
-
-
 
 </script>
 

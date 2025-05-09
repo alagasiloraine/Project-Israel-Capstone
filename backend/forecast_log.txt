@@ -18483,3 +18483,15 @@ google.auth.exceptions.TransportError: ('Connection aborted.', RemoteDisconnecte
 2025-05-09 20:40:10,457 - INFO - Added job "schedule_dataset_update" to job store "default"
 2025-05-09 20:40:10,457 - INFO - Scheduler started
 2025-05-09 20:40:10,465 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
+2025-05-09 20:44:49,631 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-09 20:44:49,633 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-09 20:44:49,635 - INFO - Added job "schedule_forecast_script" to job store "default"
+2025-05-09 20:44:49,635 - INFO - Added job "schedule_dataset_update" to job store "default"
+2025-05-09 20:44:49,636 - INFO - Scheduler started
+2025-05-09 20:44:49,646 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
+2025-05-09 22:31:55,659 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-09 22:31:55,660 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-09 22:31:55,661 - INFO - Added job "schedule_forecast_script" to job store "default"
+2025-05-09 22:31:55,663 - INFO - Added job "schedule_dataset_update" to job store "default"
+2025-05-09 22:31:55,663 - INFO - Scheduler started
+2025-05-09 22:31:55,671 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.

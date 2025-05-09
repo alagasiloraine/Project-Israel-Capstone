@@ -20,6 +20,23 @@
 // export { auth, googleProvider, signInWithPopup };
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { 
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    orderBy,
+    limit,
+    doc,
+    setDoc,
+    Timestamp,
+    serverTimestamp,
+    getDoc,
+    updateDoc,
+    deleteDoc,
+    where
+} from "firebase/firestore";
 
 // 🔥 Replace with your actual Firebase config
 const firebaseConfig = {
@@ -34,7 +51,31 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);  // 🔹 Initialize Auth globally
+const db = getFirestore(app); // 🔹 Initialize Firestore globally
 const googleProvider = new GoogleAuthProvider();
 
-export { auth, googleProvider, getAuth, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber };
+export { 
+    auth, 
+    db, 
+    googleProvider, 
+    getAuth, 
+    signInWithPopup, 
+    RecaptchaVerifier, 
+    signInWithPhoneNumber,
+    // Firestore exports
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    orderBy,
+    limit,
+    doc,
+    setDoc,
+    Timestamp,
+    serverTimestamp,
+    getDoc,
+    updateDoc,
+    deleteDoc,
+    where
+};
 
