@@ -122,13 +122,13 @@ subscribers: List[asyncio.Queue] = []
 
 # Pydantic model
 class SensorData(BaseModel):
-    nitrogen: float
-    phosphorus: float
-    potassium: float
-    soilPh: float 
+    nitrogen: float 
+    phosphorus: float #
+    potassium: float #
+    soilPh: float #
     soilMoisture: float  # Optional if you want to keep using it later
-    temperature: float
-    humidity: float
+    temperature: float #
+    humidity: float #
 
 class WaterLevelData(BaseModel):
     waterLevel: float
