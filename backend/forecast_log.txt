@@ -18465,3 +18465,21 @@ Traceback (most recent call last):
   File "E:\ProgrammingProjects\Capstone\v2\Project-Israel-Capstone\backend\venv\Lib\site-packages\google\auth\transport\requests.py", line 192, in __call__
     raise new_exc from caught_exc
 google.auth.exceptions.TransportError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2025-05-09 08:22:05,983 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-09 08:22:05,998 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-09 08:22:06,022 - INFO - Added job "schedule_forecast_script" to job store "default"
+2025-05-09 08:22:06,023 - INFO - Added job "schedule_dataset_update" to job store "default"
+2025-05-09 08:22:06,023 - INFO - Scheduler started
+2025-05-09 08:22:06,092 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
+2025-05-09 20:30:44,048 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-09 20:30:44,048 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-09 20:30:44,049 - INFO - Added job "schedule_forecast_script" to job store "default"
+2025-05-09 20:30:44,049 - INFO - Added job "schedule_dataset_update" to job store "default"
+2025-05-09 20:30:44,050 - INFO - Scheduler started
+2025-05-09 20:30:44,055 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
+2025-05-09 20:40:10,457 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-09 20:40:10,457 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-09 20:40:10,457 - INFO - Added job "schedule_forecast_script" to job store "default"
+2025-05-09 20:40:10,457 - INFO - Added job "schedule_dataset_update" to job store "default"
+2025-05-09 20:40:10,457 - INFO - Scheduler started
+2025-05-09 20:40:10,465 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.

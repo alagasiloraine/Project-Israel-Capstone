@@ -708,17 +708,32 @@
                   <span class="text-sm font-medium text-green-600">%</span>
                 </div>
                 <p class="text-xs text-gray-600">
-                  Recommended on {{
-                    new Date(selectedPrediction?.date).toLocaleString('en-US', {
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric',
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true
-                    })
-                  }}
+                  Recommended on {{ new Date(selectedPrediction?.date).toLocaleString() }}
                 </p>
+              </div>
+
+              <!-- Recommended Fertilizer -->
+              <div class="bg-white rounded-lg p-4 border border-gray-100">
+                <div class="flex items-center gap-2 text-green-600 mb-3">
+                  <FlaskIcon class="h-4 w-4" />
+                  <span class="text-xs font-medium">Recommended Fertilizer</span>
+                </div>
+                <div class="space-y-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-gray-700">Type:</span>
+                    <span class="text-sm text-gray-600">{{ selectedPrediction?.fertilizer?.type || 'N/A' }}</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-gray-700">Name:</span>
+                    <span class="text-sm text-gray-600">{{ selectedPrediction?.fertilizer?.name || 'N/A' }}</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-gray-700">Amount:</span>
+                    <span class="text-sm text-gray-600">
+                      {{ selectedPrediction?.fertilizer?.adjusted_amount || 0 }} {{ selectedPrediction?.fertilizer?.unit || '' }}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <!-- Status Management -->
@@ -743,78 +758,73 @@
                   </button>
                 </div>
               </div>
-
-              <!-- Crop Rotation Tip -->
-              <div class="bg-green-50/50 rounded-lg p-3">
-                <div class="flex items-start gap-2">
-                  <div class="mt-0.5">
-                    <InfoIcon class="h-3.5 w-3.5 text-green-600" />
-                  </div>
-                  <div>
-                    <h5 class="text-xs font-medium text-green-700 mb-1">Crop Rotation Tip</h5>
-                    <p class="text-[11px] leading-relaxed text-green-600">
-                      Consider rotating between these crops to maintain soil health and maximize yields over time.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
 
             <!-- Right Column -->
             <div class="space-y-3">
-              <!-- Alternative Options -->
-              <div class="bg-white rounded-lg p-3 border border-gray-100">
-                <div class="flex items-center gap-2 text-green-600 mb-2">
+              <!-- Alternative Options with Fertilizers -->
+              <div class="bg-white rounded-lg p-4 border border-gray-100">
+                <div class="flex items-center gap-2 text-green-600 mb-3">
                   <ListIcon class="h-4 w-4" />
                   <span class="text-xs font-medium">Alternative Options</span>
                 </div>
-
-                <div class="space-y-2">
-                  <div 
-                    v-for="option in alternativeCrops" 
-                    :key="option.crop" 
-                    class="group"
-                  >
-                    <div class="flex items-center justify-between mb-1">
+                <div class="space-y-4">
+                  <div v-for="option in alternativeCrops" :key="option.crop" class="space-y-2">
+                    <!-- Crop Info -->
+                    <div class="flex items-center justify-between">
                       <div>
-                        <h4 class="text-sm font-medium text-gray-900">
-                          {{ option.crop }}
-                        </h4>
+                        <h4 class="text-sm font-medium text-gray-900">{{ option.crop }}</h4>
                         <p class="text-[10px] text-gray-500">Alternative crop</p>
                       </div>
                       <div class="text-right">
                         <div class="text-sm font-semibold text-gray-900">
-                          {{ option.successRate || option.confidence }}%
+                          {{ option.confidence }}%
                         </div>
                       </div>
                     </div>
+                    <!-- Progress Bar -->
                     <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                       <div 
                         class="h-full bg-green-500 rounded-full transition-all" 
-                        :style="{ width: `${option.successRate || option.confidence}%` }"
+                        :style="{ width: `${option.confidence}%` }"
                       ></div>
                     </div>
-
+                    <!-- Fertilizer Info -->
+                    <div class="bg-gray-50 rounded-lg p-2 mt-2">
+                      <div class="text-[10px] font-medium text-gray-600 mb-1">Recommended Fertilizer:</div>
+                      <div class="grid grid-cols-2 gap-1 text-[10px]">
+                        <div class="text-gray-500">Type:</div>
+                        <div class="text-gray-700 text-right">{{ option.fertilizer?.type || 'N/A' }}</div>
+                        <div class="text-gray-500">Name:</div>
+                        <div class="text-gray-700 text-right">{{ option.fertilizer?.name || 'N/A' }}</div>
+                        <div class="text-gray-500">Amount:</div>
+                        <div class="text-gray-700 text-right">
+                          {{ option.fertilizer?.adjusted_amount || 0 }} {{ option.fertilizer?.unit || '' }}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-
-              <!-- Organic Fertilizer Recommendations -->
-              <div class="bg-white rounded-lg p-3 border border-gray-100">
-                <div class="flex items-center gap-2 text-green-600 mb-2">
-                  <FlaskIcon class="h-4 w-4" />
-                  <span class="text-xs font-medium">Recommended Fertilizers</span>
+              <!-- Success Metrics -->
+              <div class="bg-white rounded-lg p-4 border border-gray-100">
+                <div class="flex items-center gap-2 text-green-600 mb-3">
+                  <TrendingUpIcon class="h-4 w-4" />
+                  <span class="text-xs font-medium">Success Metrics</span>
                 </div>
                 <div class="space-y-2">
-                  <div v-for="fertilizer in recommendedFertilizers" :key="fertilizer.name" 
-                       class="p-2 bg-gray-50 rounded-lg">
-                    <h4 class="text-sm font-medium text-gray-900">{{ fertilizer.name }}</h4>
-                    <p class="text-xs text-gray-600 mt-1">{{ fertilizer.description }}</p>
-                    <div class="flex items-center gap-2 mt-1">
-                      <span class="text-xs font-medium text-green-600">Application Rate:</span>
-                      <span class="text-xs text-gray-600">{{ fertilizer.rate }}</span>
-                    </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-600">Soil Compatibility</span>
+                    <span class="text-xs font-medium text-gray-900">{{ selectedPrediction?.soilCompatibility }}%</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-600">Growth Rate</span>
+                    <span class="text-xs font-medium text-gray-900">{{ selectedPrediction?.growthRate }}%</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-600">Yield Potential</span>
+                    <span class="text-xs font-medium text-gray-900">{{ selectedPrediction?.yieldPotential }}%</span>
                   </div>
                 </div>
               </div>
@@ -914,6 +924,13 @@ const soilCompatibility = ref(0)
 const growthRate = ref(0)
 const yieldPotential = ref(0)
 const alternativeOptions = ref([])
+const fertilizer = ref({
+  type: '',
+  name: '',
+  base_amount: 0,
+  adjusted_amount: 0,
+  unit: ''
+})
 
 const predictions = ref([])
 const searchQuery = ref('')
@@ -1162,6 +1179,7 @@ const submitForm = async () => {
     soilCompatibility.value = result.soilCompatibility
     growthRate.value = result.growthRate
     yieldPotential.value = result.yieldPotential
+    fertilizer.value = result.fertilizer
     showModal.value = true
   } catch (error) {
     console.error('Fetch error:', error)
@@ -1176,10 +1194,52 @@ const saveRecommendation = async () => {
     soilCompatibility: soilCompatibility.value,
     growthRate: growthRate.value,
     yieldPotential: yieldPotential.value,
-    alternativeOptions: alternativeOptions.value,
+    fertilizer: {
+      type: fertilizer.value.type,
+      name: fertilizer.value.name,
+      base_amount: fertilizer.value.base_amount,
+      adjusted_amount: fertilizer.value.adjusted_amount,
+      unit: fertilizer.value.unit
+    },
+    alternativeOptions: alternativeOptions.value.map(alt => ({
+      crop: alt.crop,
+      confidence: alt.confidence,
+      fertilizer: {
+        type: alt.fertilizer.type,
+        name: alt.fertilizer.name,
+        base_amount: alt.fertilizer.base_amount,
+        adjusted_amount: alt.fertilizer.adjusted_amount,
+        unit: alt.fertilizer.unit
+      }
+    })),
+    // Add soil reading data
+    soilData: {
+      nitrogen: nitrogen.value,
+      phosphorus: phosphorus.value,
+      potassium: potassium.value,
+      soilpH: soilpH.value,
+      soilMoisture: soilMoisture.value,
+      temperature: temperature.value,
+      humidity: humidity.value,
+    }
   }
 
   try {
+    // First save the soil reading
+    const soilReadingRef = await addDoc(collection(db, "sensor_readings"), {
+      nitrogen: nitrogen.value,
+      phosphorus: phosphorus.value,
+      potassium: potassium.value,
+      soilPh: soilpH.value,
+      soilMoisture: soilMoisture.value,
+      temperature: temperature.value,
+      humidity: humidity.value,
+      timestamp: serverTimestamp()
+    });
+
+    // Add the soil reading reference to the payload
+    payload.soilReadingId = soilReadingRef.id;
+
     const res = await api.post('/crop/save', payload)
     console.log("send to back:", payload)
     console.log("✅ Saved recommendation:", res.data)
@@ -1191,7 +1251,6 @@ const saveRecommendation = async () => {
     toastr.error('Unexpected error, please try again')
   }
 }
-
 
 const closeModal = () => {
   showModal.value = false
@@ -1215,10 +1274,71 @@ const tableHeaders = [
 
 const fetchSavedRecommendations = async () => {
   try {
-    const response = await api.get('/crop/recommendations')
-    predictions.value = response.data
+    // Create a query to get all crop recommendations, ordered by timestamp
+    const q = query(
+      collection(db, 'crop_recommendations'),
+      orderBy('timestamp', 'desc')
+    )
+    
+    const querySnapshot = await getDocs(q)
+    
+    // Map the documents to include id and format the data
+    predictions.value = querySnapshot.docs.map(doc => {
+      const data = doc.data()
+      let formattedDate = new Date().toLocaleString() // Default to current date
+      
+      try {
+        if (data.timestamp) {
+          // Handle Firestore Timestamp
+          if (data.timestamp.toDate) {
+            formattedDate = data.timestamp.toDate().toLocaleString()
+          } 
+          // Handle regular Date object
+          else if (data.timestamp instanceof Date) {
+            formattedDate = data.timestamp.toLocaleString()
+          }
+          // Handle timestamp as number
+          else if (typeof data.timestamp === 'number') {
+            formattedDate = new Date(data.timestamp).toLocaleString()
+          }
+        }
+      } catch (error) {
+        console.warn('Error formatting date:', error)
+      }
+
+      return {
+        id: doc.id,
+        crop: data.recommendedCrop,
+        successRate: data.successRate,
+        status: data.status || 'Recommended',
+        date: formattedDate,
+        soilCompatibility: data.soilCompatibility,
+        growthRate: data.growthRate,
+        yieldPotential: data.yieldPotential,
+        alternativeOptions: data.alternativeOptions?.map(alt => ({
+          ...alt,
+          fertilizer: alt.fertilizer || {
+            type: '',
+            name: '',
+            base_amount: 0,
+            adjusted_amount: 0,
+            unit: ''
+          }
+        })) || [],
+        fertilizer: data.fertilizer || {
+          type: '',
+          name: '',
+          base_amount: 0,
+          adjusted_amount: 0,
+          unit: ''
+        }
+      }
+    })
+    
+    console.log("✅ Fetched recommendations:", predictions.value)
   } catch (error) {
-    console.error("Error fetching predictions:", error)
+    console.error("❌ Error fetching predictions from Firebase:", error)
+    toastr.error('Failed to fetch crop recommendations')
   }
 }
 

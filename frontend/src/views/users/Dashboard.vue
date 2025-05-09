@@ -740,7 +740,7 @@ const soilPhChartRef = ref(null);
 
 // Update the motorStatus and motorStatusPercentage variables
 const motorStatus = ref(false);
-const motorOnPercentage = ref(65.7); 
+const motorOnPercentage = ref(0); 
 
 // const circumference = 2 * Math.PI * 48;
 const dashOffset = computed(() => circumference * (1 - motorOnPercentage.value / 100));

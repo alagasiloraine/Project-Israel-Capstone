@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List
-from app.ml.crop_ml.prediction_function import predict_crop
+from app.ml.integrated_prediction import get_integrated_recommendation
 from datetime import datetime
 import os
 from dotenv import load_dotenv
@@ -37,9 +37,17 @@ class CropInput(BaseModel):
     temperature: float
     humidity: float
 
+class FertilizerRecommendation(BaseModel):
+    type: str
+    name: str
+    base_amount: float
+    adjusted_amount: float
+    unit: str
+
 class AlternativeCrop(BaseModel):
     crop: str
     confidence: float
+    fertilizer: FertilizerRecommendation
 
 class CropPrediction(BaseModel):
     recommendedCrop: str
@@ -47,6 +55,7 @@ class CropPrediction(BaseModel):
     soilCompatibility: float
     growthRate: float
     yieldPotential: float
+    fertilizer: FertilizerRecommendation
     alternativeOptions: List[AlternativeCrop]
 
 class CropRecommendationSave(BaseModel):
@@ -55,7 +64,10 @@ class CropRecommendationSave(BaseModel):
     soilCompatibility: float
     growthRate: float
     yieldPotential: float
+    fertilizer: FertilizerRecommendation
     alternativeOptions: List[AlternativeCrop]
+    soilReadingId: str
+    soilData: dict
 
 # ------------------ Predict Route ------------------
 
@@ -72,23 +84,54 @@ async def recommend_crop(data: CropInput):
             "Soil Moisture (%)": data.soilMoisture
         }
 
-        results = predict_crop(features_dict, top_k=3)
+        # Get integrated recommendations
+        result = get_integrated_recommendation(features_dict)
+        
+        # Check for errors
+        if "error" in result:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"{result['error']}: {result['details']}"
+            )
+        
+        recommendations = result["recommendations"]
+        if not recommendations:
+            raise HTTPException(
+                status_code=500,
+                detail="No recommendations generated"
+            )
 
-        results = sorted(results, key=lambda x: x['confidence'], reverse=True)
-        for crop in results:
-            crop['confidence'] = round(crop['confidence'] * 100, 2)
-
-        top_crop = results[0]
-
+        # Process recommendations
+        recommendations = sorted(recommendations, key=lambda x: x['confidence'], reverse=True)
+        
+        # Format the response
+        top_rec = recommendations[0]
         return {
-            "recommendedCrop": top_crop['crop'],
-            "successRate": top_crop['confidence'],
-            "soilCompatibility": top_crop.get('soilCompatibility', 0.0),
-            "growthRate": top_crop.get('growthRate', 0.0),
-            "yieldPotential": top_crop.get('yieldPotential', 0.0),
+            "recommendedCrop": top_rec['crop'],
+            "successRate": round(top_rec['confidence'] * 100, 2),
+            "soilCompatibility": top_rec.get('soil_compatibility', 0.0),
+            "growthRate": top_rec.get('growth_rate', 0.0),
+            "yieldPotential": top_rec.get('yield_potential', 0.0),
+            "fertilizer": {
+                "type": top_rec['fertilizer']['type'],
+                "name": top_rec['fertilizer']['name'],
+                "base_amount": top_rec['fertilizer']['base_amount'],
+                "adjusted_amount": top_rec['fertilizer']['adjusted_amount'],
+                "unit": top_rec['fertilizer']['unit']
+            },
             "alternativeOptions": [
-                {"crop": results[1]['crop'], "confidence": results[1]['confidence']},
-                {"crop": results[2]['crop'], "confidence": results[2]['confidence']}
+                {
+                    "crop": rec['crop'],
+                    "confidence": round(rec['confidence'] * 100, 2),
+                    "fertilizer": {
+                        "type": rec['fertilizer']['type'],
+                        "name": rec['fertilizer']['name'],
+                        "base_amount": rec['fertilizer']['base_amount'],
+                        "adjusted_amount": rec['fertilizer']['adjusted_amount'],
+                        "unit": rec['fertilizer']['unit']
+                    }
+                }
+                for rec in recommendations[1:3]
             ]
         }
 
@@ -104,9 +147,22 @@ async def save_crop_recommendation(data: CropRecommendationSave):
         doc_data["timestamp"] = datetime.utcnow().isoformat()
 
         # Convert alternativeOptions from List[AlternativeCrop] to dicts
-        doc_data["alternativeOptions"] = [alt.dict() for alt in data.alternativeOptions]
+        doc_data["alternativeOptions"] = [
+            {
+                "crop": alt.crop,
+                "confidence": alt.confidence,
+                "fertilizer": alt.fertilizer.dict()
+            } 
+            for alt in data.alternativeOptions
+        ]
 
+        # Convert fertilizer to dict
+        doc_data["fertilizer"] = data.fertilizer.dict()
         doc_data["status"] = "Recommended"
+
+        # Add soil reading reference and data
+        doc_data["soilReadingId"] = data.soilReadingId
+        doc_data["soilData"] = data.soilData
 
         db.collection("crop_recommendations").add(doc_data)
 
@@ -146,9 +202,9 @@ async def get_saved_recommendations():
                 "alternativeOptions": data.get("alternativeOptions", []),
                 "growthRate": data.get("growthRate"),
                 "soilCompatibility": data.get("soilCompatibility"),
-                "yieldPotential": data.get("yieldPotential")
+                "yieldPotential": data.get("yieldPotential"),
+                "fertilizer": data.get("fertilizer", {})
             })
-
 
         return recommendations
 
