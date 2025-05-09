@@ -255,6 +255,18 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  where,
+  Timestamp
+} from 'firebase/firestore'
+
+const db = getFirestore()
 
 // Headers definition
 const headers = [
@@ -265,20 +277,9 @@ const headers = [
 ]
 
 // Data
-const data = ref([
-  { id: 1, status: 'ON', date: '2024-05-17', time: '18:58:33' },
-  { id: 2, status: 'OFF', date: '2024-05-17', time: '18:58:48' },
-  { id: 3, status: 'OFF', date: '2024-05-17', time: '18:59:24' },
-  { id: 4, status: 'ON', date: '2024-05-17', time: '19:00:25' },
-  { id: 5, status: 'OFF', date: '2024-05-17', time: '19:01:25' },
-  { id: 6, status: 'ON', date: '2024-05-17', time: '19:02:25' },
-  { id: 7, status: 'OFF', date: '2024-05-17', time: '19:01:25' },
-  { id: 8, status: 'ON', date: '2024-05-17', time: '19:02:25' },
-])
-
-// Reactive state
+const data = ref([])
 const searchQuery = ref('')
-const itemsPerPage = ref(6) // Changed from 5 to 6 as requested
+const itemsPerPage = ref(6)
 const currentPage = ref(1)
 const activeDropdown = ref(null)
 const sortKey = ref('id')
@@ -295,8 +296,118 @@ const filters = ref({
   status: { min: '', max: '' }
 })
 
-// Changed from 'excel' to 'docs' to match Soil Analysis
 const exportFormats = ['csv', 'pdf', 'docs']
+
+// Fetch motor control data function
+const fetchMotorControlData = async () => {
+  try {
+    console.log('🔄 Starting to fetch motor control data...');
+    
+    // Check if Firestore is initialized
+    if (!db) {
+      console.error('❌ Firestore not initialized');
+      return;
+    }
+
+    // Create a query against the nested logs collection in motor_status/history
+    const logsRef = collection(db, "motor_status", "history", "logs");
+    console.log('📊 Collection reference created for motor_status/history/logs');
+
+    const q = query(
+      logsRef,
+      orderBy("timestamp", "desc"),
+      limit(50)
+    );
+    console.log('📊 Query created:', q);
+
+    // Get the documents
+    console.log('📥 Fetching documents...');
+    const querySnapshot = await getDocs(q);
+    console.log('📦 Query snapshot received:', querySnapshot.size, 'documents');
+    
+    if (querySnapshot.empty) {
+      console.log('⚠️ No documents found in motor_status/history/logs collection');
+      data.value = [];
+      return;
+    }
+
+    // Process the data
+    const processedData = querySnapshot.docs.map((doc, index) => {
+      const docData = doc.data();
+      console.log('📄 Document data:', docData);
+
+      // Check if timestamp exists and is valid
+      let timestamp;
+      if (docData.timestamp) {
+        if (docData.timestamp instanceof Timestamp) {
+          timestamp = docData.timestamp.toDate();
+        } else if (docData.timestamp.seconds) {
+          // Handle timestamp stored as object with seconds
+          timestamp = new Date(docData.timestamp.seconds * 1000);
+        } else {
+          timestamp = new Date(docData.timestamp);
+        }
+      } else {
+        timestamp = new Date();
+        console.warn('⚠️ No timestamp found in document, using current time');
+      }
+
+      // Format date and time
+      const date = timestamp.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit'
+      });
+
+      const time = timestamp.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+
+      // Process status - handle different data types
+      let status = 'OFF'; // Default status
+      if (docData.status !== undefined && docData.status !== null) {
+        // Convert to string and handle boolean values
+        if (typeof docData.status === 'boolean') {
+          status = docData.status ? 'ON' : 'OFF';
+        } else if (typeof docData.status === 'number') {
+          status = docData.status === 1 ? 'ON' : 'OFF';
+        } else {
+          // Handle string or other types
+          const statusStr = String(docData.status).trim().toUpperCase();
+          if (['ON', 'OFF', '1', '0', 'TRUE', 'FALSE'].includes(statusStr)) {
+            status = ['ON', '1', 'TRUE'].includes(statusStr) ? 'ON' : 'OFF';
+          }
+        }
+      }
+
+      console.log(`📊 Processed document ${index + 1}:`, { status, date, time });
+
+      return {
+        id: index + 1,
+        status: status,
+        date: date,
+        time: time,
+        raw_timestamp: timestamp // Keep for sorting purposes
+      };
+    });
+
+    // Sort by timestamp descending (newest first)
+    data.value = processedData.sort((a, b) => b.raw_timestamp - a.raw_timestamp);
+    console.log('✅ Final processed data:', data.value);
+
+  } catch (error) {
+    console.error('❌ Error fetching motor control data:', error);
+    console.error('Error details:', {
+      code: error.code,
+      message: error.message,
+      stack: error.stack
+    });
+    data.value = [];
+  }
+};
 
 // Computed properties
 const filteredData = computed(() => {
@@ -528,14 +639,27 @@ watch([searchQuery, activeFilters, itemsPerPage], () => {
   currentPage.value = 1
 })
 
-// Lifecycle hooks
+// Add auto-refresh functionality
+let refreshInterval;
+
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
+  document.addEventListener('click', handleClickOutside);
+  fetchMotorControlData(); // Initial fetch
+  
+  // Set up auto-refresh every 30 seconds
+  refreshInterval = setInterval(() => {
+    console.log('🔄 Auto-refreshing motor status data...');
+    fetchMotorControlData();
+  }, 30000);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+  document.removeEventListener('click', handleClickOutside);
+  // Clear the refresh interval
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+  }
+});
 </script>
 
 <style>
