@@ -1,6 +1,12 @@
 <template>
   <div class="h-screen flex bg-gradient-to-br from-green-50 to-emerald-100 font-poppins overflow-hidden">
+<<<<<<< HEAD
     <Sidebar />
+=======
+    <keep-alive>
+      <Sidebar />
+    </keep-alive>
+>>>>>>> cy
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-screen pt-32">
       <!-- Container Wrapper with proper spacing -->
@@ -265,10 +271,17 @@
                   <div class="flex items-center justify-between mb-4">
                     <div>
                       <div class="flex items-end space-x-1">
+<<<<<<< HEAD
                         <p class="text-4xl font-bold text-gray-900">{{ weather?.temperature_c }}</p>
                         <p class="text-xl font-semibold text-gray-600 mb-1">°C</p>
                       </div>
                       <p class="text-base mt-1 text-gray-600">{{ weather?.weather_condition }}</p>
+=======
+                        <p class="text-4xl font-bold text-gray-900">{{ weather?.temperature_c ?? '0' }}</p>
+                        <p class="text-xl font-semibold text-gray-600 mb-1">°C</p>
+                      </div>
+                      <p class="text-base mt-1 text-gray-600">{{ weather?.weather_condition ?? '--' }}</p>
+>>>>>>> cy
                     </div>
                     <div class="weather-icon-wrapper">
                       <component 
@@ -306,12 +319,20 @@
 
                         <!-- Use actual condition if available -->
                         <component 
+<<<<<<< HEAD
                           :is="getWeatherIcon(day.temp || 'Clear')" 
+=======
+                          :is="getWeatherIcon(day.temperature_max || 'Clear')" 
+>>>>>>> cy
                           class="h-6 w-6 mb-1 text-yellow-500"
                         />
 
                         <span class="text-xs font-bold text-gray-900">
+<<<<<<< HEAD
                           {{ typeof day.temp === 'number' ? `${day.temp.toFixed(1)}°` : 'N/A' }}
+=======
+                          {{ typeof day.temperature_max === 'number' ? `${day.temperature_max.toFixed(1)}°` : 'N/A' }}
+>>>>>>> cy
                         </span>
                       </div>
                     </div>
@@ -696,10 +717,34 @@ import {
   FlaskConical
 } from 'lucide-vue-next';
 import Sidebar from '../layout/Sidebar.vue'
+<<<<<<< HEAD
 import api from '../../api/index'
 import { eventBus } from '../../eventBus';
 import { sendPushNotification } from '../../utils/notify';
 
+=======
+import { getWeatherData } from '../../utils/weather';
+import api from '../../api/index'
+import { eventBus } from '../../eventBus';
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    orderBy,
+    limit,
+    doc,
+    setDoc,
+    Timestamp,
+    serverTimestamp,
+    getDoc,
+    updateDoc,
+    deleteDoc,
+    where
+  } from 'firebase/firestore'
+const db = getFirestore()
+>>>>>>> cy
 Chart.register(...registerables);
 
 const lineChartRefs = ref([]);
@@ -721,7 +766,11 @@ const soilPhChartRef = ref(null);
 
 // Update the motorStatus and motorStatusPercentage variables
 const motorStatus = ref(false);
+<<<<<<< HEAD
 const motorOnPercentage = ref(65.7); 
+=======
+const motorOnPercentage = ref(0); 
+>>>>>>> cy
 
 // const circumference = 2 * Math.PI * 48;
 const dashOffset = computed(() => circumference * (1 - motorOnPercentage.value / 100));
@@ -742,6 +791,7 @@ const humidity = ref(null)
 const soilMoisture = ref(null)
 const sensorReadings = ref([]);
 
+<<<<<<< HEAD
 
 const weeklyData = [
   { label: 'M', percentage: 70 },
@@ -752,6 +802,22 @@ const weeklyData = [
   { label: 'S', percentage: 50 },
   { label: 'S', percentage: 65 },
 ];
+=======
+let intervalId = null;
+
+
+// const weeklyData = [
+//   { label: 'M', percentage: 70 },
+//   { label: 'T', percentage: 65 },
+//   { label: 'W', percentage: 80 },
+//   { label: 'T', percentage: 55 },
+//   { label: 'F', percentage: 75 },
+//   { label: 'S', percentage: 50 },
+//   { label: 'S', percentage: 65 },
+// ];
+
+const weeklyData = ref([])
+>>>>>>> cy
 
 const metrics = [
   {
@@ -805,6 +871,7 @@ const metrics = [
   }
 ];
 
+<<<<<<< HEAD
 watch(waterLevel, (newVal) => {
   if (newVal === 50) {
     eventBus.emit('notify', {
@@ -836,6 +903,39 @@ watch(waterLevel, (newVal) => {
     sendPushNotification("Water level is critically low! Immediate action required.")
   }
 });
+=======
+// watch(waterLevel, (newVal) => {
+//   if (newVal === 50) {
+//     eventBus.emit('notify', {
+//       title: "Water Level Notice",
+//       message: "Water level is currently at 50%.",
+//       type: "water"
+//     });
+//     sendPushNotification("Water level is currently at 50%.")
+//   } else if (newVal < 50 && newVal > 30) {
+//     eventBus.emit('notify', {
+//       title: "Water Level Low",
+//       message: "Water level is below 50%. Please check the tank.",
+//       type: "water"
+//     });
+//     sendPushNotification("Water level is below 50%. Please check the tank.")
+//   } else if (newVal < 30 && newVal >15){
+//     eventBus.emit('notify', {
+//       title: "Water Level Warning",
+//       message: "Water level has only 30%. Please check the tank.",
+//       type: "water"
+//     });
+//     sendPushNotification("Water level has only 30%. Please check the tank.")
+//   } else if (newVal <= 15 && newVal >= 10) {
+//     eventBus.emit('notify', {
+//       title: "Critical Water Level",
+//       message: "Water level is critically low! Immediate action required.",
+//       type: "water"
+//     });
+//     sendPushNotification("Water level is critically low! Immediate action required.")
+//   }
+// });
+>>>>>>> cy
 
 // const latestNpk = computed(() => sensorReadings.value.length > 0 ? sensorReadings.value[0] : {});
 
@@ -968,6 +1068,7 @@ const toggleMotorStatus = () => {
   motorStatus.value = !motorStatus.value;
 };
 
+<<<<<<< HEAD
 
 onMounted(() => {
   const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
@@ -1009,6 +1110,69 @@ onMounted(() => {
       humidity.value = data.humidity
       soilMoisture.value = data.soilMoisture
     }
+=======
+const loadWeather = async () => {
+  try {
+    const data = await getWeatherData();
+    weather.value = data.current;
+    forecast.value = data.forecast.slice(0, 7);
+  } catch (error) {
+    console.error('Failed to load weather:', error);
+  }
+};
+
+onMounted(async () => {
+  // const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+  // const host = 'localhost:8000'
+  // const socket = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
+
+  // socket.onopen = () => {
+  //   console.log('[Weather WS] Connected')
+  // }
+
+  // socket.onmessage = (event) => {
+  //   const data = JSON.parse(event.data)
+  //   console.log('[Weather WS] Data received:', data)
+
+  //   weather.value = data.current_weather
+  //   forecast.value = data.forecast_7_days.map(day => ({
+  //     ...day,
+  //     temp: parseFloat(day.temperature_max),
+  //     condition: day.condition || 'Clear'  // optional: adjust if CSV has this
+  //   }))
+  // }
+
+  // socket.onerror = (err) => {
+  //   console.error('[Weather WS] Error:', err)
+  // }
+
+  // socket.onclose = () => {
+  //   console.warn('[Weather WS] Disconnected')
+  // }
+
+  await loadWeather(); 
+  intervalId = setInterval(loadWeather, 600000); 
+
+  await fetchLatestSensorDataFromFirebase()
+
+  const eventSource = new EventSource('http://localhost:8000/api/stream')
+
+  eventSource.onmessage = (event) => {
+    const data = JSON.parse(event.data)
+
+    nitrogen.value = data.nitrogen
+    phosphorus.value = data.phosphorus
+    potassium.value = data.potassium
+    soilpH.value = data.soilPh
+    temperature.value = data.temperature
+    humidity.value = data.humidity
+    soilMoisture.value = data.soilMoisture
+
+    console.log("🔁 Real-time data:", data)
+  }
+
+  await fetchLatestWaterLevel()
+>>>>>>> cy
 
   const eventWaterSource = new EventSource('http://localhost:8000/api/water-stream')
 
@@ -1021,15 +1185,25 @@ onMounted(() => {
     }
   }
 
+<<<<<<< HEAD
 eventSource.onerror = (e) => {
   console.error("❌ SSE Error:", e)
 }
   
   fetchSensorData();
+=======
+  eventSource.onerror = (e) => {
+    console.error("❌ SSE Error:", e)
+  }
+  
+  fetchSensorData();
+  fetchMotorStatusData();
+>>>>>>> cy
 })
 
 const fetchSensorData = async () => {
   try {
+<<<<<<< HEAD
     const res = await api.get('/sensor/readings')
     sensorReadings.value = res.data
     console.log(sensorReadings)
@@ -1038,6 +1212,139 @@ const fetchSensorData = async () => {
     initSoilPhChart()
   } catch (err) {
     console.error("Error fetching sensor data:", err)
+=======
+    const snapshot = await getDocs(collection(db, 'sensor_readings'))
+
+    sensorReadings.value = snapshot.docs.map(doc => {
+      const data = doc.data()
+      // Convert Firestore Timestamp to JS Date
+      const timestamp = data.timestamp
+      const jsDate = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp.seconds * 1000)
+
+      return {
+        id: doc.id,
+        ...data,
+        timestamp: jsDate,
+      }
+    })
+
+    console.log(sensorReadings.value)
+
+    await nextTick()
+    initAllCharts()
+    initSoilPhChart()
+  } catch (err) {
+    console.error("Error fetching sensor data from Firebase:", err)
+  }
+}
+
+const fetchLatestWaterLevel = async () => {
+  try {
+    const q = query(
+      collection(db, "water_level_readings"), // replace with your actual collection name
+      orderBy("timestamp", "desc"),
+      limit(1)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      const latestDoc = snapshot.docs[0];
+      const data = latestDoc.data();
+
+      // Convert Firestore timestamp to JS Date
+      if (data.timestamp?.seconds) {
+        data.timestamp = new Date(data.timestamp.seconds * 1000);
+      }
+
+      waterLevel.value = data.waterLevel;
+      console.log("🆕 Latest Water Level from Firebase:", waterLevel.value, "at", data.timestamp?.toLocaleTimeString());
+    } else {
+      console.warn("⚠️ No water level data found in Firebase.");
+    }
+  } catch (error) {
+    console.error("❌ Error fetching latest water level from Firebase:", error);
+  }
+};
+
+const fetchLatestSensorDataFromFirebase = async () => {
+  try {
+    const q = query(collection(db, "sensor_readings"), orderBy("timestamp", "desc"), limit(1))
+    const snapshot = await getDocs(q)
+
+    if (!snapshot.empty) {
+      const latestDoc = snapshot.docs[0]
+      const latestData = latestDoc.data()
+
+      // ✅ Convert Firestore timestamp to JS Date
+      const timestamp = latestData.timestamp
+      latestData.timestamp = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp.seconds * 1000)
+
+      // Now assign the values
+      nitrogen.value = latestData.nitrogen
+      phosphorus.value = latestData.phosphorus
+      potassium.value = latestData.potassium
+      soilpH.value = latestData.soilPh
+      temperature.value = latestData.temperature
+      humidity.value = latestData.humidity
+      soilMoisture.value = latestData.soilMoisture
+
+      console.log("📥 Latest Firebase Data with Date:", latestData)
+    }
+  } catch (err) {
+    console.error("❌ Error fetching from Firebase:", err)
+  }
+}
+
+const fetchMotorStatusData = async () => {
+  try {
+    // Get current motor status
+    const currentDoc = await getDoc(doc(db, 'motor_status', 'current'))
+    if (currentDoc.exists()) {
+      const data = currentDoc.data()
+      motorStatus.value = data.status || false
+    }
+
+    // Get history logs
+    const historySnapshot = await getDocs(collection(db, 'motor_status', 'history', 'logs'))
+    const logs = []
+    historySnapshot.forEach(doc => logs.push(doc.data()))
+
+    // Filter this week's logs
+    const now = new Date()
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(now.getDate() - now.getDay()) // Sunday
+
+    const thisWeekLogs = logs.filter(log => {
+      const ts = log.timestamp?.toDate?.() || new Date(log.timestamp)
+      return ts >= startOfWeek
+    })
+
+    // Compute % of time ON per day
+    const dailyStatus = Array(7).fill(0)
+    const total = thisWeekLogs.length
+
+    thisWeekLogs.forEach(log => {
+      const ts = log.timestamp?.toDate?.() || new Date(log.timestamp)
+      const dayIndex = ts.getDay()
+      if (log.status === true) {
+        dailyStatus[dayIndex]++
+      }
+    })
+
+    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const percentages = dailyStatus.map((count, index) => ({
+      label: dayLabels[index],
+      percentage: total > 0 ? (count / total) * 100 : 0
+    }))
+
+
+    weeklyData.value = percentages
+    motorOnPercentage.value = (dailyStatus.reduce((a, b) => a + b, 0) / total) * 100 || 0
+
+  } catch (error) {
+    console.error('Error fetching motor status and history:', error)
+>>>>>>> cy
   }
 }
 
@@ -1115,7 +1422,10 @@ const initSoilPhChart = () => {
   }
 };
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> cy
 const initAllCharts = () => {
   if (!sensorReadings.value.length) return;
 
@@ -1220,6 +1530,7 @@ const initAllCharts = () => {
   }
 
 
+<<<<<<< HEAD
   // if (soilPhChartRef.value) {
   //   const readings = sensorReadings.value.slice(0, 6).reverse();
   //   const validPoints = readings.filter(r => r.soilPh !== null && r.soilPh !== undefined);
@@ -1271,6 +1582,8 @@ const initAllCharts = () => {
   // }
 
 
+=======
+>>>>>>> cy
   if (performanceChartRef.value) {
     const readings = sensorReadings.value.slice(0, 8).reverse();
     const labels = readings.map(r => new Date(r.timestamp).toLocaleDateString());
@@ -1469,6 +1782,7 @@ onBeforeUnmount(() => {
     } catch (e) {
       console.warn('Error while destroying chart:', e)
     }
+<<<<<<< HEAD
 })
 
 const weatherDetails = computed(() => {
@@ -1480,6 +1794,34 @@ const weatherDetails = computed(() => {
     { label: 'UV Index', value: weather.value.uv, icon: Sun },
   ]
 })
+=======
+
+    clearInterval(intervalId);
+})
+
+const weatherDetails = computed(() => [
+  {
+    label: 'Humidity',
+    value: `${weather.value?.humidity}%`,
+    icon: Droplets, // Replace with your icon
+  },
+  {
+    label: 'Wind',
+    value: `${weather.value?.wind_speed} m/s`,
+    icon: Wind,
+  },
+  {
+    label: 'Precipitation',
+    value: `${weather.value?.precipitation} mm`,
+    icon: CloudRain,
+  },
+  {
+    label: 'UV Index',
+    value: weather.value?.uv_index?.toFixed(1),
+    icon: Sun,
+  },
+]);
+>>>>>>> cy
 
 // Add new helper function for weather icon colors
 const getWeatherIconColor = (weather) => {
@@ -1501,6 +1843,7 @@ const getWeatherIconColor = (weather) => {
   }
 };
 
+<<<<<<< HEAD
 const getWeatherIcon = (temperature) => {
   const temp = typeof temperature === 'number' ? temperature : parseFloat(temperature);
 
@@ -1522,6 +1865,43 @@ const getWeatherIcon = (temperature) => {
     return CloudLightning; // extreme cold/storm
   }
 };
+=======
+const getWeatherIcon = (condition) => {
+  switch (condition) {
+    case 'Clear':
+    case 'Mainly Clear':
+      return Sun
+    case 'Partly Cloudy':
+      return CloudSun
+    case 'Overcast':
+      return Cloud
+    case 'Fog':
+    case 'Depositing Rime Fog':
+      return Fog
+    case 'Light Drizzle':
+    case 'Moderate Drizzle':
+    case 'Dense Drizzle':
+      return CloudDrizzle
+    case 'Light Rain':
+    case 'Moderate Rain':
+    case 'Heavy Rain':
+    case 'Rain Showers':
+    case 'Heavy Rain Showers':
+    case 'Violent Rain Showers':
+      return CloudRain
+    case 'Light Snowfall':
+    case 'Moderate Snowfall':
+    case 'Heavy Snowfall':
+      return CloudSnow
+    case 'Thunderstorm':
+    case 'Thunderstorm with Hail':
+    case 'Severe Thunderstorm':
+      return CloudLightning
+    default:
+      return Cloud  // fallback
+  }
+}
+>>>>>>> cy
 
 // Add new helper function for detail icon colors
 const getDetailIconColor = (label) => {
