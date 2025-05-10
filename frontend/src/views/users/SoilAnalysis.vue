@@ -142,6 +142,7 @@
               <table class="min-w-full table-fixed">
                 <thead>
                   <tr class="bg-gray-50 border-b border-gray-200">
+<<<<<<< HEAD
                     <th class="w-[15%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date
                     </th>
@@ -154,6 +155,20 @@
                       <div class="text-gray-400 text-[10px]">(MG/KG)</div>
                     </th>
                     <th class="w-[10%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+=======
+                    <th class="w-[12%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Reading Date
+                    </th>
+                    <th class="w-[8%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-green-600">Nitrogen</div>
+                      <div class="text-gray-400 text-[10px]">(MG/KG)</div>
+                    </th>
+                    <th class="w-[8%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-blue-600">Phosphorus</div>
+                      <div class="text-gray-400 text-[10px]">(MG/KG)</div>
+                    </th>
+                    <th class="w-[8%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+>>>>>>> cy
                       <div class="text-purple-600">Potassium</div>
                       <div class="text-gray-400 text-[10px]">(MG/KG)</div>
                     </th>
@@ -161,7 +176,11 @@
                       <div class="text-orange-600">pH</div>
                       <div class="text-gray-400 text-[10px]">(LEVEL)</div>
                     </th>
+<<<<<<< HEAD
                     <th class="w-[10%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+=======
+                    <th class="w-[8%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+>>>>>>> cy
                       <div class="text-red-600">Temperature</div>
                       <div class="text-gray-400 text-[10px]">(°C)</div>
                     </th>
@@ -169,17 +188,31 @@
                       <div class="text-gray-600">Humidity</div>
                       <div class="text-gray-400 text-[10px]">(%)</div>
                     </th>
+<<<<<<< HEAD
                     <th class="w-[15%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Predicted Crop
                     </th>
                     <th class="w-[14%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date Predicted
+=======
+                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-emerald-600">Predicted Crop</div>
+                      <div class="text-gray-400 text-[10px]">RECOMMENDATION</div>
+                    </th>
+                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-gray-600">Prediction Time</div>
+                      <div class="text-gray-400 text-[10px]">DATE & TIME</div>
+>>>>>>> cy
                     </th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                   <tr 
+<<<<<<< HEAD
                     v-for="(row, index) in filteredAndSortedData" 
+=======
+                    v-for="(row, index) in paginatedData" 
+>>>>>>> cy
                     :key="index"
                     class="group transition-colors duration-150 hover:bg-gray-50"
                   >
@@ -212,11 +245,16 @@
                       </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
+<<<<<<< HEAD
                       <div class="text-sm font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-md inline-block text-center w-[60px]">
+=======
+                      <div class="text-sm font-medium text-gray-600 bg-gray-50/50 px-2 py-1 rounded-md inline-block text-center w-[60px]">
+>>>>>>> cy
                         {{ row.humidity }}
                       </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
+<<<<<<< HEAD
                       <div v-if="row.predictedCrop" class="flex items-center">
                         <span class="text-sm text-gray-800 bg-emerald-50 px-3 py-1 rounded-full">
                           {{ row.predictedCrop }}
@@ -232,6 +270,30 @@
                   <tr v-if="filteredAndSortedData.length === 0">
                     <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500">
                       No data found matching your criteria
+=======
+                      <div class="flex items-center">
+                        <div v-if="row.predictedCrop !== '--'" class="text-sm font-medium text-emerald-600">
+                          {{ row.predictedCrop.split('(')[0].trim() }}
+                          <span class="ml-1 text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full text-xs">
+                            {{ row.predictedCrop.match(/\((.*?)\)/)?.[0] || '' }}
+                          </span>
+                        </div>
+                        <div v-else class="text-sm font-medium text-gray-400">
+                          --
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm" :class="row.datePredicted !== '--' ? 'text-gray-600' : 'text-gray-400'">
+                        {{ row.datePredicted }}
+                      </div>
+                    </td>
+                  </tr>
+                  <!-- Empty state when no data -->
+                  <tr v-if="paginatedData.length === 0">
+                    <td colspan="9" class="px-6 py-4 text-center text-gray-500">
+                      No soil analysis data found
+>>>>>>> cy
                     </td>
                   </tr>
                 </tbody>
@@ -317,6 +379,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
+<<<<<<< HEAD
 
 // Original data
 const originalData = ref([
@@ -391,6 +454,119 @@ const generateMoreData = () => {
 
 // Working data copy with more entries to demonstrate pagination
 const data = ref(generateMoreData())
+=======
+import {
+  getFirestore,
+  collection,
+  query,
+  orderBy,
+  getDocs,
+  where
+} from 'firebase/firestore'
+import { format } from 'date-fns'
+
+const db = getFirestore()
+const soilData = ref([])
+
+// Fetch both soil data and crop recommendations
+const fetchSoilDataWithRecommendations = async () => {
+  try {
+    // First, get all soil readings
+    const soilQuery = query(
+      collection(db, "sensor_readings"),
+      orderBy("timestamp", "desc")  // Latest first
+    )
+    const soilSnapshot = await getDocs(soilQuery)
+    
+    // Get all crop recommendations
+    const cropQuery = query(
+      collection(db, "crop_recommendations"),
+      orderBy("timestamp", "desc")
+    )
+    const cropSnapshot = await getDocs(cropQuery)
+    
+    // Create a map of recommendations by soil reading ID
+    const cropRecommendationsMap = new Map()
+    cropSnapshot.docs.forEach(doc => {
+      const data = doc.data()
+      if (data.soilReadingId) {
+        // If we already have a recommendation for this soil reading, only keep the one with higher success rate
+        if (!cropRecommendationsMap.has(data.soilReadingId) || 
+            cropRecommendationsMap.get(data.soilReadingId).successRate < data.successRate) {
+          cropRecommendationsMap.set(data.soilReadingId, {
+            crop: data.recommendedCrop,
+            timestamp: data.timestamp,
+            successRate: data.successRate
+          })
+        }
+      }
+    })
+
+    // Process soil readings and match with recommendations
+    const processedData = soilSnapshot.docs.map(doc => {
+      const data = doc.data()
+      
+      // Handle soil reading timestamp
+      let formattedDate = '--'
+      let timestampSeconds = 0
+      try {
+        const timestamp = data.timestamp?.toDate?.() || 
+                         (data.timestamp?.seconds ? new Date(data.timestamp.seconds * 1000) : new Date())
+        formattedDate = format(timestamp, 'MMM dd, yyyy HH:mm')
+        timestampSeconds = data.timestamp?.seconds || Date.now() / 1000
+      } catch (e) {
+        console.error("Error formatting date:", e)
+      }
+
+      // Get matching recommendation
+      const recommendation = cropRecommendationsMap.get(doc.id)
+      let formattedRecDate = '--'
+      
+      if (recommendation?.timestamp) {
+        try {
+          // Handle string timestamp format: "2025-05-09T12:45:36.686088"
+          const recTimestamp = recommendation.timestamp.includes('T') 
+            ? new Date(recommendation.timestamp)
+            : recommendation.timestamp?.toDate?.() || 
+              (recommendation.timestamp?.seconds ? new Date(recommendation.timestamp.seconds * 1000) : null)
+
+          if (recTimestamp) {
+            formattedRecDate = format(recTimestamp, 'MMM dd, yyyy HH:mm')
+          }
+        } catch (e) {
+          console.error("Error formatting recommendation date:", e)
+        }
+      }
+
+      // Format the predicted crop with success rate
+      const predictedCropDisplay = recommendation?.crop && recommendation?.successRate
+        ? `${recommendation.crop} (${Number(recommendation.successRate).toFixed(2)}%)`
+        : '--'
+
+      // Return processed data
+      return {
+        date: formattedDate,
+        timestamp: timestampSeconds,
+        nitrogen: data.nitrogen !== undefined && data.nitrogen !== null ? Number(data.nitrogen).toFixed(2) : '--',
+        phosphorus: data.phosphorus !== undefined && data.phosphorus !== null ? Number(data.phosphorus).toFixed(2) : '--',
+        potassium: data.potassium !== undefined && data.potassium !== null ? Number(data.potassium).toFixed(2) : '--',
+        ph: data.soilPh !== undefined && data.soilPh !== null ? Number(data.soilPh).toFixed(2) : '--',
+        temperature: data.temperature !== undefined && data.temperature !== null ? Number(data.temperature).toFixed(2) : '--',
+        humidity: data.humidity !== undefined && data.humidity !== null ? Number(data.humidity).toFixed(2) : '--',
+        predictedCrop: predictedCropDisplay,
+        datePredicted: formattedRecDate
+      }
+    })
+
+    // Sort by timestamp ascending
+    processedData.sort((a, b) => a.timestamp - b.timestamp)
+    
+    soilData.value = processedData
+  } catch (error) {
+    console.error("❌ Error fetching data:", error)
+  }
+}
+>>>>>>> cy
 
 // Initialize filters object
 const filters = ref({
@@ -437,7 +613,11 @@ const exportFormats = ['csv', 'pdf', 'docs']
 
 // Computed properties
 const filteredData = computed(() => {
+<<<<<<< HEAD
   let result = [...data.value]
+=======
+  let result = [...soilData.value]
+>>>>>>> cy
   
   // Apply search filter
   if (searchQuery.value) {
@@ -494,11 +674,68 @@ const paginatedData = computed(() => {
 })
 
 const filteredAndSortedData = computed(() => {
+<<<<<<< HEAD
   return paginatedData.value
 })
 
 const totalPages = computed(() => {
   return Math.ceil(sortedData.value.length / itemsPerPage.value)
+=======
+  let result = [...soilData.value]
+
+  // Apply search filter
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    result = result.filter(item => 
+      Object.values(item).some(val => 
+        String(val).toLowerCase().includes(query)
+      )
+    )
+  }
+
+  // Apply range filters
+  Object.entries(filters.value).forEach(([key, filter]) => {
+    if (filter.min !== '' || filter.max !== '') {
+      result = result.filter(item => {
+        const value = parseFloat(item[key])
+        if (isNaN(value)) return true
+        if (filter.min !== '' && value < parseFloat(filter.min)) return false
+        if (filter.max !== '' && value > parseFloat(filter.max)) return false
+        return true
+      })
+    }
+  })
+
+  // Apply sorting
+  if (sortKey.value) {
+    result.sort((a, b) => {
+      let aVal = a[sortKey.value]
+      let bVal = b[sortKey.value]
+      
+      // Convert to numbers for numeric fields
+      if (['nitrogen', 'phosphorus', 'potassium', 'ph', 'temperature', 'humidity'].includes(sortKey.value)) {
+        aVal = parseFloat(aVal) || -Infinity
+        bVal = parseFloat(bVal) || -Infinity
+      }
+      
+      // Handle date fields
+      if (['date', 'datePredicted'].includes(sortKey.value)) {
+        aVal = aVal === '--' ? new Date(0) : new Date(aVal)
+        bVal = bVal === '--' ? new Date(0) : new Date(bVal)
+      }
+      
+      if (aVal < bVal) return sortDirection.value === 'asc' ? -1 : 1
+      if (aVal > bVal) return sortDirection.value === 'asc' ? 1 : -1
+      return 0
+    })
+  }
+
+  return result
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(soilData.value.length / itemsPerPage.value)
+>>>>>>> cy
 })
 
 const displayedPages = computed(() => {
@@ -672,6 +909,10 @@ watch([searchQuery, activeFilters, itemsPerPage], () => {
 // Lifecycle hooks
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+<<<<<<< HEAD
+=======
+  fetchSoilDataWithRecommendations()
+>>>>>>> cy
 })
 
 onUnmounted(() => {

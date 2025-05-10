@@ -145,6 +145,7 @@
                     <th class="w-[10%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       ID
                     </th>
+<<<<<<< HEAD
                     <th class="w-[20%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Soil Status
                     </th>
@@ -156,11 +157,29 @@
                     </th>
                     <th class="w-[25%] px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Time
+=======
+                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-blue-600">Soil Moisture</div>
+                      <div class="text-gray-400 text-[10px]">PERCENTAGE (%)</div>
+                    </th>
+                    <th class="w-[20%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-emerald-600">Soil Status</div>
+                      <div class="text-gray-400 text-[10px]">CONDITION</div>
+                    </th>
+                    <th class="w-[25%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-gray-600">Date</div>
+                      <div class="text-gray-400 text-[10px]">MMM DD, YYYY</div>
+                    </th>
+                    <th class="w-[25%] px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
+                      <div class="text-gray-600">Time</div>
+                      <div class="text-gray-400 text-[10px]">HH:MM:SS</div>
+>>>>>>> cy
                     </th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                   <tr 
+<<<<<<< HEAD
                     v-for="(row, index) in soilMoistureData" 
                     :key="index"
                     class="group transition-colors duration-150 hover:bg-gray-50"
@@ -171,6 +190,25 @@
                         :class="[
                           'px-2 py-1 rounded-full text-sm font-medium',
                           row.soilStatus === 'WET' ? 'bg-green-100 text-green-800' :
+=======
+                    v-for="(row, index) in paginatedData" 
+                    :key="index"
+                    class="group transition-colors duration-150 hover:bg-gray-50"
+                  >
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {{ row.id }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-blue-600 bg-blue-50/30 px-2 py-1 rounded-md inline-block text-center w-[80px]">
+                        {{ row.soilMoisture }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span 
+                        :class="[
+                          'px-3 py-1 rounded-full text-sm font-medium',
+                          row.soilStatus === 'WET' ? 'bg-emerald-100 text-emerald-800' :
+>>>>>>> cy
                           row.soilStatus === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
                           'bg-red-100 text-red-800'
                         ]"
@@ -178,6 +216,7 @@
                         {{ row.soilStatus }}
                       </span>
                     </td>
+<<<<<<< HEAD
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ row.soilMoisture }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.date }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ row.time }}</td>
@@ -185,6 +224,18 @@
                   <tr v-if="filteredAndSortedData.length === 0">
                     <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
                       No data found matching your criteria
+=======
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {{ row.date }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {{ row.time }}
+                    </td>
+                  </tr>
+                  <tr v-if="paginatedData.length === 0">
+                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                      No soil moisture data available
+>>>>>>> cy
                     </td>
                   </tr>
                 </tbody>
@@ -203,10 +254,17 @@
                   class="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-colors"
                   @change="updatePagination"
                 >
+<<<<<<< HEAD
                   <option value="6">6</option>
                   <option value="10">10</option>
                   <option value="20">20</option>
                   <option value="50">50</option>
+=======
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+>>>>>>> cy
                 </select>
                 <span class="hidden sm:inline">entries per page</span>
                 <span class="text-gray-400 mx-2">|</span>
@@ -270,17 +328,38 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
+<<<<<<< HEAD
 import api from '../../api/index.js'
+=======
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  where,
+  Timestamp
+} from 'firebase/firestore'
+
+const db = getFirestore()
+>>>>>>> cy
 
 // Headers definition - Removed motorStatus
 const headers = [
   { key: 'id', label: 'ID' },
+<<<<<<< HEAD
   { key: 'soilStatus', label: 'Soil Status' },
   { key: 'soilMoisture', label: 'Soil Moisture' },
+=======
+  { key: 'soilMoisture', label: 'Soil Moisture (%)' },
+  { key: 'soilStatus', label: 'Soil Status' },
+>>>>>>> cy
   { key: 'date', label: 'Date' },
   { key: 'time', label: 'Time' }
 ]
 
+<<<<<<< HEAD
 // Data - Kept motorStatus in the data but it won't be displayed
 const data = ref([
   { id: 1, soilStatus: 'WET', soilMoisture: 100, motorStatus: 'OFF', date: '2024-05-17', time: '18:58:33' },
@@ -297,11 +376,18 @@ const data = ref([
 // Reactive state
 const searchQuery = ref('')
 const itemsPerPage = ref(6)
+=======
+// Data
+const data = ref([])
+const searchQuery = ref('')
+const itemsPerPage = ref(10)
+>>>>>>> cy
 const currentPage = ref(1)
 const activeDropdown = ref(null)
 const sortKey = ref('id')
 const sortDirection = ref('asc')
 const activeFilters = ref({})
+<<<<<<< HEAD
 
 // Removed motorStatus from filterFields
 const filterFields = [
@@ -309,6 +395,16 @@ const filterFields = [
 ]
 
 // Removed motorStatus from filters
+=======
+const soilMoistureData = ref([])
+
+// Filter fields
+const filterFields = [
+  { key: 'soilMoisture', label: 'Soil Moisture (%)' }
+]
+
+// Filters
+>>>>>>> cy
 const filters = ref({
   soilMoisture: { min: '', max: '' }
 })
@@ -317,7 +413,11 @@ const exportFormats = ['csv', 'pdf', 'docs']
 
 // Computed properties
 const filteredData = computed(() => {
+<<<<<<< HEAD
   let result = [...data.value]
+=======
+  let result = [...soilMoistureData.value]
+>>>>>>> cy
   
   // Apply search filter
   if (searchQuery.value) {
@@ -373,10 +473,13 @@ const paginatedData = computed(() => {
   return sortedData.value.slice(startIndex, endIndex)
 })
 
+<<<<<<< HEAD
 const filteredAndSortedData = computed(() => {
   return paginatedData.value
 })
 
+=======
+>>>>>>> cy
 const totalPages = computed(() => {
   return Math.ceil(sortedData.value.length / itemsPerPage.value)
 })
@@ -560,6 +663,7 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
+<<<<<<< HEAD
 const soilMoistureData = ref([])
 
 const fetchSoilMoistureData = async () => {
@@ -599,6 +703,70 @@ const fetchSoilMoistureData = async () => {
 
 
 
+=======
+// Function to determine soil status based on moisture level
+const calculateSoilStatus = (moisture) => {
+  if (moisture >= 70) return 'WET'
+  if (moisture >= 30 && moisture < 70) return 'MEDIUM'
+  return 'DRY'
+}
+
+const fetchSoilMoistureData = async () => {
+  try {
+    console.log('Fetching soil moisture data...');
+    // Create a query against the sensor_readings collection
+    const q = query(
+      collection(db, "sensor_readings"),
+      orderBy("timestamp", "desc")
+    );
+
+    // Get the documents
+    const querySnapshot = await getDocs(q);
+    console.log('Raw data:', querySnapshot.docs.map(doc => doc.data()));
+    
+    // Process the data
+    soilMoistureData.value = querySnapshot.docs
+      .filter(doc => doc.data().soilMoisture !== undefined)
+      .map((doc, index) => {
+        const data = doc.data();
+        const timestamp = data.timestamp instanceof Timestamp 
+          ? new Date(data.timestamp.toMillis())
+          : new Date();
+
+        // Format date as "MMM DD, YYYY" (e.g., "May 09, 2024")
+        const date = timestamp.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: '2-digit'
+        });
+
+        // Format time as "HH:mm:ss" (e.g., "14:30:45")
+        const time = timestamp.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+
+        const soilMoisture = Number(data.soilMoisture).toFixed(2);
+        const soilStatus = calculateSoilStatus(Number(data.soilMoisture));
+
+        return {
+          id: index + 1,
+          soilMoisture: soilMoisture,
+          soilStatus: soilStatus,
+          date: date,
+          time: time
+        };
+      });
+
+    console.log('✅ Processed soil moisture data:', soilMoistureData.value);
+  } catch (error) {
+    console.error('❌ Failed to fetch soil moisture data:', error);
+  }
+};
+
+>>>>>>> cy
 </script>
 
 <style>

@@ -2,6 +2,231 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List
+from app.ml.integrated_prediction import get_integrated_recommendation
+from datetime import datetime
+import os
+from dotenv import load_dotenv
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+router = APIRouter()
+
+# Load environment variables
+load_dotenv()
+
+# Load Firebase credentials
+FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS")
+if not FIREBASE_CREDENTIALS:
+    raise ValueError("Firebase credentials not found. Set FIREBASE_CREDENTIALS in .env")
+
+# Initialize Firebase only once
+if not firebase_admin._apps:
+    cred = credentials.Certificate(FIREBASE_CREDENTIALS)
+    firebase_admin.initialize_app(cred)
+
+db = firestore.client()
+
+# ------------------ Pydantic Models ------------------
+
+class CropInput(BaseModel):
+    nitrogen: float
+    phosphorus: float
+    potassium: float
+    soilpH: float
+    soilMoisture: float
+    temperature: float
+    humidity: float
+
+class FertilizerRecommendation(BaseModel):
+    type: str
+    name: str
+    base_amount: float
+    adjusted_amount: float
+    unit: str
+
+class AlternativeCrop(BaseModel):
+    crop: str
+    confidence: float
+    fertilizer: FertilizerRecommendation
+
+class CropPrediction(BaseModel):
+    recommendedCrop: str
+    successRate: float
+    soilCompatibility: float
+    growthRate: float
+    yieldPotential: float
+    fertilizer: FertilizerRecommendation
+    alternativeOptions: List[AlternativeCrop]
+
+class CropRecommendationSave(BaseModel):
+    recommendedCrop: str
+    successRate: float
+    soilCompatibility: float
+    growthRate: float
+    yieldPotential: float
+    fertilizer: FertilizerRecommendation
+    alternativeOptions: List[AlternativeCrop]
+    soilReadingId: str
+    soilData: dict
+
+# ------------------ Predict Route ------------------
+
+@router.post("/recommend", response_model=CropPrediction)
+async def recommend_crop(data: CropInput):
+    try:
+        features_dict = {
+            "N (ppm)": data.nitrogen,
+            "P (ppm)": data.phosphorus,
+            "K (ppm)": data.potassium,
+            "Temp (°C)": data.temperature,
+            "Humidity (%)": data.humidity,
+            "pH": data.soilpH,
+            "Soil Moisture (%)": data.soilMoisture
+        }
+
+        # Get integrated recommendations
+        result = get_integrated_recommendation(features_dict)
+        
+        # Check for errors
+        if "error" in result:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"{result['error']}: {result['details']}"
+            )
+        
+        recommendations = result["recommendations"]
+        if not recommendations:
+            raise HTTPException(
+                status_code=500,
+                detail="No recommendations generated"
+            )
+
+        # Process recommendations
+        recommendations = sorted(recommendations, key=lambda x: x['confidence'], reverse=True)
+        
+        # Format the response
+        top_rec = recommendations[0]
+        return {
+            "recommendedCrop": top_rec['crop'],
+            "successRate": round(top_rec['confidence'] * 100, 2),
+            "soilCompatibility": top_rec.get('soil_compatibility', 0.0),
+            "growthRate": top_rec.get('growth_rate', 0.0),
+            "yieldPotential": top_rec.get('yield_potential', 0.0),
+            "fertilizer": {
+                "type": top_rec['fertilizer']['type'],
+                "name": top_rec['fertilizer']['name'],
+                "base_amount": top_rec['fertilizer']['base_amount'],
+                "adjusted_amount": top_rec['fertilizer']['adjusted_amount'],
+                "unit": top_rec['fertilizer']['unit']
+            },
+            "alternativeOptions": [
+                {
+                    "crop": rec['crop'],
+                    "confidence": round(rec['confidence'] * 100, 2),
+                    "fertilizer": {
+                        "type": rec['fertilizer']['type'],
+                        "name": rec['fertilizer']['name'],
+                        "base_amount": rec['fertilizer']['base_amount'],
+                        "adjusted_amount": rec['fertilizer']['adjusted_amount'],
+                        "unit": rec['fertilizer']['unit']
+                    }
+                }
+                for rec in recommendations[1:3]
+            ]
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ------------------ Save Route ------------------
+
+@router.post("/save")
+async def save_crop_recommendation(data: CropRecommendationSave):
+    try:
+        doc_data = data.dict()
+        doc_data["timestamp"] = datetime.utcnow().isoformat()
+
+        # Convert alternativeOptions from List[AlternativeCrop] to dicts
+        doc_data["alternativeOptions"] = [
+            {
+                "crop": alt.crop,
+                "confidence": alt.confidence,
+                "fertilizer": alt.fertilizer.dict()
+            } 
+            for alt in data.alternativeOptions
+        ]
+
+        # Convert fertilizer to dict
+        doc_data["fertilizer"] = data.fertilizer.dict()
+        doc_data["status"] = "Recommended"
+
+        # Add soil reading reference and data
+        doc_data["soilReadingId"] = data.soilReadingId
+        doc_data["soilData"] = data.soilData
+
+        db.collection("crop_recommendations").add(doc_data)
+
+        return {"message": "Crop recommendation saved to Firebase"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# -------------------- History Saved Route ------------------------
+
+@router.get("/recommendations")
+async def get_saved_recommendations():
+    try:
+        docs = db.collection("crop_recommendations") \
+                 .order_by("timestamp", direction=firestore.Query.DESCENDING) \
+                 .stream()
+
+        recommendations = []
+        for doc in docs:
+            data = doc.to_dict()
+            timestamp = data.get("timestamp")
+
+            if timestamp:
+                try:
+                    formatted_date = timestamp.strftime("%b %d, %Y, %I:%M %p")
+                except Exception:
+                    formatted_date = str(timestamp)
+            else:
+                formatted_date = "N/A"
+
+            recommendations.append({
+                "id": doc.id,
+                "crop": data.get("recommendedCrop", ""),
+                "successRate": data.get("successRate", 0.0),
+                "status": data.get("status", "Planted"),
+                "date": formatted_date,
+                "alternativeOptions": data.get("alternativeOptions", []),
+                "growthRate": data.get("growthRate"),
+                "soilCompatibility": data.get("soilCompatibility"),
+                "yieldPotential": data.get("yieldPotential"),
+                "fertilizer": data.get("fertilizer", {})
+            })
+
+        return recommendations
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/recommendations/{doc_id}/status")
+async def update_recommendation_status(doc_id: str, status: str):
+    try:
+        db.collection("crop_recommendations").document(doc_id).update({
+            "status": status
+        })
+        return {"message": "Status updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from typing import List
 from app.ml.crop_ml.prediction_function import predict_crop
 from datetime import datetime
 import os

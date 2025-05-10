@@ -279,8 +279,25 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
+<<<<<<< HEAD
 
 // Headers definition - Added humidity
+=======
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  where,
+  Timestamp
+} from 'firebase/firestore'
+
+const db = getFirestore()
+
+// Headers definition
+>>>>>>> cy
 const headers = [
   { key: 'id', label: 'ID' },
   { key: 'temperature', label: 'Temperature' },
@@ -289,6 +306,7 @@ const headers = [
   { key: 'time', label: 'Time' }
 ]
 
+<<<<<<< HEAD
 // Data - Added humidity values
 const data = ref([
   { id: 1, temperature: 28, humidity: 65, date: '2024-05-17', time: '18:58:33' },
@@ -304,19 +322,31 @@ const data = ref([
 // Reactive state
 const searchQuery = ref('')
 const itemsPerPage = ref(5)
+=======
+// Data
+const data = ref([])
+const searchQuery = ref('')
+const itemsPerPage = ref(10)
+>>>>>>> cy
 const currentPage = ref(1)
 const activeDropdown = ref(null)
 const sortKey = ref('id')
 const sortDirection = ref('asc')
 const activeFilters = ref({})
 
+<<<<<<< HEAD
 // Added humidity to filter fields
+=======
+>>>>>>> cy
 const filterFields = [
   { key: 'temperature', label: 'Temperature' },
   { key: 'humidity', label: 'Humidity' }
 ]
 
+<<<<<<< HEAD
 // Added humidity to filters
+=======
+>>>>>>> cy
 const filters = ref({
   temperature: { min: '', max: '' },
   humidity: { min: '', max: '' }
@@ -324,20 +354,116 @@ const filters = ref({
 
 const exportFormats = ['csv', 'pdf', 'docs']
 
+<<<<<<< HEAD
 // Helper functions for text color only (removed background and box styling)
+=======
+// Helper functions for text color
+>>>>>>> cy
 const getTemperatureTextClass = (temp) => {
   if (temp >= 32) return 'text-red-600'
   if (temp >= 28) return 'text-yellow-600'
   return 'text-green-600'
 }
 
+<<<<<<< HEAD
 // Updated helper function for humidity styling (text color only)
+=======
+>>>>>>> cy
 const getHumidityTextClass = (humidity) => {
   if (humidity >= 70) return 'text-blue-600'
   if (humidity >= 60) return 'text-sky-600'
   return 'text-indigo-600'
 }
 
+<<<<<<< HEAD
+=======
+// Fetch temperature and humidity data function
+const fetchTempHumidityData = async () => {
+  try {
+    console.log('🌡️ Starting to fetch temperature and humidity data...');
+    // Create a query against the sensor_readings collection
+    const q = query(
+      collection(db, "sensor_readings"),
+      orderBy("timestamp", "desc")
+    );
+
+    console.log('📊 Executing Firestore query...');
+    // Get the documents
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      console.log('⚠️ No documents found in sensor_readings collection');
+      data.value = [];
+      return;
+    }
+
+    const rawData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    console.log('📥 Raw data:', rawData);
+    
+    // Process the data
+    data.value = querySnapshot.docs
+      .filter(doc => {
+        const docData = doc.data();
+        if (docData.temperature === undefined || docData.humidity === undefined) {
+          console.log('⚠️ Document missing temperature or humidity:', doc.id, docData);
+          return false;
+        }
+        return true;
+      })
+      .map((doc, index) => {
+        const docData = doc.data();
+        console.log('🔄 Processing document:', { id: doc.id, data: docData });
+
+        const timestamp = docData.timestamp instanceof Timestamp 
+          ? new Date(docData.timestamp.toMillis())
+          : new Date();
+
+        // Format date as "MMM DD, YYYY" (e.g., "May 09, 2024")
+        const date = timestamp.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: '2-digit'
+        });
+
+        // Format time as "HH:mm:ss" (e.g., "14:30:45")
+        const time = timestamp.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+
+        // Handle potential string values by converting to numbers
+        const temperature = Number(docData.temperature).toFixed(2);
+        const humidity = Number(docData.humidity).toFixed(2);
+
+        const processedData = {
+          id: index + 1,
+          temperature: temperature,
+          humidity: humidity,
+          date: date,
+          time: time
+        };
+
+        console.log('✨ Processed entry:', processedData);
+        return processedData;
+      });
+
+    console.log('✅ Final processed data:', data.value);
+    if (data.value.length === 0) {
+      console.log('⚠️ No valid temperature and humidity data found in documents');
+    }
+  } catch (error) {
+    console.error('❌ Error fetching temperature and humidity data:', error);
+    if (error.code) {
+      console.error('Firebase error code:', error.code);
+    }
+    console.error('Error stack:', error.stack);
+    data.value = [];
+  }
+};
+
+>>>>>>> cy
 // Computed properties
 const filteredData = computed(() => {
   let result = [...data.value]
@@ -574,6 +700,10 @@ watch([searchQuery, activeFilters, itemsPerPage], () => {
 // Lifecycle hooks
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+<<<<<<< HEAD
+=======
+  fetchTempHumidityData()
+>>>>>>> cy
 })
 
 onUnmounted(() => {
