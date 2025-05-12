@@ -3,4 +3,16 @@ serviceAccountKey.json
 .env
 data
 forecast_log.txt
+<<<<<<< HEAD
+__pycache__/
+*.pyc
+
+# Ignore secret keys
+# Secret keys
+firebase-key.json
+hindiItoApiKey.json
+.env
+
+=======
+>>>>>>> cy
 
