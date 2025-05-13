@@ -348,15 +348,17 @@
             </div>
           </div>
 
-          <!-- Schedule History View (Modified to match Soil Moisture table) -->
+          <!-- Schedule History View (MODIFIED to use 1/4 - 3/4 layout) -->
           <div v-else-if="currentView === 'history'" class="flex-1 flex flex-col overflow-hidden">
-            <!-- Filter section - SIMPLIFIED AND MINIMALISTIC -->
-            <div class="p-4 bg-white border-b">
-              <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
-                <div>
-                  <h2 class="text-xl font-semibold text-gray-800">Schedule History</h2>
-                </div>
-                <div class="flex items-center gap-2">
+            
+            <!-- Modified layout - 1/4 and 3/4 split -->
+            <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+              
+              <!-- LEFT SIDE (1/4) - Filters, Search, Export -->
+              <div class="w-full md:w-1/4 border-r border-gray-100 bg-white p-4 flex flex-col overflow-y-auto">
+                
+                <!-- Search Bar -->
+                <div class="mb-4">
                   <div class="relative">
                     <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
@@ -367,306 +369,323 @@
                     />
                   </div>
                 </div>
-              </div>
-              
-              <!-- Simplified Filter Bar - Horizontal layout with all controls visible -->
-              <div class="flex flex-wrap items-center gap-3 mb-2">
-                <!-- Date Range - Simplified with inline labels -->
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-sm text-gray-500">From:</span>
-                  <input 
-                    type="date" 
-                    v-model="historyFilters.startDate" 
-                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
+                
+                <!-- Filters Section -->
+                <div class="space-y-4 mb-4">
+                  <h3 class="text-sm font-medium text-gray-700">Filters</h3>
                   
-                  <span class="text-sm text-gray-500 ml-2">To:</span>
-                  <input 
-                    type="date" 
-                    v-model="historyFilters.endDate" 
-                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-                
-                <!-- Schedule Type - Simplified dropdown -->
-                <div class="flex items-center gap-2">
-                  <select 
-                    v-model="historyFilters.scheduleType" 
-                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  >
-                    <option value="all">All Types</option>
-                    <option value="one-time">One-time</option>
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="custom">Custom</option>
-                  </select>
-                </div>
-                
-                <!-- Duration - Simplified dropdown -->
-                <div class="flex items-center gap-2">
-                  <select 
-                    v-model="historyFilters.duration" 
-                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  >
-                    <option value="all">All Durations</option>
-                    <option value="short">Short (< 10 min)</option>
-                    <option value="medium">Medium (10-30 min)</option>
-                    <option value="long">Long (> 30 min)</option>
-                  </select>
-                </div>
-                
-                <!-- Apply Filters Button -->
-                <button 
-                  @click="applyHistoryFilters" 
-                  class="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-colors"
-                >
-                  <Filter class="h-4 w-4" />
-                  Apply
-                </button>
-                
-                <!-- Export Button - Simplified -->
-                <div class="relative ml-auto">
+                  <!-- Date Range -->
+                  <div class="space-y-2">
+                    <label class="text-xs text-gray-500">Date Range</label>
+                    <div class="flex flex-col space-y-2">
+                      <div class="flex items-center">
+                        <span class="text-xs text-gray-500 w-14">From:</span>
+                        <input 
+                          type="date" 
+                          v-model="historyFilters.startDate" 
+                          class="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
+                      <div class="flex items-center">
+                        <span class="text-xs text-gray-500 w-14">To:</span>
+                        <input 
+                          type="date" 
+                          v-model="historyFilters.endDate" 
+                          class="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Schedule Type -->
+                  <div class="space-y-2">
+                    <label class="text-xs text-gray-500">Schedule Type</label>
+                    <select 
+                      v-model="historyFilters.scheduleType" 
+                      class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    >
+                      <option value="all">All Types</option>
+                      <option value="one-time">One-time</option>
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                  </div>
+                  
+                  <!-- Duration -->
+                  <div class="space-y-2">
+                    <label class="text-xs text-gray-500">Duration</label>
+                    <select 
+                      v-model="historyFilters.duration" 
+                      class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    >
+                      <option value="all">All Durations</option>
+                      <option value="short">Short (< 10 min)</option>
+                      <option value="medium">Medium (10-30 min)</option>
+                      <option value="long">Long (> 30 min)</option>
+                    </select>
+                  </div>
+                  
+                  <!-- Apply Filters Button -->
                   <button 
-                    @click.stop="toggleDropdown('export')"
-                    class="flex items-center gap-1.5 px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                    @click="applyHistoryFilters" 
+                    class="w-full flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-colors"
                   >
-                    <Download class="h-4 w-4" />
-                    Export
-                    <ChevronDown class="h-3.5 w-3.5" :class="{ 'transform rotate-180': activeDropdown === 'export' }" />
+                    <Filter class="h-4 w-4" />
+                    Apply Filters
                   </button>
                   
-                  <div 
-                    v-show="activeDropdown === 'export'"
-                    class="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
-                    @click.stop
+                  <!-- Clear All Filters (only shown when filters are active) -->
+                  <button 
+                    v-if="hasActiveFilters"
+                    @click="clearAllFilters" 
+                    class="w-full text-xs text-gray-500 hover:text-gray-700 underline py-1 text-center"
                   >
-                    <div class="py-1">
-                      <button
-                        v-for="format in exportFormats"
-                        :key="format"
-                        @click="exportData(format)"
-                        class="w-full px-3 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                      >
-                        <span v-if="format === 'csv'" class="mr-2 text-emerald-500"><FileText class="h-3.5 w-3.5" /></span>
-                        <span v-else-if="format === 'pdf'" class="mr-2 text-red-500"><FileText class="h-3.5 w-3.5" /></span>
-                        <span v-else class="mr-2 text-blue-500"><FileText class="h-3.5 w-3.5" /></span>
-                        {{ format.toUpperCase() }}
+                    Clear all filters
+                  </button>
+                </div>
+                
+                <!-- Active Filters Display -->
+                <div v-if="hasActiveFilters" class="mb-4">
+                  <h3 class="text-xs font-medium text-gray-500 mb-2">Active filters:</h3>
+                  <div class="flex flex-wrap gap-2">
+                    <!-- Date Range Filter Tag -->
+                    <div v-if="historyFilters.startDate || historyFilters.endDate" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
+                      <Calendar class="w-3 h-3" />
+                      <span>{{ formatDateRange }}</span>
+                      <button @click="clearDateFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
+                        <X class="w-3 h-3" />
                       </button>
+                    </div>
+                    
+                    <!-- Schedule Type Filter Tag -->
+                    <div v-if="historyFilters.scheduleType !== 'all'" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
+                      <CalendarClock class="w-3 h-3" />
+                      <span>{{ formatScheduleType }}</span>
+                      <button @click="clearTypeFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
+                        <X class="w-3 h-3" />
+                      </button>
+                    </div>
+                    
+                    <!-- Duration Filter Tag -->
+                    <div v-if="historyFilters.duration !== 'all'" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
+                      <Clock class="w-3 h-3" />
+                      <span>{{ formatDuration }}</span>
+                      <button @click="clearDurationFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
+                        <X class="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Export Section -->
+                <div class="mt-auto">
+                  <h3 class="text-sm font-medium text-gray-700 mb-2">Export Data</h3>
+                  <div class="relative">
+                    <button 
+                      @click.stop="toggleDropdown('export')"
+                      class="w-full flex items-center justify-between gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      <div class="flex items-center gap-1.5">
+                        <Download class="h-4 w-4" />
+                        <span>Export History</span>
+                      </div>
+                      <ChevronDown class="h-3.5 w-3.5" :class="{ 'transform rotate-180': activeDropdown === 'export' }" />
+                    </button>
+                    
+                    <div 
+                      v-show="activeDropdown === 'export'"
+                      class="absolute left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
+                      @click.stop
+                    >
+                      <div class="py-1">
+                        <button
+                          v-for="format in exportFormats"
+                          :key="format"
+                          @click="exportData(format)"
+                          class="w-full px-3 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                        >
+                          <span v-if="format === 'csv'" class="mr-2 text-emerald-500"><FileText class="h-3.5 w-3.5" /></span>
+                          <span v-else-if="format === 'pdf'" class="mr-2 text-red-500"><FileText class="h-3.5 w-3.5" /></span>
+                          <span v-else class="mr-2 text-blue-500"><FileText class="h-3.5 w-3.5" /></span>
+                          {{ format.toUpperCase() }}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
               
-              <!-- Active Filters Display - Shows what filters are currently applied -->
-              <div v-if="hasActiveFilters" class="flex flex-wrap items-center gap-2 mb-2">
-                <span class="text-xs text-gray-500">Active filters:</span>
-                
-                <!-- Date Range Filter Tag -->
-                <div v-if="historyFilters.startDate || historyFilters.endDate" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
-                  <Calendar class="w-3 h-3" />
-                  <span>{{ formatDateRange }}</span>
-                  <button @click="clearDateFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
-                    <X class="w-3 h-3" />
-                  </button>
+              <!-- RIGHT SIDE (3/4) - Table Display -->
+              <div class="w-full md:w-3/4 flex-1 flex flex-col overflow-hidden">
+                <!-- Fixed Table Header - Will not scroll -->
+                <div class="bg-gray-50 border-b border-gray-200">
+                  <table class="min-w-full">
+                    <thead>
+                      <tr>
+                        <th class="w-[25%] py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <div class="text-gray-600">Date & Time</div>
+                          <div class="text-gray-400 text-[10px] normal-case">MMM DD, YYYY HH:MM</div>
+                        </th>
+                        <th class="w-[20%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
+                          <div class="text-blue-600">Duration</div>
+                          <div class="text-gray-400 text-[10px] normal-case">Minutes</div>
+                        </th>
+                        <th class="w-[20%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
+                          <div class="text-emerald-600">Schedule Type</div>
+                          <div class="text-gray-400 text-[10px] normal-case">Mode</div>
+                        </th>
+                        <th class="w-[15%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
+                          <div class="text-gray-600">Status</div>
+                          <div class="text-gray-400 text-[10px] normal-case">Completion</div>
+                        </th>
+                        <th class="w-[20%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
+                          <div class="text-gray-600">Additional Info</div>
+                          <div class="text-gray-400 text-[10px] normal-case">Settings</div>
+                        </th>
+                      </tr>
+                    </thead>
+                  </table>
                 </div>
                 
-                <!-- Schedule Type Filter Tag -->
-                <div v-if="historyFilters.scheduleType !== 'all'" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
-                  <CalendarClock class="w-3 h-3" />
-                  <span>{{ formatScheduleType }}</span>
-                  <button @click="clearTypeFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
-                    <X class="w-3 h-3" />
-                  </button>
+                <!-- Scrollable Table Body -->
+                <div class="flex-1 overflow-y-auto">
+                  <table class="min-w-full">
+                    <tbody>
+                      <!-- Loading state -->
+                      <tr v-if="isLoadingHistory" class="border-b border-gray-50 last:border-0">
+                        <td colspan="5" class="px-4 py-20 text-center">
+                          <div class="flex flex-col items-center justify-center">
+                            <div class="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                            <p class="text-gray-500">Loading schedule history...</p>
+                          </div>
+                        </td>
+                      </tr>
+                      
+                      <!-- Empty state -->
+                      <tr v-else-if="filteredPastSchedules.length === 0" class="border-b border-gray-50 last:border-0">
+                        <td colspan="5" class="px-4 py-20 text-center">
+                          <div class="flex flex-col items-center justify-center">
+                            <History class="h-16 w-16 text-gray-200 mb-4" />
+                            <p class="text-gray-400 font-medium">No schedule history found</p>
+                            <p class="text-xs text-gray-400 mt-2">Completed schedules will appear here</p>
+                          </div>
+                        </td>
+                      </tr>
+                      
+                      <!-- Data rows -->
+                      <tr 
+                        v-else
+                        v-for="(schedule, index) in paginatedPastSchedules" 
+                        :key="index"
+                        class="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0"
+                      >
+                        <!-- Date & Time -->
+                        <td class="w-[25%] px-4 py-3 whitespace-nowrap">
+                          <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-gray-400"></div>
+                            <div class="text-sm font-medium text-gray-700">{{ schedule.dateTime }}</div>
+                          </div>
+                        </td>
+                        
+                        <!-- Duration -->
+                        <td class="w-[20%] px-4 py-3 whitespace-nowrap">
+                          <div class="text-sm font-medium text-blue-600">
+                            {{ schedule.duration }} minutes
+                          </div>
+                        </td>
+                        
+                        <!-- Schedule Type -->
+                        <td class="w-[20%] px-4 py-3 whitespace-nowrap">
+                          <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 capitalize">
+                            {{ schedule.mode }}
+                          </span>
+                        </td>
+                        
+                        <!-- Status -->
+                        <td class="w-[15%] px-4 py-3 whitespace-nowrap">
+                          <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            Completed
+                          </span>
+                        </td>
+                        
+                        <!-- Additional Info -->
+                        <td class="w-[20%] px-4 py-3">
+                          <div class="flex flex-wrap gap-1">
+                            <div v-if="schedule.skipIfRain" class="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                              <CloudRain class="w-3 h-3" />
+                              <span>Rain skip</span>
+                            </div>
+                            <div v-if="schedule.notifyWatering" class="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                              <Bell class="w-3 h-3" />
+                              <span>Notify</span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-                
-                <!-- Duration Filter Tag -->
-                <div v-if="historyFilters.duration !== 'all'" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
-                  <Clock class="w-3 h-3" />
-                  <span>{{ formatDuration }}</span>
-                  <button @click="clearDurationFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
-                    <X class="w-3 h-3" />
-                  </button>
-                </div>
-                
-                <!-- Clear All Filters -->
-                <button 
-                  @click="clearAllFilters" 
-                  class="text-xs text-gray-500 hover:text-gray-700 ml-2 underline"
-                >
-                  Clear all
-                </button>
-              </div>
-            </div>
-            
-            <!-- Table Container with Fixed Header and Scrollable Body -->
-            <div class="flex-1 flex flex-col overflow-hidden">
-              <!-- Fixed Table Header - Will not scroll -->
-              <div class="bg-gray-50 border-b border-gray-200">
-                <table class="min-w-full">
-                  <thead>
-                    <tr>
-                      <th class="w-[25%] py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <div class="text-gray-600">Date & Time</div>
-                        <div class="text-gray-400 text-[10px] normal-case">MMM DD, YYYY HH:MM</div>
-                      </th>
-                      <th class="w-[20%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
-                        <div class="text-blue-600">Duration</div>
-                        <div class="text-gray-400 text-[10px] normal-case">Minutes</div>
-                      </th>
-                      <th class="w-[20%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
-                        <div class="text-emerald-600">Schedule Type</div>
-                        <div class="text-gray-400 text-[10px] normal-case">Mode</div>
-                      </th>
-                      <th class="w-[15%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
-                        <div class="text-gray-600">Status</div>
-                        <div class="text-gray-400 text-[10px] normal-case">Completion</div>
-                      </th>
-                      <th class="w-[20%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
-                        <div class="text-gray-600">Additional Info</div>
-                        <div class="text-gray-400 text-[10px] normal-case">Settings</div>
-                      </th>
-                    </tr>
-                  </thead>
-                </table>
-              </div>
               
-              <!-- Scrollable Table Body -->
-              <div class="flex-1 overflow-y-auto">
-                <table class="min-w-full">
-                  <tbody>
-                    <!-- Loading state -->
-                    <tr v-if="isLoadingHistory" class="border-b border-gray-50 last:border-0">
-                      <td colspan="5" class="px-4 py-20 text-center">
-                        <div class="flex flex-col items-center justify-center">
-                          <div class="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                          <p class="text-gray-500">Loading schedule history...</p>
-                        </div>
-                      </td>
-                    </tr>
+                <!-- Pagination - At the bottom of right side -->
+                <div class="border-t border-gray-100 py-3 px-6 bg-white">
+                  <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="text-sm text-gray-600 flex items-center gap-2">
+                      <span>Showing</span>
+                      <select 
+                        v-model="itemsPerPage" 
+                        class="bg-white border border-gray-200 rounded-lg px-2 py-1 text-sm font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        @change="updatePagination"
+                      >
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                      </select>
+                      <span>of {{ filteredPastSchedules.length }}</span>
+                    </div>
                     
-                    <!-- Empty state -->
-                    <tr v-else-if="filteredPastSchedules.length === 0" class="border-b border-gray-50 last:border-0">
-                      <td colspan="5" class="px-4 py-20 text-center">
-                        <div class="flex flex-col items-center justify-center">
-                          <History class="h-16 w-16 text-gray-200 mb-4" />
-                          <p class="text-gray-400 font-medium">No schedule history found</p>
-                          <p class="text-xs text-gray-400 mt-2">Completed schedules will appear here</p>
-                        </div>
-                      </td>
-                    </tr>
-                    
-                    <!-- Data rows -->
-                    <tr 
-                      v-else
-                      v-for="(schedule, index) in paginatedPastSchedules" 
-                      :key="index"
-                      class="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0"
-                    >
-                      <!-- Date & Time -->
-                      <td class="w-[25%] px-4 py-3 whitespace-nowrap">
-                        <div class="flex items-center gap-2">
-                          <div class="w-2 h-2 rounded-full bg-gray-400"></div>
-                          <div class="text-sm font-medium text-gray-700">{{ schedule.dateTime }}</div>
-                        </div>
-                      </td>
+                    <div class="flex items-center gap-1">
+                      <button 
+                        @click="prevPage"
+                        :disabled="currentPage === 1"
+                        class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-md
+                          disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400
+                          enabled:text-gray-700 enabled:hover:text-emerald-600 enabled:hover:bg-emerald-50"
+                      >
+                        <ChevronLeft class="w-4 h-4 mr-1" />
+                        Prev
+                      </button>
                       
-                      <!-- Duration -->
-                      <td class="w-[20%] px-4 py-3 whitespace-nowrap">
-                        <div class="text-sm font-medium text-blue-600">
-                          {{ schedule.duration }} minutes
-                        </div>
-                      </td>
+                      <div class="flex items-center">
+                        <button
+                          v-for="page in displayedPages"
+                          :key="page"
+                          @click="goToPage(page)"
+                          :class="[
+                            'relative inline-flex items-center justify-center w-8 h-8 text-sm transition-colors mx-0.5 rounded-md',
+                            page === currentPage
+                              ? 'text-white bg-emerald-500 font-semibold'
+                              : page === '...'
+                                ? 'cursor-default text-gray-400'
+                                : 'text-gray-700 hover:text-emerald-600 hover:bg-emerald-50'
+                          ]"
+                        >
+                          {{ page }}
+                        </button>
+                      </div>
                       
-                      <!-- Schedule Type -->
-                      <td class="w-[20%] px-4 py-3 whitespace-nowrap">
-                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 capitalize">
-                          {{ schedule.mode }}
-                        </span>
-                      </td>
-                      
-                      <!-- Status -->
-                      <td class="w-[15%] px-4 py-3 whitespace-nowrap">
-                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          Completed
-                        </span>
-                      </td>
-                      
-                      <!-- Additional Info -->
-                      <td class="w-[20%] px-4 py-3">
-                        <div class="flex flex-wrap gap-1">
-                          <div v-if="schedule.skipIfRain" class="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                            <CloudRain class="w-3 h-3" />
-                            <span>Rain skip</span>
-                          </div>
-                          <div v-if="schedule.notifyWatering" class="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
-                            <Bell class="w-3 h-3" />
-                            <span>Notify</span>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            
-            <!-- Pagination - Simplified -->
-            <div class="border-t border-gray-100 py-3 px-6 bg-white">
-              <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="text-sm text-gray-600 flex items-center gap-2">
-                  <span>Showing</span>
-                  <select 
-                    v-model="itemsPerPage" 
-                    class="bg-white border border-gray-200 rounded-lg px-2 py-1 text-sm font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    @change="updatePagination"
-                  >
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                  </select>
-                  <span>of {{ filteredPastSchedules.length }}</span>
-                </div>
-                
-                <div class="flex items-center gap-1">
-                  <button 
-                    @click="prevPage"
-                    :disabled="currentPage === 1"
-                    class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-md
-                      disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400
-                      enabled:text-gray-700 enabled:hover:text-emerald-600 enabled:hover:bg-emerald-50"
-                  >
-                    <ChevronLeft class="w-4 h-4 mr-1" />
-                    Prev
-                  </button>
-                  
-                  <div class="flex items-center">
-                    <button
-                      v-for="page in displayedPages"
-                      :key="page"
-                      @click="goToPage(page)"
-                      :class="[
-                        'relative inline-flex items-center justify-center w-8 h-8 text-sm transition-colors mx-0.5 rounded-md',
-                        page === currentPage
-                          ? 'text-white bg-emerald-500 font-semibold'
-                          : page === '...'
-                            ? 'cursor-default text-gray-400'
-                            : 'text-gray-700 hover:text-emerald-600 hover:bg-emerald-50'
-                      ]"
-                    >
-                      {{ page }}
-                    </button>
+                      <button 
+                        @click="nextPage"
+                        :disabled="currentPage >= totalPages"
+                        class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-md
+                          disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400
+                          enabled:text-gray-700 enabled:hover:text-emerald-600 enabled:hover:bg-emerald-50"
+                      >
+                        Next
+                        <ChevronRight class="w-4 h-4 ml-1" />
+                      </button>
+                    </div>
                   </div>
-                  
-                  <button 
-                    @click="nextPage"
-                    :disabled="currentPage >= totalPages"
-                    class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-md
-                      disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400
-                      enabled:text-gray-700 enabled:hover:text-emerald-600 enabled:hover:bg-emerald-50"
-                  >
-                    Next
-                    <ChevronRight class="w-4 h-4 ml-1" />
-                  </button>
                 </div>
               </div>
             </div>
@@ -2741,47 +2760,31 @@ onUnmounted(() => {
 
 .power-icon-off {
   filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
-  transition: all 0.3s ease;
 }
 
 @keyframes glow {
   from {
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
   }
   to {
-    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.9));
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.9));
   }
 }
 
-@keyframes pulse-animation {
+/* Pulse animation for active button */
+.pulse-animation {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
   0% {
     opacity: 0;
   }
   50% {
-    opacity: 0.3;
+    opacity: 0.1;
   }
   100% {
     opacity: 0;
-  }
-}
-
-.pulse-animation {
-  animation: pulse-animation 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Animation for page transitions */
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 </style>
