@@ -200,13 +200,6 @@
               <div class="flex-1 overflow-y-auto">
                 <table class="min-w-full">
                   <tbody>
-                    <tr>
-                      <div v-if="isLoading" class="py-8 flex flex-col items-center justify-center">
-                        <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-                        <p class="text-sm text-gray-500">Loading soil analysis data...</p>
-                      </div>
-                    </tr>
-
                     <tr 
                       v-for="(row, index) in paginatedData" 
                       :key="index"
@@ -358,11 +351,11 @@
     </main>
 
     <!-- Loading Page Component -->
-    <!-- <LoadingPage 
+    <LoadingPage 
       :isVisible="isLoading" 
       title="Loading Soil Analysis Data" 
       message="Please wait while we fetch the latest soil measurements"
-    /> -->
+    />
   </div>
 </template>
   

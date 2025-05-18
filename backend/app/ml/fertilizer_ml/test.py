@@ -121,8 +121,4 @@ def main():
         print("-" * 50)
 
 if __name__ == "__main__":
-<<<<<<< HEAD
     main()
-=======
-    main()
->>>>>>> 66e0e81c89013d6314707b4c6dbe4e752e0e7a4e
