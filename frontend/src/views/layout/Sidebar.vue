@@ -260,9 +260,9 @@
               </div>
 
               <div class="p-2 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-                <button class="text-xs text-[#00A572] font-medium hover:underline">
+                <a href="/notifications" class="text-xs text-[#00A572] font-medium hover:underline">
                   View all notifications
-                </button>
+                </a>
                 <button 
                   @click.stop="showNotifications = false"
                   class="text-xs px-2 py-1 text-gray-500 hover:bg-gray-200 rounded transition-colors"
@@ -514,6 +514,7 @@ function addNotification({ title, message, type }) {
     time: new Date(),
     read: false
   });
+
 }
 
 const fetchSensorData = async () => {
@@ -989,4 +990,6 @@ html {
     display: none;
   }
 }
-</style>
+</style>    
+
+
