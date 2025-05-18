@@ -658,7 +658,9 @@
                     >
                       {{ page }}
                     </button>
-=======
+                  </div>
+                </div>
+
                 
                 <!-- Filters Section -->
                 <div class="space-y-4 mb-4">
@@ -2824,17 +2826,167 @@ const timeDisplay = computed(() => {
   return `${hour12}:${minute} ${ampm}`;
 });
 
-// FIXED: Save or update watering schedule
+// // FIXED: Save or update watering schedule
+// const saveWateringSchedule = async () => {
+//   try {
+//     console.log("Starting saveWateringSchedule with current values:");
+//     console.log(`Hour: ${wateringHour.value}, Minute: ${wateringMinute.value}, isAm: ${isAm.value}`);
+    
+//     // Create scheduled time as a timestamp for easier querying
+//     const scheduledTime = new Date();
+
+//     if (wateringMode.value === 'one-time') {
+//       // Use the selected date for one-time schedules
+//       scheduledTime.setFullYear(
+//         selectedDate.value.getFullYear(),
+//         selectedDate.value.getMonth(),
+//         selectedDate.value.getDate()
+//       );
+//     }
+
+//     // CRITICAL FIX: Properly convert 12-hour format to 24-hour format
+//     let hour24 = wateringHour.value;
+    
+//     // Debug the current state
+//     console.log(`Before conversion - hour24: ${hour24}, isAm: ${isAm.value}`);
+    
+//     // Handle 12 AM special case
+//     if (isAm.value && hour24 === 12) {
+//       hour24 = 0;
+//     } 
+//     // Handle PM conversion (except 12 PM which stays as 12)
+//     else if (!isAm.value && hour24 < 12) {
+//       hour24 = hour24 + 12;
+//     }
+    
+//     console.log(`After conversion - hour24: ${hour24}, isAm: ${isAm.value}`);
+    
+//     // Set the time component
+//     scheduledTime.setHours(hour24, wateringMinute.value, 0, 0);
+    
+//     // Format the time string for display
+//     const formattedDateTime = (() => {
+//       const timeDate = new Date();
+      
+//       // Set the date part if it's a one-time schedule
+//       if (wateringMode.value === 'one-time') {
+//         timeDate.setFullYear(
+//           selectedDate.value.getFullYear(),
+//           selectedDate.value.getMonth(),
+//           selectedDate.value.getDate()
+//         );
+//       }
+      
+//       // Set the time part
+//       timeDate.setHours(hour24, wateringMinute.value, 0, 0);
+      
+//       // Format with explicit AM/PM
+//       const formattedTime = timeDate.toLocaleString('en-US', {
+//         weekday: 'short',
+//         month: 'short',
+//         day: 'numeric',
+//         hour: '2-digit',
+//         minute: '2-digit',
+//         hour12: true
+//       });
+      
+//       console.log(`Formatted time for Firebase: ${formattedTime}`);
+//       return formattedTime;
+//     })();
+
+//     // FIXED: Check if the schedule is already completed (in the past)
+//     const now = new Date().getTime();
+//     const isCompleted = scheduledTime.getTime() <= now;
+
+//     // Create a new schedule object with all the data
+//     const scheduleData = {
+//       dateTime: formattedDateTime,
+//       duration: wateringDuration.value,
+//       mode: wateringMode.value,
+//       days: [...wateringDays.value], // Create a copy of the array
+//       skipIfRain: skipIfRain.value,
+//       notifyWatering: notifyWatering.value,
+//       waterFlowRate: waterFlowRate.value,
+//       interval:
+//         wateringMode.value === 'custom'
+//           ? {
+//               value: wateringInterval.value,
+//               unit: wateringIntervalUnit.value,
+//             }
+//           : null,
+//       updatedAt: serverTimestamp(),
+//       // Add a scheduled time as a numeric timestamp for easier querying
+//       scheduledTime: scheduledTime.getTime(),
+//       // FIXED: Add completed flag
+//       completed: isCompleted
+//     };
+
+//     console.log('Saving schedule to Firebase:', scheduleData);
+//     console.log(`DateTime being saved: ${scheduleData.dateTime}`);
+
+//     // If editing, update existing schedule
+//     if (editingScheduleId.value) {
+//       // Update in Firebase - only update the fields we have in scheduleData
+//       await updateDoc(doc(db, 'watering_schedules', editingScheduleId.value), scheduleData);
+
+//       // Update in local array
+//       if (editingScheduleIndex.value !== null) {
+//         // Preserve the original createdAt when updating the local array
+//         const originalCreatedAt = savedSchedules.value[editingScheduleIndex.value].createdAt;
+
+//         savedSchedules.value[editingScheduleIndex.value] = {
+//           ...scheduleData,
+//           id: editingScheduleId.value,
+//           createdAt: originalCreatedAt, // Keep the original createdAt
+//         };
+//       }
+
+//       showToastMessage('Schedule updated successfully');
+//     } else {
+//       // Add createdAt only for new schedules
+//       const newScheduleData = {
+//         ...scheduleData,
+//         createdAt: serverTimestamp(),
+//       };
+
+//       // Add new schedule to Firebase
+//       const docRef = await addDoc(collection(db, 'watering_schedules'), newScheduleData);
+
+//       // Add to local array with the document ID
+//       savedSchedules.value.push({
+//         ...newScheduleData,
+//         id: docRef.id,
+//       });
+
+//       showToastMessage('New schedule saved successfully');
+//     }
+
+//     // Recalculate next watering time
+//     await calculateNextWateringTime();
+
+//     // Close the modal after saving
+//     closeScheduleModal();
+    
+//     // If we're in history view, refresh the data to show the new schedule
+//     if (currentView.value === 'history') {
+//       await fetchWateringSchedules();
+//     }
+//   } catch (error) {
+//     console.error('Error saving watering schedule:', error);
+//     showToastMessage('Error saving schedule. Please try again.');
+//   }
+// };
+
 const saveWateringSchedule = async () => {
   try {
+    const deviceIp = 'http://192.168.1.50'; // Replace with your ESP32's IP or fetch dynamically from Firebase
+
     console.log("Starting saveWateringSchedule with current values:");
     console.log(`Hour: ${wateringHour.value}, Minute: ${wateringMinute.value}, isAm: ${isAm.value}`);
     
-    // Create scheduled time as a timestamp for easier querying
     const scheduledTime = new Date();
 
     if (wateringMode.value === 'one-time') {
-      // Use the selected date for one-time schedules
       scheduledTime.setFullYear(
         selectedDate.value.getFullYear(),
         selectedDate.value.getMonth(),
@@ -2842,31 +2994,17 @@ const saveWateringSchedule = async () => {
       );
     }
 
-    // CRITICAL FIX: Properly convert 12-hour format to 24-hour format
     let hour24 = wateringHour.value;
-    
-    // Debug the current state
-    console.log(`Before conversion - hour24: ${hour24}, isAm: ${isAm.value}`);
-    
-    // Handle 12 AM special case
     if (isAm.value && hour24 === 12) {
       hour24 = 0;
-    } 
-    // Handle PM conversion (except 12 PM which stays as 12)
-    else if (!isAm.value && hour24 < 12) {
+    } else if (!isAm.value && hour24 < 12) {
       hour24 = hour24 + 12;
     }
-    
-    console.log(`After conversion - hour24: ${hour24}, isAm: ${isAm.value}`);
-    
-    // Set the time component
+
     scheduledTime.setHours(hour24, wateringMinute.value, 0, 0);
-    
-    // Format the time string for display
+
     const formattedDateTime = (() => {
       const timeDate = new Date();
-      
-      // Set the date part if it's a one-time schedule
       if (wateringMode.value === 'one-time') {
         timeDate.setFullYear(
           selectedDate.value.getFullYear(),
@@ -2874,12 +3012,8 @@ const saveWateringSchedule = async () => {
           selectedDate.value.getDate()
         );
       }
-      
-      // Set the time part
       timeDate.setHours(hour24, wateringMinute.value, 0, 0);
-      
-      // Format with explicit AM/PM
-      const formattedTime = timeDate.toLocaleString('en-US', {
+      return timeDate.toLocaleString('en-US', {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
@@ -2887,21 +3021,16 @@ const saveWateringSchedule = async () => {
         minute: '2-digit',
         hour12: true
       });
-      
-      console.log(`Formatted time for Firebase: ${formattedTime}`);
-      return formattedTime;
     })();
 
-    // FIXED: Check if the schedule is already completed (in the past)
     const now = new Date().getTime();
     const isCompleted = scheduledTime.getTime() <= now;
 
-    // Create a new schedule object with all the data
     const scheduleData = {
       dateTime: formattedDateTime,
       duration: wateringDuration.value,
       mode: wateringMode.value,
-      days: [...wateringDays.value], // Create a copy of the array
+      days: [...wateringDays.value],
       skipIfRain: skipIfRain.value,
       notifyWatering: notifyWatering.value,
       waterFlowRate: waterFlowRate.value,
@@ -2913,44 +3042,34 @@ const saveWateringSchedule = async () => {
             }
           : null,
       updatedAt: serverTimestamp(),
-      // Add a scheduled time as a numeric timestamp for easier querying
       scheduledTime: scheduledTime.getTime(),
-      // FIXED: Add completed flag
       completed: isCompleted
     };
 
     console.log('Saving schedule to Firebase:', scheduleData);
-    console.log(`DateTime being saved: ${scheduleData.dateTime}`);
 
-    // If editing, update existing schedule
     if (editingScheduleId.value) {
-      // Update in Firebase - only update the fields we have in scheduleData
       await updateDoc(doc(db, 'watering_schedules', editingScheduleId.value), scheduleData);
 
-      // Update in local array
       if (editingScheduleIndex.value !== null) {
-        // Preserve the original createdAt when updating the local array
         const originalCreatedAt = savedSchedules.value[editingScheduleIndex.value].createdAt;
 
         savedSchedules.value[editingScheduleIndex.value] = {
           ...scheduleData,
           id: editingScheduleId.value,
-          createdAt: originalCreatedAt, // Keep the original createdAt
+          createdAt: originalCreatedAt,
         };
       }
 
       showToastMessage('Schedule updated successfully');
     } else {
-      // Add createdAt only for new schedules
       const newScheduleData = {
         ...scheduleData,
         createdAt: serverTimestamp(),
       };
 
-      // Add new schedule to Firebase
       const docRef = await addDoc(collection(db, 'watering_schedules'), newScheduleData);
 
-      // Add to local array with the document ID
       savedSchedules.value.push({
         ...newScheduleData,
         id: docRef.id,
@@ -2959,21 +3078,43 @@ const saveWateringSchedule = async () => {
       showToastMessage('New schedule saved successfully');
     }
 
-    // Recalculate next watering time
     await calculateNextWateringTime();
-
-    // Close the modal after saving
     closeScheduleModal();
-    
-    // If we're in history view, refresh the data to show the new schedule
+
     if (currentView.value === 'history') {
       await fetchWateringSchedules();
+    }
+
+    // ✅ Send watering schedule to ESP32 after saving to Firebase
+    try {
+      const esp32Response = await axios.post(`${deviceIp}/set-schedule`, {
+        mode: wateringMode.value,
+        duration: wateringDuration.value,
+        timestamp: scheduledTime.getTime(),
+        days: wateringDays.value,
+        skipIfRain: skipIfRain.value,
+        interval:
+          wateringMode.value === 'custom'
+            ? {
+                value: wateringInterval.value,
+                unit: wateringIntervalUnit.value,
+              }
+            : null,
+        waterFlowRate: waterFlowRate.value,
+      });
+
+      console.log("✅ Schedule sent to ESP32:", esp32Response.data);
+    } catch (espError) {
+      console.error("❌ Failed to send schedule to ESP32:", espError);
+      showToastMessage("Saved to Firebase, but failed to sync with ESP32");
     }
   } catch (error) {
     console.error('Error saving watering schedule:', error);
     showToastMessage('Error saving schedule. Please try again.');
   }
 };
+
+
 
 // Initialize AM/PM based on hour
 watch(() => wateringHour.value, updateAmPm, { immediate: true })

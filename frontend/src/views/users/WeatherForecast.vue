@@ -516,7 +516,7 @@ import {
   Thermometer,
   Waves,
   Wind,
-  CloudSnow,     // for snow (71, 73, 75)
+  CloudSnow, 
 } from 'lucide-vue-next'
 import { getWeatherData, getWeatherDataForPopularCities, mapWeatherCode  } from '../../utils/weather';
 import Sidebar from '../layout/Sidebar.vue'
@@ -647,7 +647,7 @@ const getWeatherIcon = (condition) => {
       return Cloud
     case 'Fog':
     case 'Depositing Rime Fog':
-      return Fog
+      return Cloud // fallback for fog since lucide doesn't have Fog icon
     case 'Light Drizzle':
     case 'Moderate Drizzle':
     case 'Dense Drizzle':
@@ -668,7 +668,7 @@ const getWeatherIcon = (condition) => {
     case 'Severe Thunderstorm':
       return CloudLightning
     default:
-      return Cloud  // fallback
+      return Cloud
   }
 }
 
