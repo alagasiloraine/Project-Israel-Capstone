@@ -453,13 +453,12 @@ watch(waterLevel, (newVal) => {
       title: "Water Level Notice",
       message: "Water level is currently at 50%.",
       type: "water",
+      severity: "info", // new field
       timestamp
     }
     eventBus.emit('notify', notification)
     sendPushNotification(notification.message)
     sendNotificationToBackend(notification)
-    // saveToLocalStorage(notification)
-
 
   } else if (newVal < 50 && newVal > 30) {
     const notification = {
@@ -467,27 +466,25 @@ watch(waterLevel, (newVal) => {
       title: "Water Level Low",
       message: "Water level is below 50%. Please check the tank.",
       type: "water",
+      severity: "warning", // new field
       timestamp
     }
     eventBus.emit('notify', notification)
     sendPushNotification(notification.message)
     sendNotificationToBackend(notification)
-    // saveToLocalStorage(notification)
 
-
-  } else if (newVal < 30 && newVal > 15) {
+  } else if (newVal <= 30 && newVal > 15) {
     const notification = {
       id: baseId,
       title: "Water Level Warning",
       message: "Water level has only 30%. Please check the tank.",
       type: "water",
+      severity: "alert", // new field
       timestamp
     }
     eventBus.emit('notify', notification)
     sendPushNotification(notification.message)
     sendNotificationToBackend(notification)
-    // saveToLocalStorage(notification)
-
 
   } else if (newVal <= 15 && newVal >= 10) {
     const notification = {
@@ -495,22 +492,23 @@ watch(waterLevel, (newVal) => {
       title: "Critical Water Level",
       message: "Water level is critically low! Immediate action required.",
       type: "water",
+      severity: "critical", // new field
       timestamp
     }
     eventBus.emit('notify', notification)
     sendPushNotification(notification.message)
     sendNotificationToBackend(notification)
-    // saveToLocalStorage(notification)
-
   }
+
 })
 
-function addNotification({ title, message, type }) {
+function addNotification({ title, message, type, severity = 'info' }) {
   notifications.value.unshift({
     id: Date.now(),
     title,
     message,
     type,
+    severity,           // Add severity field
     time: new Date(),
     read: false
   });
@@ -530,6 +528,7 @@ const fetchSensorData = async () => {
 }
 
 let isEventBusRegistered = false
+let fallbackTimeout = null
 
 onMounted(() => {
   if (!isEventBusRegistered) {
@@ -544,7 +543,7 @@ onMounted(() => {
   })
 
   fetchSensorData();
-  // saveToLocalStorage()
+  saveToLocalStorage()
 });
 
 let eventWaterSourceInitialized = false
@@ -596,12 +595,10 @@ onMounted(async () => {
   // }
 
 
-  // Get IP address
   const res = await fetch('https://api.ipify.org?format=json');
   const ipData = await res.json();
   ipAddress.value = ipData.ip;
 
-  // Estimate WiFi type (not always accurate) and listen for changes
   if ('connection' in navigator) {
     const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
@@ -619,20 +616,38 @@ onMounted(async () => {
     }
   }
 
-  // if (!eventWaterSourceInitialized) {
-  //   const eventWaterSource = new EventSource('http://localhost:8000/api/water-stream')
+  if (!eventWaterSourceInitialized) {
+    const eventWaterSource = new EventSource('http://localhost:8000/api/water-stream')
 
-  //   eventWaterSource.onmessage = (event) => {
-  //     const data = JSON.parse(event.data)
+    let dataReceived = false
 
-  //     if (data.type === 'water') {
-  //       waterLevel.value = data.data.waterLevel
-  //       console.log("💧 Updated Water Level:", waterLevel.value + "%")
-  //     }
-  //   }
+    eventWaterSource.onmessage = (event) => {
+      const data = JSON.parse(event.data)
 
-  //   eventWaterSourceInitialized = true
-  // }
+      if (data.type === 'water') {
+        waterLevel.value = data.data.waterLevel
+        console.log('💧 Updated Water Level:', waterLevel.value + '%')
+        dataReceived = true
+        if (fallbackTimeout) clearTimeout(fallbackTimeout)
+      }
+    }
+
+    eventWaterSource.onerror = (err) => {
+      console.error('❌ EventSource error:', err)
+      if (fallbackTimeout) clearTimeout(fallbackTimeout)
+      fetchLatestWaterLevelFromFirestore()
+    }
+
+    // Fallback if no message received within 5 seconds
+    fallbackTimeout = setTimeout(() => {
+      if (!dataReceived) {
+        console.warn('⚠️ No data from stream, falling back to Firestore.')
+        fetchLatestWaterLevelFromFirestore()
+      }
+    }, 5000)
+
+    eventWaterSourceInitialized = true
+  }
 
   const saved = localStorage.getItem('notifications')
   if (saved) {
@@ -651,23 +666,50 @@ onMounted(async () => {
 
 })
 
+const fetchLatestWaterLevelFromFirestore = async () => {
+  try {
+    const q = query(
+      collection(db, 'water_level_readings'),
+      orderBy('timestamp', 'desc'),
+      limit(1)
+    )
+    const snapshot = await getDocs(q)
+    if (!snapshot.empty) {
+      const latestData = snapshot.docs[0].data()
+      waterLevel.value = latestData.waterLevel || 0
+      console.log('💧 Fallback: Water level from Firestore:', waterLevel.value + '%')
+    }
+  } catch (error) {
+    console.error('🔥 Failed to fetch water level from Firestore:', error)
+  }
+}
+
+// const sendNotificationToBackend = async (notification) => {
+//   try {
+//     await api.post("/notifications", notification); // This is enough
+//     console.log(notification)
+//     console.log("Notification sent to backend");
+//   } catch (error) {
+//     console.error("Failed to send notification to backend", error);
+//     console.log(notification)
+//   }
+// };
 
 const sendNotificationToBackend = async (notification) => {
   try {
-    await api.post("/notifications", notification); // This is enough
-    console.log(notification)
-    console.log("Notification sent to backend");
+    await api.post("/notifications", notification);
+    console.log(notification);
+    console.log("✅ Notification sent to backend");
+
+    // ✅ Emit event to notify Notification.vue
+    eventBus.emit("notification-saved-success");
   } catch (error) {
-    console.error("Failed to send notification to backend", error);
-    console.log(notification)
+    console.error("❌ Failed to send notification to backend", error);
+    console.log(notification);
   }
 };
 
 // Mark one as read
-const updateLocalStorage = () => {
-  localStorage.setItem('notifications', JSON.stringify(notifications.value))
-}
-
 const markAsRead = async (id) => {
   const notification = notifications.value.find(n => n.id === id)
   if (notification && !notification.read) {
@@ -681,7 +723,6 @@ const markAsRead = async (id) => {
   }
 }
 
-// Mark all as read
 const markAllAsRead = async () => {
   try {
     await api.post("/notifications/read-all")
@@ -694,15 +735,12 @@ const markAllAsRead = async () => {
   }
 }
 
-
-// Get signal strength class based on percentage
 const getSignalStrengthClass = (strength) => {
   if (strength >= 70) return 'bg-green-500'
   if (strength >= 40) return 'bg-yellow-500'
   return 'bg-red-500'
 }
 
-// Filter notifications by date
 const todayNotifications = computed(() => {
 const today = new Date()
 today.setHours(0, 0, 0, 0)
@@ -746,8 +784,6 @@ if (diffMins < 60) {
 }
 }
 
-
-// Toggle notifications panel
 const toggleNotifications = () => {
   showNotifications.value = !showNotifications.value
   
@@ -761,8 +797,6 @@ const toggleNotifications = () => {
   }
 }
 
-
- // Get notification type styling
 const getNotificationTypeClass = (type) => {
   switch (type) {
     case 'alert':

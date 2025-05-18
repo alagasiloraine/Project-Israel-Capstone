@@ -11,22 +11,17 @@ from firebase_admin import credentials, firestore
 
 router = APIRouter()
 
-# Load environment variables
 load_dotenv()
 
-# Load Firebase credentials
 FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS")
 if not FIREBASE_CREDENTIALS:
     raise ValueError("Firebase credentials not found. Set FIREBASE_CREDENTIALS in .env")
 
-# Initialize Firebase only once
 if not firebase_admin._apps:
     cred = credentials.Certificate(FIREBASE_CREDENTIALS)
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
-
-# ------------------ Pydantic Models ------------------
 
 class CropInput(BaseModel):
     nitrogen: float
@@ -69,7 +64,6 @@ class CropRecommendationSave(BaseModel):
     soilReadingId: str
     soilData: dict
 
-# ------------------ Predict Route ------------------
 
 @router.post("/recommend", response_model=CropPrediction)
 async def recommend_crop(data: CropInput):
@@ -84,10 +78,8 @@ async def recommend_crop(data: CropInput):
             "Soil Moisture (%)": data.soilMoisture
         }
 
-        # Get integrated recommendations
         result = get_integrated_recommendation(features_dict)
         
-        # Check for errors
         if "error" in result:
             raise HTTPException(
                 status_code=500, 
@@ -101,10 +93,8 @@ async def recommend_crop(data: CropInput):
                 detail="No recommendations generated"
             )
 
-        # Process recommendations
         recommendations = sorted(recommendations, key=lambda x: x['confidence'], reverse=True)
         
-        # Format the response
         top_rec = recommendations[0]
         return {
             "recommendedCrop": top_rec['crop'],
@@ -138,7 +128,6 @@ async def recommend_crop(data: CropInput):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ------------------ Save Route ------------------
 
 @router.post("/save")
 async def save_crop_recommendation(data: CropRecommendationSave):
@@ -146,7 +135,6 @@ async def save_crop_recommendation(data: CropRecommendationSave):
         doc_data = data.dict()
         doc_data["timestamp"] = datetime.utcnow().isoformat()
 
-        # Convert alternativeOptions from List[AlternativeCrop] to dicts
         doc_data["alternativeOptions"] = [
             {
                 "crop": alt.crop,
@@ -156,11 +144,9 @@ async def save_crop_recommendation(data: CropRecommendationSave):
             for alt in data.alternativeOptions
         ]
 
-        # Convert fertilizer to dict
         doc_data["fertilizer"] = data.fertilizer.dict()
         doc_data["status"] = "Recommended"
 
-        # Add soil reading reference and data
         doc_data["soilReadingId"] = data.soilReadingId
         doc_data["soilData"] = data.soilData
 
@@ -171,7 +157,6 @@ async def save_crop_recommendation(data: CropRecommendationSave):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# -------------------- History Saved Route ------------------------
 
 @router.get("/recommendations")
 async def get_saved_recommendations():
