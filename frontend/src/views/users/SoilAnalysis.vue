@@ -206,6 +206,7 @@
                         <p class="text-sm text-gray-500">Loading soil analysis data...</p>
                       </div>
                     </tr>
+
                     <tr 
                       v-for="(row, index) in paginatedData" 
                       :key="index"

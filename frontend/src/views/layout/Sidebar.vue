@@ -387,7 +387,8 @@ import {
   Droplet,
   Leaf,
   BarChart,
-  Cog
+  Cog,
+  Beaker
 } from 'lucide-vue-next'
 import { eventBus } from '../../eventBus'
 import { sendPushNotification } from '../../utils/notify.js'
@@ -513,6 +514,7 @@ function addNotification({ title, message, type }) {
     time: new Date(),
     read: false
   });
+
 }
 
 const fetchSensorData = async () => {
@@ -662,6 +664,10 @@ const sendNotificationToBackend = async (notification) => {
 };
 
 // Mark one as read
+const updateLocalStorage = () => {
+  localStorage.setItem('notifications', JSON.stringify(notifications.value))
+}
+
 const markAsRead = async (id) => {
   const notification = notifications.value.find(n => n.id === id)
   if (notification && !notification.read) {
@@ -807,6 +813,7 @@ const menuItems = [
   { name: 'Crop Prediction', href: '/prediction', icon: Brain },
   { name: 'Weather', href: '/weather', icon: Cloud },
   { name: 'Device Control', href: '/control', icon: Cpu },
+  { name: 'NPK Calibration', href: '/npk-calibration', icon: Beaker },
   { name: 'Soil Analysis', href: '/soil', icon: Sprout }
 ]
 
@@ -984,3 +991,5 @@ html {
   }
 }
 </style>    
+
+

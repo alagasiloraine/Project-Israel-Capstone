@@ -60,28 +60,28 @@ export const userRoutes = [
     component: TemperatureHumidity
   },
   {
-    path: '/motor-control',
-    name: 'MotorControl',
-    component: MotorControl
+    path: "/motor-control",
+    name: "MotorControl",
+    component: MotorControl,
   },
   {
-    path: '/soil',
-    name: 'SoilAnalysis',
-    component: SoilAnalysis
+    path: "/soil",
+    name: "SoilAnalysis",
+    component: SoilAnalysis,
   },
   {
-    path: '/profile',
-    name: 'UserProfile',
-    component: UserProfile
+    path: "/profile",
+    name: "UserProfile",
+    component: UserProfile,
   },
   {
-    path: '/weather',
-    name: 'WeatherForecast',
-    component: WeatherForecast
+    path: "/weather",
+    name: "WeatherForecast",
+    component: WeatherForecast,
   },
   {
-    path: '/notifications',
-    name: 'Notifications',
-    component: Notifications
-  }
+    path: "/notifications",
+    name: "Notifications",
+    component: Notifications,
+  },
 ]
