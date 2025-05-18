@@ -329,7 +329,10 @@ import {
   collection,
   getDocs,
   query,
-  orderBy
+  orderBy,
+  doc,
+  updateDoc,
+  deleteDoc
 } from 'firebase/firestore'
 
 // Firestore DB reference
@@ -349,6 +352,7 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(4)
 const notifications = ref([])
+const NOTIF_COLLECTION = "notifications"
 
 // Fetch notifications from Firebase
 const fetchNotifications = async () => {
@@ -456,20 +460,50 @@ const earlierNotifications = computed(() =>
   })
 )
 
-// Actions
-const markAsRead = (id) => {
-  const n = notifications.value.find(n => n.id === id)
-  if (n) n.read = true
-}
+const markAsRead = async (id) => {
+  try {
+    const notifIndex = notifications.value.findIndex(n => n.id === id);
+    if (notifIndex !== -1) {
+      notifications.value[notifIndex].read = true;
 
-const markAllAsRead = () => {
-  notifications.value.forEach(n => { n.read = true })
-}
+      // Firestore update
+      const notifRef = doc(db, NOTIF_COLLECTION, id);
+      await updateDoc(notifRef, { read: true });
+    }
+  } catch (err) {
+    console.error("❌ Failed to mark as read:", err);
+  }
+};
 
-const deleteNotification = (id) => {
-  const i = notifications.value.findIndex(n => n.id === id)
-  if (i !== -1) notifications.value.splice(i, 1)
-}
+const markAllAsRead = async () => {
+  try {
+    const updates = notifications.value.map(async (n) => {
+      if (!n.read) {
+        n.read = true;
+        const notifRef = doc(db, NOTIF_COLLECTION, n.id);
+        return updateDoc(notifRef, { read: true });
+      }
+    });
+    await Promise.all(updates);
+  } catch (err) {
+    console.error("❌ Failed to mark all as read:", err);
+  }
+};
+
+const deleteNotification = async (id) => {
+  try {
+    const index = notifications.value.findIndex(n => n.id === id);
+    if (index !== -1) {
+      notifications.value.splice(index, 1);
+
+      // Firestore delete
+      const notifRef = doc(db, NOTIF_COLLECTION, id);
+      await deleteDoc(notifRef);
+    }
+  } catch (err) {
+    console.error("❌ Failed to delete notification:", err);
+  }
+};
 
 // Format notification time
 const formatTime = (time) => {
