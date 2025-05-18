@@ -11,6 +11,7 @@ class Notification(BaseModel):
     title: str
     message: str
     type: str
+    severity: str  # New field: 'info', 'warning', 'alert', 'critical', etc.
     timestamp: datetime
     read: bool = False
 
@@ -21,13 +22,14 @@ async def create_notification(notification: Notification):
         return {"message": "Notification saved successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-# Fetch all notifications
+
 @router.get("/get-notifications")
 async def get_notifications():
-    docs = db.collection("notifications").order_by("timestamp", direction=firestore.Query.DESCENDING).stream()
-    print(docs)
-    return [{**doc.to_dict(), "id": doc.id} for doc in docs]
+    try:
+        docs = db.collection("notifications").order_by("timestamp", direction=firestore.Query.DESCENDING).stream()
+        return [{**doc.to_dict(), "id": doc.id} for doc in docs]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/notifications/{notification_id}/read")
 async def mark_notification_as_read(notification_id: str):
