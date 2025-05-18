@@ -1950,3 +1950,4 @@ const getDetailIconColor = (label) => {
   border-radius: 2rem;
 }
 </style>
+

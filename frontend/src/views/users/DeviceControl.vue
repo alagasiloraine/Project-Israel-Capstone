@@ -348,17 +348,17 @@
             </div>
           </div>
 
-          <!-- Schedule History View (MODIFIED to use 1/4 - 3/4 layout) -->
+
+          <!-- Schedule History View (Modified to match Soil Moisture table) -->
           <div v-else-if="currentView === 'history'" class="flex-1 flex flex-col overflow-hidden">
-            
-            <!-- Modified layout - 1/4 and 3/4 split -->
-            <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
-              
-              <!-- LEFT SIDE (1/4) - Filters, Search, Export -->
-              <div class="w-full md:w-1/4 border-r border-gray-100 bg-white p-4 flex flex-col overflow-y-auto">
-                
-                <!-- Search Bar -->
-                <div class="mb-4">
+            <!-- Filter section - SIMPLIFIED AND MINIMALISTIC -->
+            <div class="p-4 bg-white border-b">
+              <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
+                <div>
+                  <h2 class="text-xl font-semibold text-gray-800">Schedule History</h2>
+                </div>
+                <div class="flex items-center gap-2">
+
                   <div class="relative">
                     <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
@@ -369,6 +369,298 @@
                     />
                   </div>
                 </div>
+
+              </div>
+              
+              <!-- Simplified Filter Bar - Horizontal layout with all controls visible -->
+              <div class="flex flex-wrap items-center gap-3 mb-2">
+                <!-- Date Range - Simplified with inline labels -->
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-sm text-gray-500">From:</span>
+                  <input 
+                    type="date" 
+                    v-model="historyFilters.startDate" 
+                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                  
+                  <span class="text-sm text-gray-500 ml-2">To:</span>
+                  <input 
+                    type="date" 
+                    v-model="historyFilters.endDate" 
+                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+                
+                <!-- Schedule Type - Simplified dropdown -->
+                <div class="flex items-center gap-2">
+                  <select 
+                    v-model="historyFilters.scheduleType" 
+                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="one-time">One-time</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+                
+                <!-- Duration - Simplified dropdown -->
+                <div class="flex items-center gap-2">
+                  <select 
+                    v-model="historyFilters.duration" 
+                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    <option value="all">All Durations</option>
+                    <option value="short">Short (< 10 min)</option>
+                    <option value="medium">Medium (10-30 min)</option>
+                    <option value="long">Long (> 30 min)</option>
+                  </select>
+                </div>
+                
+                <!-- Apply Filters Button -->
+                <button 
+                  @click="applyHistoryFilters" 
+                  class="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-colors"
+                >
+                  <Filter class="h-4 w-4" />
+                  Apply
+                </button>
+                
+                <!-- Export Button - Simplified -->
+                <div class="relative ml-auto">
+                  <button 
+                    @click.stop="toggleDropdown('export')"
+                    class="flex items-center gap-1.5 px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    <Download class="h-4 w-4" />
+                    Export
+                    <ChevronDown class="h-3.5 w-3.5" :class="{ 'transform rotate-180': activeDropdown === 'export' }" />
+                  </button>
+                  
+                  <div 
+                    v-show="activeDropdown === 'export'"
+                    class="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
+                    @click.stop
+                  >
+                    <div class="py-1">
+                      <button
+                        v-for="format in exportFormats"
+                        :key="format"
+                        @click="exportData(format)"
+                        class="w-full px-3 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                      >
+                        <span v-if="format === 'csv'" class="mr-2 text-emerald-500"><FileText class="h-3.5 w-3.5" /></span>
+                        <span v-else-if="format === 'pdf'" class="mr-2 text-red-500"><FileText class="h-3.5 w-3.5" /></span>
+                        <span v-else class="mr-2 text-blue-500"><FileText class="h-3.5 w-3.5" /></span>
+                        {{ format.toUpperCase() }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Active Filters Display - Shows what filters are currently applied -->
+              <div v-if="hasActiveFilters" class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="text-xs text-gray-500">Active filters:</span>
+                
+                <!-- Date Range Filter Tag -->
+                <div v-if="historyFilters.startDate || historyFilters.endDate" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
+                  <Calendar class="w-3 h-3" />
+                  <span>{{ formatDateRange }}</span>
+                  <button @click="clearDateFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
+                    <X class="w-3 h-3" />
+                  </button>
+                </div>
+                
+                <!-- Schedule Type Filter Tag -->
+                <div v-if="historyFilters.scheduleType !== 'all'" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
+                  <CalendarClock class="w-3 h-3" />
+                  <span>{{ formatScheduleType }}</span>
+                  <button @click="clearTypeFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
+                    <X class="w-3 h-3" />
+                  </button>
+                </div>
+                
+                <!-- Duration Filter Tag -->
+                <div v-if="historyFilters.duration !== 'all'" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
+                  <Clock class="w-3 h-3" />
+                  <span>{{ formatDuration }}</span>
+                  <button @click="clearDurationFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
+                    <X class="w-3 h-3" />
+                  </button>
+                </div>
+                
+                <!-- Clear All Filters -->
+                <button 
+                  @click="clearAllFilters" 
+                  class="text-xs text-gray-500 hover:text-gray-700 ml-2 underline"
+                >
+                  Clear all
+                </button>
+              </div>
+            </div>
+            
+            <!-- Table Container with Fixed Header and Scrollable Body -->
+            <div class="flex-1 flex flex-col overflow-hidden">
+              <!-- Fixed Table Header - Will not scroll -->
+              <div class="bg-gray-50 border-b border-gray-200">
+                <table class="min-w-full">
+                  <thead>
+                    <tr>
+                      <th class="w-[25%] py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <div class="text-gray-600">Date & Time</div>
+                        <div class="text-gray-400 text-[10px] normal-case">MMM DD, YYYY HH:MM</div>
+                      </th>
+                      <th class="w-[20%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
+                        <div class="text-blue-600">Duration</div>
+                        <div class="text-gray-400 text-[10px] normal-case">Minutes</div>
+                      </th>
+                      <th class="w-[20%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
+                        <div class="text-emerald-600">Schedule Type</div>
+                        <div class="text-gray-400 text-[10px] normal-case">Mode</div>
+                      </th>
+                      <th class="w-[15%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
+                        <div class="text-gray-600">Status</div>
+                        <div class="text-gray-400 text-[10px] normal-case">Completion</div>
+                      </th>
+                      <th class="w-[20%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
+                        <div class="text-gray-600">Additional Info</div>
+                        <div class="text-gray-400 text-[10px] normal-case">Settings</div>
+                      </th>
+                    </tr>
+                  </thead>
+                </table>
+              </div>
+              
+              <!-- Scrollable Table Body -->
+              <div class="flex-1 overflow-y-auto">
+                <table class="min-w-full">
+                  <tbody>
+                    <!-- Loading state -->
+                    <tr v-if="isLoadingHistory" class="border-b border-gray-50 last:border-0">
+                      <td colspan="5" class="px-4 py-20 text-center">
+                        <div class="flex flex-col items-center justify-center">
+                          <div class="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                          <p class="text-gray-500">Loading schedule history...</p>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    <!-- Empty state -->
+                    <tr v-else-if="filteredPastSchedules.length === 0" class="border-b border-gray-50 last:border-0">
+                      <td colspan="5" class="px-4 py-20 text-center">
+                        <div class="flex flex-col items-center justify-center">
+                          <History class="h-16 w-16 text-gray-200 mb-4" />
+                          <p class="text-gray-400 font-medium">No schedule history found</p>
+                          <p class="text-xs text-gray-400 mt-2">Completed schedules will appear here</p>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    <!-- Data rows -->
+                    <tr 
+                      v-else
+                      v-for="(schedule, index) in paginatedPastSchedules" 
+                      :key="index"
+                      class="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0"
+                    >
+                      <!-- Date & Time -->
+                      <td class="w-[25%] px-4 py-3 whitespace-nowrap">
+                        <div class="flex items-center gap-2">
+                          <div class="w-2 h-2 rounded-full bg-gray-400"></div>
+                          <div class="text-sm font-medium text-gray-700">{{ schedule.dateTime }}</div>
+                        </div>
+                      </td>
+                      
+                      <!-- Duration -->
+                      <td class="w-[20%] px-4 py-3 whitespace-nowrap">
+                        <div class="text-sm font-medium text-blue-600">
+                          {{ schedule.duration }} minutes
+                        </div>
+                      </td>
+                      
+                      <!-- Schedule Type -->
+                      <td class="w-[20%] px-4 py-3 whitespace-nowrap">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 capitalize">
+                          {{ schedule.mode }}
+                        </span>
+                      </td>
+                      
+                      <!-- Status -->
+                      <td class="w-[15%] px-4 py-3 whitespace-nowrap">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          Completed
+                        </span>
+                      </td>
+                      
+                      <!-- Additional Info -->
+                      <td class="w-[20%] px-4 py-3">
+                        <div class="flex flex-wrap gap-1">
+                          <div v-if="schedule.skipIfRain" class="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                            <CloudRain class="w-3 h-3" />
+                            <span>Rain skip</span>
+                          </div>
+                          <div v-if="schedule.notifyWatering" class="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                            <Bell class="w-3 h-3" />
+                            <span>Notify</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- Pagination - Simplified -->
+            <div class="border-t border-gray-100 py-3 px-6 bg-white">
+              <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="text-sm text-gray-600 flex items-center gap-2">
+                  <span>Showing</span>
+                  <select 
+                    v-model="itemsPerPage" 
+                    class="bg-white border border-gray-200 rounded-lg px-2 py-1 text-sm font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    @change="updatePagination"
+                  >
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                  </select>
+                  <span>of {{ filteredPastSchedules.length }}</span>
+                </div>
+                
+                <div class="flex items-center gap-1">
+                  <button 
+                    @click="prevPage"
+                    :disabled="currentPage === 1"
+                    class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-md
+                      disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400
+                      enabled:text-gray-700 enabled:hover:text-emerald-600 enabled:hover:bg-emerald-50"
+                  >
+                    <ChevronLeft class="w-4 h-4 mr-1" />
+                    Prev
+                  </button>
+                  
+                  <div class="flex items-center">
+                    <button
+                      v-for="page in displayedPages"
+                      :key="page"
+                      @click="goToPage(page)"
+                      :class="[
+                        'relative inline-flex items-center justify-center w-8 h-8 text-sm transition-colors mx-0.5 rounded-md',
+                        page === currentPage
+                          ? 'text-white bg-emerald-500 font-semibold'
+                          : page === '...'
+                            ? 'cursor-default text-gray-400'
+                            : 'text-gray-700 hover:text-emerald-600 hover:bg-emerald-50'
+                      ]"
+                    >
+                      {{ page }}
+                    </button>
+                  </div>
+                </div>
+
                 
                 <!-- Filters Section -->
                 <div class="space-y-4 mb-4">
@@ -686,6 +978,17 @@
                       </button>
                     </div>
                   </div>
+                  
+                  <button 
+                    @click="nextPage"
+                    :disabled="currentPage >= totalPages"
+                    class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-md
+                      disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400
+                      enabled:text-gray-700 enabled:hover:text-emerald-600 enabled:hover:bg-emerald-50"
+                  >
+                    Next
+                    <ChevronRight class="w-4 h-4 ml-1" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -2523,17 +2826,167 @@ const timeDisplay = computed(() => {
   return `${hour12}:${minute} ${ampm}`;
 });
 
-// FIXED: Save or update watering schedule
+// // FIXED: Save or update watering schedule
+// const saveWateringSchedule = async () => {
+//   try {
+//     console.log("Starting saveWateringSchedule with current values:");
+//     console.log(`Hour: ${wateringHour.value}, Minute: ${wateringMinute.value}, isAm: ${isAm.value}`);
+    
+//     // Create scheduled time as a timestamp for easier querying
+//     const scheduledTime = new Date();
+
+//     if (wateringMode.value === 'one-time') {
+//       // Use the selected date for one-time schedules
+//       scheduledTime.setFullYear(
+//         selectedDate.value.getFullYear(),
+//         selectedDate.value.getMonth(),
+//         selectedDate.value.getDate()
+//       );
+//     }
+
+//     // CRITICAL FIX: Properly convert 12-hour format to 24-hour format
+//     let hour24 = wateringHour.value;
+    
+//     // Debug the current state
+//     console.log(`Before conversion - hour24: ${hour24}, isAm: ${isAm.value}`);
+    
+//     // Handle 12 AM special case
+//     if (isAm.value && hour24 === 12) {
+//       hour24 = 0;
+//     } 
+//     // Handle PM conversion (except 12 PM which stays as 12)
+//     else if (!isAm.value && hour24 < 12) {
+//       hour24 = hour24 + 12;
+//     }
+    
+//     console.log(`After conversion - hour24: ${hour24}, isAm: ${isAm.value}`);
+    
+//     // Set the time component
+//     scheduledTime.setHours(hour24, wateringMinute.value, 0, 0);
+    
+//     // Format the time string for display
+//     const formattedDateTime = (() => {
+//       const timeDate = new Date();
+      
+//       // Set the date part if it's a one-time schedule
+//       if (wateringMode.value === 'one-time') {
+//         timeDate.setFullYear(
+//           selectedDate.value.getFullYear(),
+//           selectedDate.value.getMonth(),
+//           selectedDate.value.getDate()
+//         );
+//       }
+      
+//       // Set the time part
+//       timeDate.setHours(hour24, wateringMinute.value, 0, 0);
+      
+//       // Format with explicit AM/PM
+//       const formattedTime = timeDate.toLocaleString('en-US', {
+//         weekday: 'short',
+//         month: 'short',
+//         day: 'numeric',
+//         hour: '2-digit',
+//         minute: '2-digit',
+//         hour12: true
+//       });
+      
+//       console.log(`Formatted time for Firebase: ${formattedTime}`);
+//       return formattedTime;
+//     })();
+
+//     // FIXED: Check if the schedule is already completed (in the past)
+//     const now = new Date().getTime();
+//     const isCompleted = scheduledTime.getTime() <= now;
+
+//     // Create a new schedule object with all the data
+//     const scheduleData = {
+//       dateTime: formattedDateTime,
+//       duration: wateringDuration.value,
+//       mode: wateringMode.value,
+//       days: [...wateringDays.value], // Create a copy of the array
+//       skipIfRain: skipIfRain.value,
+//       notifyWatering: notifyWatering.value,
+//       waterFlowRate: waterFlowRate.value,
+//       interval:
+//         wateringMode.value === 'custom'
+//           ? {
+//               value: wateringInterval.value,
+//               unit: wateringIntervalUnit.value,
+//             }
+//           : null,
+//       updatedAt: serverTimestamp(),
+//       // Add a scheduled time as a numeric timestamp for easier querying
+//       scheduledTime: scheduledTime.getTime(),
+//       // FIXED: Add completed flag
+//       completed: isCompleted
+//     };
+
+//     console.log('Saving schedule to Firebase:', scheduleData);
+//     console.log(`DateTime being saved: ${scheduleData.dateTime}`);
+
+//     // If editing, update existing schedule
+//     if (editingScheduleId.value) {
+//       // Update in Firebase - only update the fields we have in scheduleData
+//       await updateDoc(doc(db, 'watering_schedules', editingScheduleId.value), scheduleData);
+
+//       // Update in local array
+//       if (editingScheduleIndex.value !== null) {
+//         // Preserve the original createdAt when updating the local array
+//         const originalCreatedAt = savedSchedules.value[editingScheduleIndex.value].createdAt;
+
+//         savedSchedules.value[editingScheduleIndex.value] = {
+//           ...scheduleData,
+//           id: editingScheduleId.value,
+//           createdAt: originalCreatedAt, // Keep the original createdAt
+//         };
+//       }
+
+//       showToastMessage('Schedule updated successfully');
+//     } else {
+//       // Add createdAt only for new schedules
+//       const newScheduleData = {
+//         ...scheduleData,
+//         createdAt: serverTimestamp(),
+//       };
+
+//       // Add new schedule to Firebase
+//       const docRef = await addDoc(collection(db, 'watering_schedules'), newScheduleData);
+
+//       // Add to local array with the document ID
+//       savedSchedules.value.push({
+//         ...newScheduleData,
+//         id: docRef.id,
+//       });
+
+//       showToastMessage('New schedule saved successfully');
+//     }
+
+//     // Recalculate next watering time
+//     await calculateNextWateringTime();
+
+//     // Close the modal after saving
+//     closeScheduleModal();
+    
+//     // If we're in history view, refresh the data to show the new schedule
+//     if (currentView.value === 'history') {
+//       await fetchWateringSchedules();
+//     }
+//   } catch (error) {
+//     console.error('Error saving watering schedule:', error);
+//     showToastMessage('Error saving schedule. Please try again.');
+//   }
+// };
+
 const saveWateringSchedule = async () => {
   try {
+    const deviceIp = 'http://192.168.1.50'; // Replace with your ESP32's IP or fetch dynamically from Firebase
+
     console.log("Starting saveWateringSchedule with current values:");
     console.log(`Hour: ${wateringHour.value}, Minute: ${wateringMinute.value}, isAm: ${isAm.value}`);
     
-    // Create scheduled time as a timestamp for easier querying
     const scheduledTime = new Date();
 
     if (wateringMode.value === 'one-time') {
-      // Use the selected date for one-time schedules
       scheduledTime.setFullYear(
         selectedDate.value.getFullYear(),
         selectedDate.value.getMonth(),
@@ -2541,31 +2994,17 @@ const saveWateringSchedule = async () => {
       );
     }
 
-    // CRITICAL FIX: Properly convert 12-hour format to 24-hour format
     let hour24 = wateringHour.value;
-    
-    // Debug the current state
-    console.log(`Before conversion - hour24: ${hour24}, isAm: ${isAm.value}`);
-    
-    // Handle 12 AM special case
     if (isAm.value && hour24 === 12) {
       hour24 = 0;
-    } 
-    // Handle PM conversion (except 12 PM which stays as 12)
-    else if (!isAm.value && hour24 < 12) {
+    } else if (!isAm.value && hour24 < 12) {
       hour24 = hour24 + 12;
     }
-    
-    console.log(`After conversion - hour24: ${hour24}, isAm: ${isAm.value}`);
-    
-    // Set the time component
+
     scheduledTime.setHours(hour24, wateringMinute.value, 0, 0);
-    
-    // Format the time string for display
+
     const formattedDateTime = (() => {
       const timeDate = new Date();
-      
-      // Set the date part if it's a one-time schedule
       if (wateringMode.value === 'one-time') {
         timeDate.setFullYear(
           selectedDate.value.getFullYear(),
@@ -2573,12 +3012,8 @@ const saveWateringSchedule = async () => {
           selectedDate.value.getDate()
         );
       }
-      
-      // Set the time part
       timeDate.setHours(hour24, wateringMinute.value, 0, 0);
-      
-      // Format with explicit AM/PM
-      const formattedTime = timeDate.toLocaleString('en-US', {
+      return timeDate.toLocaleString('en-US', {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
@@ -2586,21 +3021,16 @@ const saveWateringSchedule = async () => {
         minute: '2-digit',
         hour12: true
       });
-      
-      console.log(`Formatted time for Firebase: ${formattedTime}`);
-      return formattedTime;
     })();
 
-    // FIXED: Check if the schedule is already completed (in the past)
     const now = new Date().getTime();
     const isCompleted = scheduledTime.getTime() <= now;
 
-    // Create a new schedule object with all the data
     const scheduleData = {
       dateTime: formattedDateTime,
       duration: wateringDuration.value,
       mode: wateringMode.value,
-      days: [...wateringDays.value], // Create a copy of the array
+      days: [...wateringDays.value],
       skipIfRain: skipIfRain.value,
       notifyWatering: notifyWatering.value,
       waterFlowRate: waterFlowRate.value,
@@ -2612,44 +3042,34 @@ const saveWateringSchedule = async () => {
             }
           : null,
       updatedAt: serverTimestamp(),
-      // Add a scheduled time as a numeric timestamp for easier querying
       scheduledTime: scheduledTime.getTime(),
-      // FIXED: Add completed flag
       completed: isCompleted
     };
 
     console.log('Saving schedule to Firebase:', scheduleData);
-    console.log(`DateTime being saved: ${scheduleData.dateTime}`);
 
-    // If editing, update existing schedule
     if (editingScheduleId.value) {
-      // Update in Firebase - only update the fields we have in scheduleData
       await updateDoc(doc(db, 'watering_schedules', editingScheduleId.value), scheduleData);
 
-      // Update in local array
       if (editingScheduleIndex.value !== null) {
-        // Preserve the original createdAt when updating the local array
         const originalCreatedAt = savedSchedules.value[editingScheduleIndex.value].createdAt;
 
         savedSchedules.value[editingScheduleIndex.value] = {
           ...scheduleData,
           id: editingScheduleId.value,
-          createdAt: originalCreatedAt, // Keep the original createdAt
+          createdAt: originalCreatedAt,
         };
       }
 
       showToastMessage('Schedule updated successfully');
     } else {
-      // Add createdAt only for new schedules
       const newScheduleData = {
         ...scheduleData,
         createdAt: serverTimestamp(),
       };
 
-      // Add new schedule to Firebase
       const docRef = await addDoc(collection(db, 'watering_schedules'), newScheduleData);
 
-      // Add to local array with the document ID
       savedSchedules.value.push({
         ...newScheduleData,
         id: docRef.id,
@@ -2658,21 +3078,43 @@ const saveWateringSchedule = async () => {
       showToastMessage('New schedule saved successfully');
     }
 
-    // Recalculate next watering time
     await calculateNextWateringTime();
-
-    // Close the modal after saving
     closeScheduleModal();
-    
-    // If we're in history view, refresh the data to show the new schedule
+
     if (currentView.value === 'history') {
       await fetchWateringSchedules();
+    }
+
+    // ✅ Send watering schedule to ESP32 after saving to Firebase
+    try {
+      const esp32Response = await axios.post(`${deviceIp}/set-schedule`, {
+        mode: wateringMode.value,
+        duration: wateringDuration.value,
+        timestamp: scheduledTime.getTime(),
+        days: wateringDays.value,
+        skipIfRain: skipIfRain.value,
+        interval:
+          wateringMode.value === 'custom'
+            ? {
+                value: wateringInterval.value,
+                unit: wateringIntervalUnit.value,
+              }
+            : null,
+        waterFlowRate: waterFlowRate.value,
+      });
+
+      console.log("✅ Schedule sent to ESP32:", esp32Response.data);
+    } catch (espError) {
+      console.error("❌ Failed to send schedule to ESP32:", espError);
+      showToastMessage("Saved to Firebase, but failed to sync with ESP32");
     }
   } catch (error) {
     console.error('Error saving watering schedule:', error);
     showToastMessage('Error saving schedule. Please try again.');
   }
 };
+
+
 
 // Initialize AM/PM based on hour
 watch(() => wateringHour.value, updateAmPm, { immediate: true })

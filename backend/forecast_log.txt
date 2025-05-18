@@ -18495,25 +18495,27 @@ google.auth.exceptions.TransportError: ('Connection aborted.', RemoteDisconnecte
 2025-05-09 22:31:55,663 - INFO - Added job "schedule_dataset_update" to job store "default"
 2025-05-09 22:31:55,663 - INFO - Scheduler started
 2025-05-09 22:31:55,671 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
-2025-05-18 15:53:05,832 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2025-05-18 15:53:05,836 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2025-05-18 15:53:05,836 - INFO - Added job "schedule_forecast_script" to job store "default"
-2025-05-18 15:53:05,836 - INFO - Added job "schedule_dataset_update" to job store "default"
-2025-05-18 15:53:05,836 - INFO - Scheduler started
-2025-05-18 15:53:05,869 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2025-05-18 15:53:05,869 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2025-05-18 15:53:05,871 - INFO - Added job "schedule_forecast_script" to job store "default"
-2025-05-18 15:53:05,871 - INFO - Added job "schedule_dataset_update" to job store "default"
-2025-05-18 15:53:05,871 - INFO - Scheduler started
-2025-05-18 15:53:05,873 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
-2025-05-18 17:05:16,121 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2025-05-18 17:05:16,121 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2025-05-18 17:05:16,122 - INFO - Added job "schedule_forecast_script" to job store "default"
-2025-05-18 17:05:16,122 - INFO - Added job "schedule_dataset_update" to job store "default"
-2025-05-18 17:05:16,122 - INFO - Scheduler started
-2025-05-18 17:05:16,147 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2025-05-18 17:05:16,147 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2025-05-18 17:05:16,148 - INFO - Added job "schedule_forecast_script" to job store "default"
-2025-05-18 17:05:16,148 - INFO - Added job "schedule_dataset_update" to job store "default"
-2025-05-18 17:05:16,148 - INFO - Scheduler started
-2025-05-18 17:05:16,152 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
+2025-05-18 10:08:58,697 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-18 10:08:58,710 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-18 10:08:58,711 - INFO - Added job "schedule_forecast_script" to job store "default"
+2025-05-18 10:08:58,711 - INFO - Added job "schedule_dataset_update" to job store "default"
+2025-05-18 10:08:58,713 - INFO - Scheduler started
+2025-05-18 10:08:58,717 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
+2025-05-18 10:23:09,182 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-18 10:23:09,183 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-18 10:23:09,184 - INFO - Added job "schedule_forecast_script" to job store "default"
+2025-05-18 10:23:09,184 - INFO - Added job "schedule_dataset_update" to job store "default"
+2025-05-18 10:23:09,186 - INFO - Scheduler started
+2025-05-18 10:23:09,191 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
+2025-05-18 10:33:24,774 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-18 10:33:24,774 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-18 10:33:24,775 - INFO - Added job "schedule_forecast_script" to job store "default"
+2025-05-18 10:33:24,775 - INFO - Added job "schedule_dataset_update" to job store "default"
+2025-05-18 10:33:24,775 - INFO - Scheduler started
+2025-05-18 10:33:24,781 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
+2025-05-18 10:37:43,757 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-18 10:37:43,758 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-05-18 10:37:43,758 - INFO - Added job "schedule_forecast_script" to job store "default"
+2025-05-18 10:37:43,758 - INFO - Added job "schedule_dataset_update" to job store "default"
+2025-05-18 10:37:43,759 - INFO - Scheduler started
+2025-05-18 10:37:43,762 - INFO - \U0001f680 FastAPI app started. Forecast scheduler is active.
