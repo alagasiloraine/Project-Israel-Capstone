@@ -1,27 +1,31 @@
 <template>
   <Transition name="fade">
     <div v-if="isVisible" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-      <div class="gradient-border relative w-[90%] max-w-md rounded-2xl p-[4px]">
-        <div class="relative w-full h-full rounded-2xl bg-white/95 p-6 shadow-2xl">
+      <div class="gradient-border relative w-[90%] max-w-md rounded-xl p-[3px]">
+        <div class="relative w-full h-full rounded-xl bg-white/95 p-6 shadow-xl">
           <div class="flex flex-col items-center justify-center">
-            <!-- GIF Animation Container -->
-            <div class="w-full max-w-md mx-auto mb-3">
-              <img 
-                src="/public/images/GIF/loading_plant.gif"
-                alt="Loading animation"
-                class="w-[200px] h-[200px] mx-auto object-contain"
-              />
+            <!-- Plant Illustration Container -->
+            <div class="w-full flex justify-center mb-4">
+              <div class="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 relative">
+                <img 
+                  src="/public/images/GIF/loading_plant.gif"
+                  alt="Loading animation"
+                  class="w-full h-full object-contain"
+                />
+              </div>
             </div>
             
             <!-- Loading Dots -->
-            <div class="flex justify-center space-x-2 mb-4">
+            <div class="flex justify-center space-x-2.5 mb-4">
               <div v-for="index in 5" :key="index" class="loading-dot"></div>
             </div>
 
-            <!-- Text Content -->
+            <!-- Text Content - Dynamic -->
             <div class="text-center">
               <h3 class="text-xl font-bold text-[#2B5329] mb-2">{{ title }}</h3>
-              <p class="text-sm font-medium text-[#2B5329]/80">{{ message }}</p>
+              <p class="text-sm leading-relaxed font-medium text-[#2B5329]/80 max-w-[280px] mx-auto">
+                {{ message }}
+              </p>
             </div>
           </div>
         </div>
@@ -40,11 +44,11 @@ export default {
     },
     title: {
       type: String,
-      default: 'Loading...'
+      default: 'Loading'
     },
     message: {
       type: String,
-      default: 'Please wait while we process your request'
+      default: 'Please wait...'
     }
   }
 }
@@ -100,8 +104,8 @@ export default {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 1rem;
-  padding: 4px;
+  border-radius: 0.75rem;
+  padding: 3px;
   background: linear-gradient(90deg, #FFB74D, #81C784);
   background-size: 200% 200%;
   animation: gradientBorder 2s linear infinite;
@@ -128,10 +132,39 @@ export default {
 }
 
 /* Responsive adjustments */
+@media (min-width: 640px) {
+  .loading-dot {
+    width: 9px;
+    height: 9px;
+  }
+}
+
 @media (min-width: 768px) {
   .loading-dot {
     width: 10px;
     height: 10px;
+  }
+}
+
+/* Modal sizes on different screen sizes */
+@media (max-width: 480px) {
+  .gradient-border {
+    width: 92%;
+    max-width: 320px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .gradient-border {
+    width: 88%;
+    max-width: 380px;
+  }
+}
+
+@media (min-width: 769px) {
+  .gradient-border {
+    width: 85%;
+    max-width: 420px;
   }
 }
 </style>
