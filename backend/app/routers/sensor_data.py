@@ -210,25 +210,25 @@ async def forward_sensor_data(data_dict):
         await queue.put(data_dict)
 
 
-@router.get('/sensor/readings')
-async def get_sensor_data():
-    try:
-        docs = db.collection("sensor_readings") \
-                 .order_by("timestamp", direction=firestore.Query.DESCENDING) \
-                 .stream()
+# @router.get('/sensor/readings')
+# async def get_sensor_data():
+#     try:
+#         docs = db.collection("sensor_readings") \
+#                  .order_by("timestamp", direction=firestore.Query.DESCENDING) \
+#                  .stream()
 
-        sensor_data = []
-        for doc in docs:
-            sensor_data.append(doc.to_dict())
+#         sensor_data = []
+#         for doc in docs:
+#             sensor_data.append(doc.to_dict())
 
-        if not sensor_data:
-            return {"message": "No sensor data found"}
+#         if not sensor_data:
+#             return {"message": "No sensor data found"}
         
-        print(sensor_data)
-        return sensor_data
+#         print(sensor_data)
+#         return sensor_data
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/water-data")
