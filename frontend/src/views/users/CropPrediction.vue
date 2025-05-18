@@ -1,116 +1,140 @@
 <template>
-  <div class="h-screen flex bg-gradient-to-br from-green-50 to-emerald-100 font-poppins overflow-hidden">
+  <div class="min-h-screen flex bg-gradient-to-br from-green-50 to-emerald-100 font-poppins overflow-hidden">
     <Sidebar />
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-screen pt-32">
+    <main class="flex-1 flex flex-col h-screen pt-20 sm:pt-24 md:pt-28">
       <!-- Container Wrapper with proper spacing -->
       <div class="flex-1 w-full px-4 sm:px-6 md:px-8 lg:px-10 overflow-hidden">
         <!-- Main Container with adjusted width -->
-        <div class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-green-100 h-[calc(100vh-140px)] overflow-y-auto transition-all duration-300 ease-in-out hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]">
+        <div class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-green-100 h-[calc(100vh-100px)] overflow-y-auto transition-all duration-300 ease-in-out hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]">
           <!-- Content Wrapper -->
-          <div class="p-6">
-            <!-- Enhanced Stats Section -->
-            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="p-4 sm:p-6">
+            <!-- Clean Minimalist Metrics Section -->
+            <div class="grid grid-cols-4 gap-4 mb-6">
               <!-- Total Predictions -->
-              <div class="bg-white rounded-xl p-4 border border-purple-100 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+              <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
                 <div class="flex items-center justify-between mb-2">
-                  <ChartBarIcon class="h-5 w-5 text-purple-500" />
-                  <span class="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded-full">Total</span>
+                  <div class="flex items-center gap-2">
+                    <ChartBarIcon class="h-5 w-5 text-purple-500" />
+                    <span class="text-sm font-medium text-gray-700">Total</span>
+                  </div>
                 </div>
-                <div class="text-xl font-bold text-purple-700">{{ totalRecommendations }}</div>
-                <div class="flex items-center mt-1">
-                  <component
-                    :is="isIncrease ? ArrowUpIcon : ArrowDownIcon"
-                    class="w-3 h-3 mr-1"
-                    :class="isIncrease ? 'text-green-500' : 'text-red-500'"
-                  />
-                  <span
-                    class="text-xs"
-                    :class="isIncrease ? 'text-green-600' : 'text-red-600'"
+                <div class="flex flex-col">
+                  <div class="text-2xl font-bold text-gray-900 mb-2">{{ totalRecommendations }}</div>
+                  <div 
+                    :class="[
+                      'text-xs font-medium',
+                      isIncrease ? 'text-green-600' : 'text-red-600'
+                    ]"
                   >
-                    {{ isIncrease ? '+' : '-' }}{{ percentageChange }}% {{ isIncrease ? 'increase' : 'decrease' }}
-                  </span>
+                    <span class="flex items-center">
+                      <component
+                        :is="isIncrease ? ArrowUpIcon : ArrowDownIcon"
+                        class="w-3 h-3 mr-1"
+                      />
+                      {{ isIncrease ? '+' : '-' }}{{ percentageChange }}% {{ isIncrease ? 'increase' : 'decrease' }}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               <!-- Planted -->
-              <div class="bg-white rounded-xl p-4 border border-green-100 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+              <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
                 <div class="flex items-center justify-between mb-2">
-                  <SproutIcon class="h-5 w-5 text-green-500" />
-                  <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">Planted</span>
+                  <div class="flex items-center gap-2">
+                    <SproutIcon class="h-5 w-5 text-green-500" />
+                    <span class="text-sm font-medium text-gray-700">Planted</span>
+                  </div>
                 </div>
-                <div class="text-xl font-bold text-green-700">{{ plantedCount }}</div>
-                <div class="flex items-center mt-1">
-                  <component
-                    :is="plantedIsIncrease ? ArrowUpIcon : ArrowDownIcon"
-                    class="w-3 h-3 mr-1"
-                    :class="plantedIsIncrease ? 'text-green-500' : 'text-red-500'"
-                  />
-                  <span
-                    class="text-xs"
-                    :class="plantedIsIncrease ? 'text-green-600' : 'text-red-600'"
+                <div class="flex flex-col">
+                  <div class="text-2xl font-bold text-gray-900 mb-2">{{ plantedCount }}</div>
+                  <div 
+                    :class="[
+                      'text-xs font-medium',
+                      plantedIsIncrease ? 'text-green-600' : 'text-red-600'
+                    ]"
                   >
-                    {{ plantedIsIncrease ? '+' : '' }}{{ plantedPercentageChange }}% {{ plantedIsIncrease ? 'increase' : 'decrease' }}
-                  </span>
+                    <span class="flex items-center">
+                      <component
+                        :is="plantedIsIncrease ? ArrowUpIcon : ArrowDownIcon"
+                        class="w-3 h-3 mr-1"
+                      />
+                      {{ plantedIsIncrease ? '+' : '-' }}{{ plantedPercentageChange }}% {{ plantedIsIncrease ? 'increase' : 'decrease' }}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               <!-- Success Rate -->
-              <div class="bg-white rounded-xl p-4 border border-blue-100 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+              <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
                 <div class="flex items-center justify-between mb-2">
-                  <ActivityIcon class="h-5 w-5 text-blue-500" />
-                  <span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Rate</span>
+                  <div class="flex items-center gap-2">
+                    <ActivityIcon class="h-5 w-5 text-blue-500" />
+                    <span class="text-sm font-medium text-gray-700">Rate</span>
+                  </div>
                 </div>
-                <div class="text-xl font-bold text-blue-700">{{ successRate }}%</div>
-                <div class="flex items-center mt-1">
-                  <component
-                    :is="isIncrease ? ArrowUpIcon : ArrowDownIcon"
-                    class="w-3 h-3 mr-1"
-                    :class="isIncrease ? 'text-green-500' : 'text-red-500'"
-                  />
-                  <span
-                    class="text-xs"
-                    :class="isIncrease ? 'text-green-600' : 'text-red-600'"
+                <div class="flex flex-col">
+                  <div class="text-2xl font-bold text-gray-900 mb-2">{{ successRate }}%</div>
+                  <div 
+                    :class="[
+                      'text-xs font-medium',
+                      isIncrease ? 'text-green-600' : 'text-red-600'
+                    ]"
                   >
-                    {{ isIncrease ? '+' : '-' }}{{ percentageChange }}% {{ isIncrease ? 'increase' : 'decrease' }}
-                  </span>
+                    <span class="flex items-center">
+                      <component
+                        :is="isIncrease ? ArrowUpIcon : ArrowDownIcon"
+                        class="w-3 h-3 mr-1"
+                      />
+                      {{ isIncrease ? '+' : '-' }}{{ percentageChange }}% {{ isIncrease ? 'increase' : 'decrease' }}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               <!-- Ongoing -->
-              <div class="bg-white rounded-xl p-4 border border-red-100 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+              <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
                 <div class="flex items-center justify-between mb-2">
-                  <ClipboardListIcon class="h-5 w-5 text-red-500" />
-                  <span class="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded-full">Active</span>
+                  <div class="flex items-center gap-2">
+                    <ClipboardListIcon class="h-5 w-5 text-red-500" />
+                    <span class="text-sm font-medium text-gray-700">Active</span>
+                  </div>
                 </div>
-                <div class="text-xl font-bold text-red-700">{{ ongoingCount }}</div>
-                <div class="flex items-center mt-1">
-                  <component
-                    :is="ongoingIsIncrease ? ArrowUpIcon : ArrowDownIcon"
-                    class="w-3 h-3 mr-1"
-                    :class="ongoingIsIncrease ? 'text-green-500' : 'text-red-500'"
-                  />
-                  <span
-                    class="text-xs"
-                    :class="ongoingIsIncrease ? 'text-green-600' : 'text-red-600'"
+                <div class="flex flex-col">
+                  <div class="text-2xl font-bold text-gray-900 mb-2">{{ ongoingCount }}</div>
+                  <div 
+                    :class="[
+                      'text-xs font-medium',
+                      ongoingIsIncrease ? 'text-green-600' : 'text-red-600'
+                    ]"
                   >
-                    {{ ongoingIsIncrease ? '+' : '' }}{{ ongoingPercentageChange }}% {{ ongoingIsIncrease ? 'increase' : 'decrease' }}
-                  </span>
+                    <span class="flex items-center">
+                      <component
+                        :is="ongoingIsIncrease ? ArrowUpIcon : ArrowDownIcon"
+                        class="w-3 h-3 mr-1"
+                      />
+                      {{ ongoingIsIncrease ? '+' : '-' }}{{ ongoingPercentageChange }}% {{ ongoingIsIncrease ? 'increase' : 'decrease' }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
+            <!-- Rest of the content remains the same -->
             <!-- Main Content Area -->
             <div class="space-y-6">
               <!-- Modified Prediction Form - Enhanced UI -->
-              <div class="bg-white rounded-xl shadow-md p-6 border border-green-100">
+              <div class="bg-white rounded-xl shadow-md p-5 sm:p-6 border border-gray-100 relative overflow-hidden">
+                <!-- Background Pattern -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-green-50 to-transparent opacity-50 -z-10"></div>
+                
                 <!-- Enhanced Header -->
-                <div class="mb-8">
-                  <h2 class="text-xl font-semibold text-green-600 flex items-center gap-2">
-                    <ActivitySquareIcon class="w-5 h-5" />
+                <div class="mb-6">
+                  <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <ActivitySquareIcon class="w-5 h-5 text-green-500" />
                     Crop Recommendations
                   </h2>
-                  <p class="text-sm text-gray-500 mt-2">
+                  <p class="text-sm text-gray-500 mt-1">
                     Real-time soil analysis and environmental parameters
                   </p>
                 </div>
@@ -119,18 +143,21 @@
                 <div class="space-y-6">
                   <!-- Primary Measurements Section -->
                   <div>
-                    <h3 class="text-sm font-medium text-gray-700 mb-4">Soil Composition Analysis</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <h3 class="text-sm font-medium text-gray-700 mb-4 flex items-center">
+                      <span class="inline-block w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
+                      Soil Composition Analysis
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       <!-- Nitrogen Level -->
                       <div class="relative group">
                         <div class="absolute inset-0 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                        <div class="relative bg-white rounded-lg p-3 border border-gray-200 transition-all duration-300 hover:border-green-300 hover:shadow-md">
-                          <div class="flex items-center gap-2 mb-2">
-                            <div class="p-1.5 bg-green-50 rounded-lg">
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-green-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-green-50 rounded-lg">
                               <BeakerIcon class="w-4 h-4 text-green-600" />
                             </div>
                             <div>
-                              <label class="block text-xs font-medium text-gray-500">Nitrogen (N)</label>
+                              <label class="block text-sm font-medium text-gray-500">Nitrogen (N)</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
                                   type="number"
@@ -141,9 +168,9 @@
                               </div>
                             </div>
                           </div>
-                          <div class="h-1 w-full bg-gray-100 rounded-full">
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
                             <div 
-                              class="h-1 bg-green-500 rounded-full transition-all duration-500"
+                              class="h-1.5 bg-green-500 rounded-full transition-all duration-500"
                               :style="{ width: `${(parseFloat(nitrogen) / 150) * 100}%` }"
                             ></div>
                           </div>
@@ -153,13 +180,13 @@
                       <!-- Phosphorus Level -->
                       <div class="relative group">
                         <div class="absolute inset-0 bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                        <div class="relative bg-white rounded-lg p-3 border border-gray-200 transition-all duration-300 hover:border-blue-300 hover:shadow-md">
-                          <div class="flex items-center gap-2 mb-2">
-                            <div class="p-1.5 bg-blue-50 rounded-lg">
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-blue-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-blue-50 rounded-lg">
                               <TestTubesIcon class="w-4 h-4 text-blue-600" />
                             </div>
                             <div>
-                              <label class="block text-xs font-medium text-gray-500">Phosphorus (P)</label>
+                              <label class="block text-sm font-medium text-gray-500">Phosphorus (P)</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
                                   type="number"
@@ -170,9 +197,9 @@
                               </div>
                             </div>
                           </div>
-                          <div class="h-1 w-full bg-gray-100 rounded-full">
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
                             <div 
-                              class="h-1 bg-blue-500 rounded-full transition-all duration-500"
+                              class="h-1.5 bg-blue-500 rounded-full transition-all duration-500"
                               :style="{ width: `${(parseFloat(phosphorus) / 150) * 100}%` }"
                             ></div>
                           </div>
@@ -182,13 +209,13 @@
                       <!-- Potassium Level -->
                       <div class="relative group">
                         <div class="absolute inset-0 bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                        <div class="relative bg-white rounded-lg p-3 border border-gray-200 transition-all duration-300 hover:border-purple-300 hover:shadow-md">
-                          <div class="flex items-center gap-2 mb-2">
-                            <div class="p-1.5 bg-purple-50 rounded-lg">
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-purple-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-purple-50 rounded-lg">
                               <BeakerIcon class="w-4 h-4 text-purple-600" />
                             </div>
                             <div>
-                              <label class="block text-xs font-medium text-gray-500">Potassium (K)</label>
+                              <label class="block text-sm font-medium text-gray-500">Potassium (K)</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
                                   type="number"
@@ -199,9 +226,9 @@
                               </div>
                             </div>
                           </div>
-                          <div class="h-1 w-full bg-gray-100 rounded-full">
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
                             <div 
-                              class="h-1 bg-purple-500 rounded-full transition-all duration-500"
+                              class="h-1.5 bg-purple-500 rounded-full transition-all duration-500"
                               :style="{ width: `${(parseFloat(potassium) / 150) * 100}%` }"
                             ></div>
                           </div>
@@ -211,13 +238,13 @@
                       <!-- pH Level -->
                       <div class="relative group">
                         <div class="absolute inset-0 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                        <div class="relative bg-white rounded-lg p-3 border border-gray-200 transition-all duration-300 hover:border-amber-300 hover:shadow-md">
-                          <div class="flex items-center gap-2 mb-2">
-                            <div class="p-1.5 bg-amber-50 rounded-lg">
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-amber-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-amber-50 rounded-lg">
                               <DropletIcon class="w-4 h-4 text-amber-600" />
                             </div>
                             <div>
-                              <label class="block text-xs font-medium text-gray-500">Soil pH</label>
+                              <label class="block text-sm font-medium text-gray-500">Soil pH</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
                                   type="number"
@@ -228,9 +255,9 @@
                               </div>
                             </div>
                           </div>
-                          <div class="h-1 w-full bg-gray-100 rounded-full">
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
                             <div 
-                              class="h-1 bg-amber-500 rounded-full transition-all duration-500"
+                              class="h-1.5 bg-amber-500 rounded-full transition-all duration-500"
                               :style="{ width: `${(parseFloat(soilpH) / 14) * 100}%` }"
                             ></div>
                           </div>
@@ -241,18 +268,21 @@
 
                   <!-- Environmental Parameters Section -->
                   <div>
-                    <h3 class="text-sm font-medium text-gray-700 mb-4">Environmental Parameters</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <h3 class="text-sm font-medium text-gray-700 mb-4 flex items-center">
+                      <span class="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
+                      Environmental Parameters
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <!-- Soil Moisture -->
                       <div class="relative group">
                         <div class="absolute inset-0 bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                        <div class="relative bg-white rounded-lg p-3 border border-gray-200 transition-all duration-300 hover:border-cyan-300 hover:shadow-md">
-                          <div class="flex items-center gap-2 mb-2">
-                            <div class="p-1.5 bg-cyan-50 rounded-lg">
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-cyan-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-cyan-50 rounded-lg">
                               <WavesIcon class="w-4 h-4 text-cyan-600" />
                             </div>
                             <div>
-                              <label class="block text-xs font-medium text-gray-500">Soil Moisture</label>
+                              <label class="block text-sm font-medium text-gray-500">Soil Moisture</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
                                   type="number"
@@ -263,9 +293,9 @@
                               </div>
                             </div>
                           </div>
-                          <div class="h-1 w-full bg-gray-100 rounded-full">
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
                             <div 
-                              class="h-1 bg-cyan-500 rounded-full transition-all duration-500"
+                              class="h-1.5 bg-cyan-500 rounded-full transition-all duration-500"
                               :style="{ width: `${parseFloat(soilMoisture)}%` }"
                             ></div>
                           </div>
@@ -275,13 +305,13 @@
                       <!-- Temperature -->
                       <div class="relative group">
                         <div class="absolute inset-0 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                        <div class="relative bg-white rounded-lg p-3 border border-gray-200 transition-all duration-300 hover:border-orange-300 hover:shadow-md">
-                          <div class="flex items-center gap-2 mb-2">
-                            <div class="p-1.5 bg-orange-50 rounded-lg">
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-orange-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-orange-50 rounded-lg">
                               <ThermometerIcon class="w-4 h-4 text-orange-600" />
                             </div>
                             <div>
-                              <label class="block text-xs font-medium text-gray-500">Temperature</label>
+                              <label class="block text-sm font-medium text-gray-500">Temperature</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
                                   type="number"
@@ -292,9 +322,9 @@
                               </div>
                             </div>
                           </div>
-                          <div class="h-1 w-full bg-gray-100 rounded-full">
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
                             <div 
-                              class="h-1 bg-orange-500 rounded-full transition-all duration-500"
+                              class="h-1.5 bg-orange-500 rounded-full transition-all duration-500"
                               :style="{ width: `${(parseFloat(temperature) / 50) * 100}%` }"
                             ></div>
                           </div>
@@ -304,13 +334,13 @@
                       <!-- Humidity -->
                       <div class="relative group">
                         <div class="absolute inset-0 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                        <div class="relative bg-white rounded-lg p-3 border border-gray-200 transition-all duration-300 hover:border-teal-300 hover:shadow-md">
-                          <div class="flex items-center gap-2 mb-2">
-                            <div class="p-1.5 bg-teal-50 rounded-lg">
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-teal-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-teal-50 rounded-lg">
                               <CloudIcon class="w-4 h-4 text-teal-600" />
                             </div>
                             <div>
-                              <label class="block text-xs font-medium text-gray-500">Humidity</label>
+                              <label class="block text-sm font-medium text-gray-500">Humidity</label>
                               <div class="flex items-baseline gap-1 mt-0.5">
                                 <input 
                                   type="number"
@@ -321,9 +351,9 @@
                               </div>
                             </div>
                           </div>
-                          <div class="h-1 w-full bg-gray-100 rounded-full">
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
                             <div 
-                              class="h-1 bg-teal-500 rounded-full transition-all duration-500"
+                              class="h-1.5 bg-teal-500 rounded-full transition-all duration-500"
                               :style="{ width: `${parseFloat(humidity)}%` }"
                             ></div>
                           </div>
@@ -337,7 +367,7 @@
                     <button 
                       type="submit"
                       @click="submitForm"
-                      class="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white bg-green-500 rounded-xl transition-all duration-300 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 gap-2"
+                      class="inline-flex items-center justify-center px-6 sm:px-8 py-3 text-base font-medium text-white bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl transition-all duration-300 hover:from-green-600 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 gap-2"
                     >
                       <SproutIcon class="w-5 h-5" />
                       <span>Get Crop Recommendations</span>
@@ -347,15 +377,18 @@
               </div>
 
               <!-- Table Section with Enhanced UI and Truly Fixed Height -->
-              <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+              <div class="bg-white rounded-xl shadow-md p-5 sm:p-6 border border-gray-100 relative overflow-hidden">
+                <!-- Background Pattern -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-blue-50 to-transparent opacity-50 -z-10"></div>
+                
                 <!-- Enhanced Filter Tabs -->
                 <div class="border-b border-gray-100 mb-6">
-                  <div class="flex gap-2 overflow-x-auto">
+                  <div class="flex gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent pb-2">
                     <button 
                       v-for="filter in filters" 
                       :key="filter.name"
                       :class="[
-                        'px-4 py-2.5 text-sm font-medium transition-all duration-200 relative',
+                        'px-4 py-2.5 text-sm font-medium transition-all duration-200 relative whitespace-nowrap',
                         activeFilter === filter.name 
                           ? 'text-green-600' 
                           : 'text-gray-500 hover:text-gray-700'
@@ -389,19 +422,187 @@
                     />
                   </div>
                   <div class="flex items-center gap-2">
-                    <button class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                    <button 
+                      class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                      @click="toggleGridView"
+                      :class="{'bg-gray-100': isGridView}"
+                      aria-label="Toggle grid view"
+                    >
                       <LayoutGridIcon class="h-4 w-4" />
                     </button>
-                    <button class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                    <button 
+                      class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                      @click="toggleFilterPanel"
+                      :class="{'bg-gray-100': showFilterPanel}"
+                      aria-label="Toggle filter panel"
+                    >
                       <FilterIcon class="h-4 w-4" />
                     </button>
                   </div>
                 </div>
 
+                <!-- Filter Panel -->
+                <div 
+                  v-if="showFilterPanel" 
+                  class="bg-gray-50 rounded-lg p-4 mb-6 transition-all duration-300 ease-in-out"
+                >
+                  <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-medium text-gray-700">Advanced Filters</h3>
+                    <button 
+                      @click="toggleFilterPanel"
+                      class="text-gray-400 hover:text-gray-600"
+                    >
+                      <XIcon class="h-4 w-4" />
+                    </button>
+                  </div>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Success Rate Range -->
+                    <div>
+                      <label class="block text-xs font-medium text-gray-600 mb-2">Success Rate</label>
+                      <div class="flex items-center gap-2">
+                        <input 
+                          type="number" 
+                          v-model="filterSuccessRateMin" 
+                          min="0" 
+                          max="100"
+                          placeholder="Min" 
+                          class="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                        />
+                        <span class="text-gray-400">-</span>
+                        <input 
+                          type="number" 
+                          v-model="filterSuccessRateMax" 
+                          min="0" 
+                          max="100"
+                          placeholder="Max" 
+                          class="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                        />
+                      </div>
+                    </div>
+                    
+                    <!-- Date Range -->
+                    <div>
+                      <label class="block text-xs font-medium text-gray-600 mb-2">Date Range</label>
+                      <div class="flex items-center gap-2">
+                        <input 
+                          type="date" 
+                          v-model="filterDateStart" 
+                          class="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                        />
+                        <span class="text-gray-400">-</span>
+                        <input 
+                          type="date" 
+                          v-model="filterDateEnd" 
+                          class="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                        />
+                      </div>
+                    </div>
+                    
+                    <!-- Status Filter -->
+                    <div>
+                      <label class="block text-xs font-medium text-gray-600 mb-2">Status</label>
+                      <select 
+                        v-model="filterStatus" 
+                        class="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                      >
+                        <option value="">All Statuses</option>
+                        <option value="Planted">Planted</option>
+                        <option value="Ongoing">Ongoing</option>
+                        <option value="Harvested">Harvested</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-end mt-4 gap-2">
+                    <button 
+                      @click="resetFilters"
+                      class="px-4 py-2 text-sm font-medium text-gray-600 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                    >
+                      Reset
+                    </button>
+                    <button 
+                      @click="applyFilters"
+                      class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors"
+                    >
+                      Apply Filters
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Grid View -->
+                <div 
+                  v-if="isGridView" 
+                  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 transition-all duration-300 ease-in-out"
+                >
+                  <div 
+                    v-for="prediction in paginatedPredictions" 
+                    :key="prediction.id"
+                    class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all duration-200 hover:-translate-y-1"
+                  >
+                    <div class="flex items-center gap-3 mb-3">
+                      <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-green-50 text-green-600">
+                        <SproutIcon class="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 class="text-sm font-medium text-gray-900">{{ prediction.crop }}</h3>
+                        <p class="text-xs text-gray-500">{{ prediction.date.split(',')[0] }}</p>
+                      </div>
+                    </div>
+                    
+                    <div class="space-y-2 mb-3">
+                      <div class="flex justify-between items-center">
+                        <span class="text-xs text-gray-600">Success Rate:</span>
+                        <span class="text-xs font-medium text-gray-900">{{ prediction.successRate }}%</span>
+                      </div>
+                      <div class="w-full bg-gray-100 rounded-full h-1.5">
+                        <div 
+                          class="bg-green-500 h-1.5 rounded-full"
+                          :style="{ width: `${prediction.successRate}%` }"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                      <span 
+                        :class="[
+                          'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                          getStatusClass(prediction.status)
+                        ]"
+                      >
+                        <span 
+                          :class="[
+                            'w-1.5 h-1.5 rounded-full mr-1.5',
+                            {
+                              'bg-green-500': prediction.status === 'Planted',
+                              'bg-blue-500': prediction.status === 'Ongoing',
+                              'bg-red-500': prediction.status === 'Cancelled',
+                              'bg-gray-500': prediction.status === 'Harvested'
+                            }
+                          ]"
+                        />
+                        {{ prediction.status }}
+                      </span>
+                      
+                      <button 
+                        @click="showDetails(prediction)"
+                        class="inline-flex items-center justify-center px-3 py-1 text-xs font-medium text-white bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors duration-200 gap-1"
+                      >
+                        <EyeIcon class="h-3 w-3" />
+                        Details
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Enhanced Table with Truly Fixed Height -->
-                <div class="overflow-hidden rounded-lg border border-gray-100">
+                <div 
+                  v-if="!isGridView"
+                  class="overflow-hidden rounded-lg border border-gray-100 transition-all duration-300 ease-in-out"
+                >
                   <div class="overflow-x-auto">
-                    <div class="overflow-y-auto" style="height: 370px;"> <!-- Fixed height container -->
+                    <div class="overflow-y-auto" style="height: 370px"> <!-- Fixed height container -->
                       <table class="w-full">
                         <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-sm z-10">
                           <tr>
@@ -477,7 +678,7 @@
                             <td class="px-4 py-3.5 whitespace-nowrap">
                               <button 
                                 @click="showDetails(prediction)"
-                                class="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium text-white bg-green-500 rounded-lg hover:bg-green-600 transition-colors duration-200 gap-1.5"
+                                class="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors duration-200 gap-1.5"
                               >
                                 <EyeIcon class="h-3.5 w-3.5" />
                                 Show
@@ -495,7 +696,7 @@
                 </div>
 
                 <!-- Enhanced Pagination -->
-                <div class="mt-6 flex items-center justify-between">
+                <div class="mt-6 flex flex-wrap items-center justify-between gap-4">
                   <div class="flex items-center gap-2">
                     <label class="text-sm text-gray-600">Items per page</label>
                     <select 
@@ -524,7 +725,7 @@
                         :class="[
                           'px-3 py-1 text-sm font-medium rounded-lg transition-colors duration-200',
                           currentPage === page
-                            ? 'bg-green-500 text-white'
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
                             : 'text-gray-500 hover:bg-gray-50'
                         ]"
                         @click="currentPage = page"
@@ -555,7 +756,7 @@
       <div class="absolute inset-0 bg-black/50 backdrop-blur-[2px]" @click="closeModal"></div>
       
       <!-- Modal Content - Centered and above the backdrop -->
-      <div class="absolute inset-0 flex items-center justify-center">
+      <div class="absolute inset-0 flex items-center justify-center p-4">
         <div class="relative bg-white rounded-2xl shadow-xl max-w-xl w-full mx-auto">
           <!-- Modal Header -->
           <div class="text-center p-6 pb-0">
@@ -568,7 +769,7 @@
             <!-- Left Column -->
             <div class="space-y-4">
               <!-- Primary Recommendation -->
-              <div class="bg-green-50/50 rounded-lg p-5">
+              <div class="bg-gradient-to-br from-green-50 to-emerald-50/50 rounded-lg p-5">
                 <div class="flex items-center gap-2 text-green-600 mb-3">
                   <SproutIcon class="h-4 w-4" />
                   <span class="text-xs font-medium">Recommended Crop</span>
@@ -584,7 +785,7 @@
               </div>
 
               <!-- Success Metrics -->
-              <div class="bg-white rounded-lg p-4 border border-gray-100">
+              <div class="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
                 <div class="flex items-center gap-2 text-green-600 mb-3">
                   <TrendingUpIcon class="h-4 w-4" />
                   <span class="text-xs font-medium">Success Metrics</span>
@@ -594,13 +795,33 @@
                     <span class="text-xs text-gray-600">Soil Compatibility</span>
                     <span class="text-xs font-medium text-gray-900">{{ soilCompatibility }}%</span>
                   </div>
+                  <div class="w-full bg-gray-100 rounded-full h-1.5 mb-1">
+                    <div 
+                      class="bg-green-500 h-1.5 rounded-full"
+                      :style="{ width: `${soilCompatibility}%` }"
+                    />
+                  </div>
+                  
                   <div class="flex items-center justify-between">
                     <span class="text-xs text-gray-600">Growth Rate</span>
                     <span class="text-xs font-medium text-gray-900">{{ growthRate }}%</span>
                   </div>
+                  <div class="w-full bg-gray-100 rounded-full h-1.5 mb-1">
+                    <div 
+                      class="bg-blue-500 h-1.5 rounded-full"
+                      :style="{ width: `${growthRate}%` }"
+                    />
+                  </div>
+                  
                   <div class="flex items-center justify-between">
                     <span class="text-xs text-gray-600">Yield Potential</span>
                     <span class="text-xs font-medium text-gray-900">{{ yieldPotential }}%</span>
+                  </div>
+                  <div class="w-full bg-gray-100 rounded-full h-1.5 mb-1">
+                    <div 
+                      class="bg-purple-500 h-1.5 rounded-full"
+                      :style="{ width: `${yieldPotential}%` }"
+                    />
                   </div>
                 </div>
               </div>
@@ -609,7 +830,7 @@
             <!-- Right Column -->
             <div class="space-y-4">
               <!-- Alternative Options -->
-              <div class="bg-white rounded-lg p-4 border border-gray-100">
+              <div class="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
                 <div class="flex items-center gap-2 text-green-600 mb-3">
                   <ListIcon class="h-4 w-4" />
                   <span class="text-xs font-medium">Alternative Options</span>
@@ -633,7 +854,7 @@
                     </div>
                     <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                       <div 
-                        class="h-full bg-green-500 rounded-full transition-all" 
+                        class="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all" 
                         :style="{ width: `${option.confidence}%` }"
                       ></div>
                     </div>
@@ -642,7 +863,7 @@
               </div>
 
               <!-- Crop Rotation Tip -->
-              <div class="bg-green-50/50 rounded-lg p-3">
+              <div class="bg-gradient-to-br from-green-50 to-emerald-50/50 rounded-lg p-3">
                 <div class="flex items-start gap-2">
                   <div class="mt-0.5">
                     <InfoIcon class="h-3.5 w-3.5 text-green-600" />
@@ -668,7 +889,7 @@
             </button>
             <button 
               @click="saveRecommendation"
-              class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1.5 shadow-sm"
+              class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-medium rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors flex items-center gap-1.5 shadow-sm"
             >
               <DownloadIcon class="h-3.5 w-3.5" />
               Save Recommendation
@@ -684,7 +905,7 @@
       <div class="absolute inset-0 bg-black/50 backdrop-blur-[2px]" @click="closeDetailsModal"></div>
     
       <!-- Modal Content - Centered and above the backdrop -->
-      <div class="absolute inset-0 flex items-center justify-center">
+      <div class="absolute inset-0 flex items-center justify-center p-4">
         <div class="relative bg-white rounded-2xl shadow-xl max-w-xl w-full mx-auto max-h-[90vh] overflow-y-auto">
           <!-- Modal Header -->
           <div class="text-center p-4 pb-0">
@@ -697,7 +918,7 @@
             <!-- Left Column -->
             <div class="space-y-3">
               <!-- Primary Recommendation -->
-              <div class="bg-green-50/50 rounded-lg p-4">
+              <div class="bg-gradient-to-br from-green-50 to-emerald-50/50 rounded-lg p-4">
                 <div class="flex items-center gap-2 text-green-600 mb-2">
                   <SproutIcon class="h-4 w-4" />
                   <span class="text-xs font-medium">Recommended Crop</span>
@@ -713,7 +934,7 @@
               </div>
 
               <!-- Recommended Fertilizer -->
-              <div class="bg-white rounded-lg p-4 border border-gray-100">
+              <div class="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
                 <div class="flex items-center gap-2 text-green-600 mb-3">
                   <FlaskIcon class="h-4 w-4" />
                   <span class="text-xs font-medium">Recommended Fertilizer</span>
@@ -737,7 +958,7 @@
               </div>
 
               <!-- Status Management -->
-              <div class="bg-white rounded-lg p-3 border border-gray-100">
+              <div class="bg-white rounded-lg p-3 border border-gray-100 shadow-sm">
                 <div class="flex items-center gap-2 text-green-600 mb-2">
                   <ActivityIcon class="h-4 w-4" />
                   <span class="text-xs font-medium">Status Management</span>
@@ -763,7 +984,7 @@
             <!-- Right Column -->
             <div class="space-y-3">
               <!-- Alternative Options with Fertilizers -->
-              <div class="bg-white rounded-lg p-4 border border-gray-100">
+              <div class="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
                 <div class="flex items-center gap-2 text-green-600 mb-3">
                   <ListIcon class="h-4 w-4" />
                   <span class="text-xs font-medium">Alternative Options</span>
@@ -785,7 +1006,7 @@
                     <!-- Progress Bar -->
                     <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                       <div 
-                        class="h-full bg-green-500 rounded-full transition-all" 
+                        class="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all" 
                         :style="{ width: `${option.confidence}%` }"
                       ></div>
                     </div>
@@ -808,7 +1029,7 @@
               </div>
 
               <!-- Success Metrics -->
-              <div class="bg-white rounded-lg p-4 border border-gray-100">
+              <div class="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
                 <div class="flex items-center gap-2 text-green-600 mb-3">
                   <TrendingUpIcon class="h-4 w-4" />
                   <span class="text-xs font-medium">Success Metrics</span>
@@ -818,13 +1039,33 @@
                     <span class="text-xs text-gray-600">Soil Compatibility</span>
                     <span class="text-xs font-medium text-gray-900">{{ selectedPrediction?.soilCompatibility }}%</span>
                   </div>
+                  <div class="w-full bg-gray-100 rounded-full h-1.5 mb-1">
+                    <div 
+                      class="bg-green-500 h-1.5 rounded-full"
+                      :style="{ width: `${selectedPrediction?.soilCompatibility}%` }"
+                    />
+                  </div>
+                  
                   <div class="flex items-center justify-between">
                     <span class="text-xs text-gray-600">Growth Rate</span>
                     <span class="text-xs font-medium text-gray-900">{{ selectedPrediction?.growthRate }}%</span>
                   </div>
+                  <div class="w-full bg-gray-100 rounded-full h-1.5 mb-1">
+                    <div 
+                      class="bg-blue-500 h-1.5 rounded-full"
+                      :style="{ width: `${selectedPrediction?.growthRate}%` }"
+                    />
+                  </div>
+                  
                   <div class="flex items-center justify-between">
                     <span class="text-xs text-gray-600">Yield Potential</span>
                     <span class="text-xs font-medium text-gray-900">{{ selectedPrediction?.yieldPotential }}%</span>
+                  </div>
+                  <div class="w-full bg-gray-100 rounded-full h-1.5 mb-1">
+                    <div 
+                      class="bg-purple-500 h-1.5 rounded-full"
+                      :style="{ width: `${selectedPrediction?.yieldPotential}%` }"
+                    />
                   </div>
                 </div>
               </div>
@@ -840,7 +1081,7 @@
               Close
             </button>
             <button 
-              class="px-3 py-1.5 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1.5 shadow-sm"
+              class="px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-medium rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors flex items-center gap-1.5 shadow-sm"
               @click="saveChanges"
             >
               <SaveIcon class="h-3.5 w-3.5" />
@@ -854,6 +1095,7 @@
 </template>
 
 <script setup>
+// Script section remains the same as in the previous version
 import { ref, computed, onMounted } from 'vue'
 import { 
   ChartBarIcon,
@@ -883,7 +1125,8 @@ import {
   CalendarIcon,
   EyeIcon,
   BeakerIcon as FlaskIcon,
-  SaveIcon
+  SaveIcon,
+  TableIcon
 } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
 // import Pagination from '../layout/Pagination.vue'
@@ -917,6 +1160,17 @@ const soilMoisture = ref(0)
 const temperature = ref(0)
 const humidity = ref(0)
 
+// Add new state for grid view and filter panel
+const isGridView = ref(false)
+const showFilterPanel = ref(false)
+
+// Filter states
+const filterSuccessRateMin = ref('')
+const filterSuccessRateMax = ref('')
+const filterDateStart = ref('')
+const filterDateEnd = ref('')
+const filterStatus = ref('')
+
 const showModal = ref(false)
 const recommendedCrop = ref('')
 const successRate = ref(0)
@@ -933,6 +1187,7 @@ const fertilizer = ref({
 })
 
 const predictions = ref([])
+const filteredPredictionsCache = ref([]) // Cache for filtered predictions
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(5)
@@ -960,6 +1215,66 @@ const previousSuccessRate = ref(0)
 const ongoingCount = ref(0) // Ongoing Count
 const ongoingPercentageChange = ref(0) // Ongoing Percentage Change
 const ongoingIsIncrease = ref(true) // Ongoing Increase or Decrease
+
+// Function to toggle grid view
+const toggleGridView = () => {
+  isGridView.value = !isGridView.value
+}
+
+// Function to toggle filter panel
+const toggleFilterPanel = () => {
+  showFilterPanel.value = !showFilterPanel.value
+}
+
+// Function to reset filters
+const resetFilters = () => {
+  filterSuccessRateMin.value = ''
+  filterSuccessRateMax.value = ''
+  filterDateStart.value = ''
+  filterDateEnd.value = ''
+  filterStatus.value = ''
+  
+  // Reset to original predictions
+  filteredPredictionsCache.value = [...predictions.value]
+  currentPage.value = 1
+}
+
+// Function to apply filters
+const applyFilters = () => {
+  let filtered = [...predictions.value]
+  
+  // Apply success rate filter
+  if (filterSuccessRateMin.value !== '') {
+    filtered = filtered.filter(p => p.successRate >= parseFloat(filterSuccessRateMin.value))
+  }
+  
+  if (filterSuccessRateMax.value !== '') {
+    filtered = filtered.filter(p => p.successRate <= parseFloat(filterSuccessRateMax.value))
+  }
+  
+  // Apply date filter
+  if (filterDateStart.value !== '') {
+    const startDate = new Date(filterDateStart.value)
+    filtered = filtered.filter(p => new Date(p.date) >= startDate)
+  }
+  
+  if (filterDateEnd.value !== '') {
+    const endDate = new Date(filterDateEnd.value)
+    endDate.setHours(23, 59, 59, 999) // Set to end of day
+    filtered = filtered.filter(p => new Date(p.date) <= endDate)
+  }
+  
+  // Apply status filter
+  if (filterStatus.value !== '') {
+    filtered = filtered.filter(p => p.status === filterStatus.value)
+  }
+  
+  // Update filtered predictions cache
+  filteredPredictionsCache.value = filtered
+  
+  // Reset to first page
+  currentPage.value = 1
+}
 
 // Greenhouse data - now all parameters are dynamic
 const greenhouse1Data = ref({
@@ -1004,7 +1319,6 @@ onMounted(async () => {
 
   fetchSavedRecommendations()
   fetchRecommendationStats()
-
 })
 
 const fetchLatestSensorDataFromFirebase = async () => {
@@ -1036,46 +1350,7 @@ const fetchLatestSensorDataFromFirebase = async () => {
   }
 }
 
-// const fetchRecommendationStats = async () => {
-//   try {
-//     const now = new Date()
-//     const oneWeekAgo = getDateDaysAgo(7)
-//     const twoWeeksAgo = getDateDaysAgo(14)
-
-//     // 🔹 Fetch this week's recommendations
-//     const thisWeekQuery = query(
-//       collection(db, 'crop_recommendations'),
-//       where('timestamp', '>=', oneWeekAgo)
-//     )
-//     const thisWeekSnap = await getDocs(thisWeekQuery)
-//     cropRecommendationCount.value = thisWeekSnap.size
-
-//     // 🔹 Fetch last week's recommendations
-//     const lastWeekQuery = query(
-//       collection(db, 'crop_recommendations'),
-//       where('timestamp', '>=', twoWeeksAgo),
-//       where('timestamp', '<', oneWeekAgo)
-//     )
-//     const lastWeekSnap = await getDocs(lastWeekQuery)
-//     previousRecommendationCount.value = lastWeekSnap.size
-
-//     // 🔹 Calculate percentage change
-//     if (previousRecommendationCount.value > 0) {
-//       const change = cropRecommendationCount.value - previousRecommendationCount.value
-//       percentageChange.value = ((change / previousRecommendationCount.value) * 100).toFixed(1)
-//       isIncrease.value = change >= 0
-//     } else {
-//       percentageChange.value = 100
-//       isIncrease.value = true
-//     }
-
-//   } catch (error) {
-//     console.error("❌ Error fetching recommendation stats:", error)
-//   }
-// }
-
 // Function to calculate percentage change between two periods
-
 const calculatePercentageChange = (docs, status = '') => {
   let percentageChange = 0
   let isIncrease = true
@@ -1170,7 +1445,6 @@ const submitForm = async () => {
     const res = await api.post('/crop/recommend', payload)
     console.log("Payload sent to backend:", payload)
 
-
     const result = res.data
 
     recommendedCrop.value = result.recommendedCrop
@@ -1185,7 +1459,6 @@ const submitForm = async () => {
     console.error('Fetch error:', error)
   }
 }
-
 
 const saveRecommendation = async () => {
   const payload = {
@@ -1335,6 +1608,9 @@ const fetchSavedRecommendations = async () => {
       }
     })
     
+    // Initialize filtered predictions cache
+    filteredPredictionsCache.value = [...predictions.value]
+    
     console.log("✅ Fetched recommendations:", predictions.value)
   } catch (error) {
     console.error("❌ Error fetching predictions from Firebase:", error)
@@ -1345,7 +1621,8 @@ const fetchSavedRecommendations = async () => {
 onMounted(fetchSavedRecommendations)
 
 const filteredPredictions = computed(() => {
-  let result = predictions.value
+  // Start with the filtered cache if it exists, otherwise use all predictions
+  let result = filteredPredictionsCache.value.length > 0 ? filteredPredictionsCache.value : predictions.value
 
   if (activeFilter.value !== 'All') {
     result = result.filter(p => p.status === activeFilter.value)
@@ -1413,32 +1690,6 @@ const getStatusButtonClass = (status) => {
   }
 }
 
-// const updateStatus = async (newStatus) => {
-//   if (!selectedPrediction.value || !selectedPrediction.value.id) return
-
-//   const docId = selectedPrediction.value.id
-
-//   try {
-//     await api.post(`/crop/recommendations/${docId}/status`, null, {
-//       params: { status: newStatus }
-//     })
-
-//     // ✅ Update local state
-//     selectedPrediction.value.status = newStatus
-
-//     // ✅ If you're showing it in a table too:
-//     const index = predictions.value.findIndex(p => p.id === docId)
-//     if (index !== -1) {
-//       predictions.value[index].status = newStatus
-//     }
-
-//     toastr.success('Crop status updated!')
-//   } catch (error) {
-//     console.error('Error updating status:', error)
-//     toastr.error('Failed to update crop status.')
-//   }
-// }
-
 const closeDetailsModal = () => {
   showDetailsModal.value = false
   selectedPrediction.value = null
@@ -1446,7 +1697,6 @@ const closeDetailsModal = () => {
   recommendedFertilizers.value = []
   editedStatus.value = null
 }
-
 
 const saveChanges = async () => {
   if (!selectedPrediction.value) return
@@ -1469,7 +1719,6 @@ const saveChanges = async () => {
     toastr.error('Failed to save changes')
   }
 }
-
 </script>
 
 <style>
@@ -1486,6 +1735,33 @@ const saveChanges = async () => {
 }
 
 /* Custom scrollbar styling */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.scrollbar-thumb-gray-200::-webkit-scrollbar-thumb {
+  background-color: rgba(229, 231, 235, 0.8);
+}
+
+.scrollbar-thumb-gray-200:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(209, 213, 219, 1);
+}
+
 .overflow-x-auto {
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
@@ -1528,10 +1804,39 @@ const saveChanges = async () => {
 
 /* Card animations */
 .bg-white {
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .bg-white:hover {
   transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .text-xl {
+    font-size: 1.1rem;
+  }
+  
+  .p-6 {
+    padding: 1rem;
+  }
+}
+
+/* Gradient animations */
+.bg-gradient-to-r {
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 </style>

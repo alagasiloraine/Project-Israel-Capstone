@@ -11,6 +11,7 @@ import UserProfile from '../views/users/UserProfile.vue'
 import About from '../views/users/About.vue'
 import OrganicSection from '../views/users/OrganicSection.vue'
 import WeatherForecast from '../views/users/WeatherForecast.vue'
+import Notifications from '../views/users/Notifications.vue'
 
 export const userRoutes = [
   {
@@ -77,5 +78,10 @@ export const userRoutes = [
     path: '/weather',
     name: 'WeatherForecast',
     component: WeatherForecast
+  },
+  {
+    path: '/notifications',
+    name: 'Notifications',
+    component: Notifications
   }
 ]
