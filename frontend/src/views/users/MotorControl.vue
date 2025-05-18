@@ -1404,4 +1404,4 @@ thead th, tbody td {
     transform: rotate(360deg);
   }
 }
-</style>
+</style>  
