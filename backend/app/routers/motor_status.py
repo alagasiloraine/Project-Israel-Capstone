@@ -16,7 +16,5 @@ class MotorStatus(BaseModel):
 
 @router.post("/motor-status")
 async def save_motor_status(status_data: MotorStatus):
-    # Example logic to save to DB or log
     print("Received motor status:", status_data)
-    # You could save this to a database here
     return {"message": "Motor status received", "data": status_data}
