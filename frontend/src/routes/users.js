@@ -12,7 +12,6 @@ import About from "../views/users/About.vue"
 import OrganicSection from "../views/users/OrganicSection.vue"
 import WeatherForecast from "../views/users/WeatherForecast.vue"
 import Notifications from "../views/users/Notifications.vue"
-import NPKCalibration from "../views/users/NPKCalibration.vue"
 
 export const userRoutes = [
   {
@@ -44,11 +43,6 @@ export const userRoutes = [
     path: "/control",
     name: "DeviceControl",
     component: DeviceControl,
-  },
-  {
-    path: "/npk-calibration",
-    name: "NPKCalibration",
-    component: NPKCalibration,
   },
   {
     path: "/soil-moisture",

@@ -812,7 +812,6 @@ const menuItems = [
   { name: 'Crop Prediction', href: '/prediction', icon: Brain },
   { name: 'Weather', href: '/weather', icon: Cloud },
   { name: 'Device Control', href: '/control', icon: Cpu },
-  { name: 'NPK Calibration', href: '/npk-calibration', icon: Beaker },
   { name: 'Soil Analysis', href: '/soil', icon: Sprout }
 ]
 
