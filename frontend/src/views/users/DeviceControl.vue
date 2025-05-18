@@ -998,7 +998,7 @@
     </main>
 
     <!-- Toggle Confirmation Dialog -->
-    <Transition name="modal">
+    <!-- <Transition name="modal">
       <div v-if="showToggleConfirmationDialog" class="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-0">
         <div 
           class="fixed inset-0 bg-black/50 backdrop-blur-sm" 
@@ -1022,6 +1022,56 @@
             }}
           </p>
           
+          <div class="flex justify-end gap-3">
+            <button 
+              @click="showToggleConfirmationDialog = false" 
+              class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              @click="confirmToggleWaterPump" 
+              :class="waterPumpActive 
+                ? 'bg-red-600 hover:bg-red-700' 
+                : 'bg-green-600 hover:bg-green-700'"
+              class="text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors flex items-center gap-2"
+            >
+              <Power class="w-4 h-4" />
+              <span>{{ waterPumpActive ? 'Turn OFF' : 'Turn ON' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition> -->
+
+    <Transition name="modal">
+      <div v-if="showToggleConfirmationDialog" class="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-0">
+        <div 
+          class="fixed inset-0 bg-black/50 backdrop-blur-sm" 
+          @click="showToggleConfirmationDialog = false"
+        ></div>
+
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 z-[10001]">
+          <div class="flex items-center gap-4 mb-4">
+            <div :class="waterPumpActive ? 'bg-red-100' : 'bg-green-100'" class="p-2 rounded-full">
+              <Power :class="waterPumpActive ? 'text-red-600' : 'text-green-600'" class="w-6 h-6" />
+            </div>
+            <h3 class="text-lg font-medium text-gray-900">
+              {{ waterPumpActive ? 'Turn OFF Water Pump?' : 'Turn ON Water Pump?' }}
+            </h3>
+          </div>
+
+          <p class="text-gray-600 mb-6">
+            <template v-if="!waterPumpActive && soilMoisture !== null && soilMoisture >= 50">
+              The soil moisture is still moist with {{ soilMoisture }}%. Are you sure you want to turn ON?
+            </template>
+            <template v-else>
+              {{ waterPumpActive 
+                ? 'Are you sure you want to turn OFF the water pump?' 
+                : 'Are you sure you want to turn ON the water pump?' }}
+            </template>
+          </p>
+
           <div class="flex justify-end gap-3">
             <button 
               @click="showToggleConfirmationDialog = false" 
@@ -1592,6 +1642,50 @@ const motorActivities = ref([])
 const isLoadingActivities = ref(true)
 const isLoadingNextWatering = ref(true)
 const isLoadingHistory = ref(false)
+const soilMoisture = ref()
+
+// Modal control
+const showScheduleModal = ref(false)
+const showAdvancedSettings = ref(false)
+const showDeleteConfirmation = ref(false)
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastTimeout = ref(null)
+
+// NEW: Toggle confirmation dialog control
+const showToggleConfirmationDialog = ref(false)
+
+// Editing state
+const editingScheduleIndex = ref(null)
+const scheduleToDeleteIndex = ref(null)
+const editingScheduleId = ref(null) // NEW: Store the Firestore document ID when editing
+
+// Motor control values
+const wateringMode = ref('weekly')
+const wateringDays = ref([true, false, true, false, true, false, false]) // Mon, Wed, Fri
+const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const wateringHour = ref(6) // 6 AM
+const wateringMinute = ref(30) // 30 minutes
+const wateringDuration = ref(20)
+const wateringDurationUnit = ref('minutes')
+const wateringInterval = ref(2)
+const wateringIntervalUnit = ref('days')
+const wateringTime = ref('11h')
+const isAm = ref(true)
+
+// Additional settings
+const skipIfRain = ref(false)
+const notifyWatering = ref(true)
+const waterFlowRate = ref('medium')
+
+// Calendar state
+const currentDate = ref(new Date())
+const selectedDate = ref(new Date())
+
+// Saved schedules array
+const savedSchedules = ref([])
+const isLoadingSchedules = ref(false)
+const nextWateringTime = ref('No schedules set')
 
 // Search query for history
 const searchQuery = ref('')
@@ -1970,49 +2064,6 @@ const parseActivityTimestamp = (timestamp) => {
   return new Date();
 };
 
-// Modal control
-const showScheduleModal = ref(false)
-const showAdvancedSettings = ref(false)
-const showDeleteConfirmation = ref(false)
-const showToast = ref(false)
-const toastMessage = ref('')
-const toastTimeout = ref(null)
-
-// NEW: Toggle confirmation dialog control
-const showToggleConfirmationDialog = ref(false)
-
-// Editing state
-const editingScheduleIndex = ref(null)
-const scheduleToDeleteIndex = ref(null)
-const editingScheduleId = ref(null) // NEW: Store the Firestore document ID when editing
-
-// Motor control values
-const wateringMode = ref('weekly')
-const wateringDays = ref([true, false, true, false, true, false, false]) // Mon, Wed, Fri
-const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-const wateringHour = ref(6) // 6 AM
-const wateringMinute = ref(30) // 30 minutes
-const wateringDuration = ref(20)
-const wateringDurationUnit = ref('minutes')
-const wateringInterval = ref(2)
-const wateringIntervalUnit = ref('days')
-const wateringTime = ref('11h')
-const isAm = ref(true)
-
-// Additional settings
-const skipIfRain = ref(false)
-const notifyWatering = ref(true)
-const waterFlowRate = ref('medium')
-
-// Calendar state
-const currentDate = ref(new Date())
-const selectedDate = ref(new Date())
-
-// Saved schedules array
-const savedSchedules = ref([])
-const isLoadingSchedules = ref(false)
-const nextWateringTime = ref('No schedules set')
-
 // NEW: Helper function to get the original index from the savedSchedules array
 const getOriginalIndex = (scheduleId) => {
   return savedSchedules.value.findIndex(schedule => schedule.id === scheduleId);
@@ -2091,6 +2142,16 @@ const showToggleConfirmation = () => {
   // Only show confirmation dialog if user is trying to change the current state
   showToggleConfirmationDialog.value = true
 }
+
+watch(showToggleConfirmationDialog, async (newVal) => {
+  if (newVal && !waterPumpActive.value) {
+    const q = query(collection(db, "sensor_readings"), orderBy("timestamp", "desc"), limit(1));
+    const snapshot = await getDocs(q);
+    snapshot.forEach(doc => {
+      soilMoisture.value = doc.data().soilMoisture;
+    });
+  }
+});
 
 // NEW: Function to confirm and execute water pump toggle
 const confirmToggleWaterPump = async () => {
@@ -3113,8 +3174,6 @@ const saveWateringSchedule = async () => {
     showToastMessage('Error saving schedule. Please try again.');
   }
 };
-
-
 
 // Initialize AM/PM based on hour
 watch(() => wateringHour.value, updateAmPm, { immediate: true })
