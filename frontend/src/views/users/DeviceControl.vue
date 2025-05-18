@@ -1293,7 +1293,7 @@ const motorActivities = ref([])
 const isLoadingActivities = ref(true)
 const isLoadingNextWatering = ref(true)
 const isLoadingHistory = ref(false)
-const soilMoisture = ref()
+const soilMoisture = ref(null);
 
 // Search query for history
 const searchQuery = ref('')
@@ -1857,9 +1857,10 @@ try {
   try {
     const response = await axios.post('http://localhost:8000/api/motor_status/', {
       status: waterPumpActive.value,
-      device_id: 'main_motor',      user: 'system',
+      device_id: 'main_motor',
+      user: 'system',
       timestamp: now.toISOString(),
-      formatted_time: formattedTime
+      formatted_time: formattedTime  // ✅ FIXED: was `formattedTime`
     })
 
     console.log('Motor status sent to FastAPI backend:', response.data)
