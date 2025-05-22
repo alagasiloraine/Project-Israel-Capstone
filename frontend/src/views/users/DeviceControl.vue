@@ -1277,7 +1277,8 @@ import {
   getDoc,
   updateDoc,
   deleteDoc,
-  where
+  where,
+  onSnapshot
 } from 'firebase/firestore'
 import axios from 'axios'
 
@@ -1311,6 +1312,51 @@ const currentPage = ref(1)
 const totalPages = computed(() => Math.ceil(filteredPastSchedules.value.length / itemsPerPage.value))
 const paginationStart = computed(() => ((currentPage.value - 1) * itemsPerPage.value) + 1)
 const paginationEnd = computed(() => Math.min(currentPage.value * itemsPerPage.value, filteredPastSchedules.value.length))
+
+
+// Modal control
+const showScheduleModal = ref(false)
+const showAdvancedSettings = ref(false)
+const showDeleteConfirmation = ref(false)
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastTimeout = ref(null)
+
+// NEW: Toggle confirmation dialog control
+const showToggleConfirmationDialog = ref(false)
+
+// Editing state
+const editingScheduleIndex = ref(null)
+const scheduleToDeleteIndex = ref(null)
+const editingScheduleId = ref(null) // NEW: Store the Firestore document ID when editing
+
+// Motor control values
+const wateringMode = ref('weekly')
+const wateringDays = ref([true, false, true, false, true, false, false]) // Mon, Wed, Fri
+const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const wateringHour = ref(6) // 6 AM
+const wateringMinute = ref(30) // 30 minutes
+const wateringDuration = ref(20)
+const wateringDurationUnit = ref('minutes')
+const wateringInterval = ref(2)
+const wateringIntervalUnit = ref('days')
+const wateringTime = ref('11h')
+const isAm = ref(true)
+
+// Additional settings
+const skipIfRain = ref(false)
+const notifyWatering = ref(true)
+const waterFlowRate = ref('medium')
+
+// Calendar state
+const currentDate = ref(new Date())
+const selectedDate = ref(new Date())
+
+// Saved schedules array
+const savedSchedules = ref([])
+const isLoadingSchedules = ref(false)
+const nextWateringTime = ref('No schedules set')
+const currentTime = ref(Date.now())
 
 // Display pagination buttons
 const displayedPages = computed(() => {
@@ -1435,13 +1481,34 @@ const filteredMotorActivities = computed(() => {
 });
 
 // NEW: Computed properties to separate upcoming and past schedules
+// const upcomingSchedules = computed(() => {
+//   const now = new Date().getTime();
+//   return savedSchedules.value.filter(schedule => {
+//     // Check if the schedule has a scheduledTime property and it's in the future
+//     return schedule.scheduledTime && schedule.scheduledTime > now;
+//   });
+// });
+
 const upcomingSchedules = computed(() => {
-  const now = new Date().getTime();
   return savedSchedules.value.filter(schedule => {
-    // Check if the schedule has a scheduledTime property and it's in the future
-    return schedule.scheduledTime && schedule.scheduledTime > now;
-  });
-});
+    if (!schedule.scheduledTime || !schedule.duration) return false
+
+    const start = new Date(schedule.scheduledTime)
+
+    let durationMinutes = 0
+    if (typeof schedule.duration === 'string') {
+      const [durHour, durMin] = schedule.duration.split(':').map(Number)
+      durationMinutes = durHour * 60 + durMin
+    } else if (typeof schedule.duration === 'number') {
+      durationMinutes = schedule.duration
+    }
+
+    const end = new Date(start.getTime() + durationMinutes * 60000)
+
+    return end.getTime() > currentTime.value
+  })
+})
+
 
 // FIXED: Modified to properly identify past schedules
 const pastSchedules = computed(() => {
@@ -1671,49 +1738,6 @@ const parseActivityTimestamp = (timestamp) => {
   console.warn('Could not parse timestamp, using current date as fallback:', timestamp);
   return new Date();
 };
-
-// Modal control
-const showScheduleModal = ref(false)
-const showAdvancedSettings = ref(false)
-const showDeleteConfirmation = ref(false)
-const showToast = ref(false)
-const toastMessage = ref('')
-const toastTimeout = ref(null)
-
-// NEW: Toggle confirmation dialog control
-const showToggleConfirmationDialog = ref(false)
-
-// Editing state
-const editingScheduleIndex = ref(null)
-const scheduleToDeleteIndex = ref(null)
-const editingScheduleId = ref(null) // NEW: Store the Firestore document ID when editing
-
-// Motor control values
-const wateringMode = ref('weekly')
-const wateringDays = ref([true, false, true, false, true, false, false]) // Mon, Wed, Fri
-const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-const wateringHour = ref(6) // 6 AM
-const wateringMinute = ref(30) // 30 minutes
-const wateringDuration = ref(20)
-const wateringDurationUnit = ref('minutes')
-const wateringInterval = ref(2)
-const wateringIntervalUnit = ref('days')
-const wateringTime = ref('11h')
-const isAm = ref(true)
-
-// Additional settings
-const skipIfRain = ref(false)
-const notifyWatering = ref(true)
-const waterFlowRate = ref('medium')
-
-// Calendar state
-const currentDate = ref(new Date())
-const selectedDate = ref(new Date())
-
-// Saved schedules array
-const savedSchedules = ref([])
-const isLoadingSchedules = ref(false)
-const nextWateringTime = ref('No schedules set')
 
 // NEW: Helper function to get the original index from the savedSchedules array
 const getOriginalIndex = (scheduleId) => {
@@ -2338,7 +2362,7 @@ const loadScheduleData = (index) => {
   }
 
   // Set time - CRITICAL FIX
-  const timeMatch = schedule.dateTime.match(/(\d+):(\d+)\s+(AM|PM)/);
+const timeMatch = schedule.dateTime.match(/(\d+):(\d+)\s+(AM|PM)/);
   if (timeMatch) {
     const hour12 = parseInt(timeMatch[1]);
     const minute = parseInt(timeMatch[2]);
@@ -2540,7 +2564,7 @@ const timeDisplay = computed(() => {
 });
 
 // FIXED: Save or update watering schedule
-const saveWateringSchedule = async () => {
+/*const saveWateringSchedule = async () => {
   try {
     console.log("Starting saveWateringSchedule with current values:");
     console.log(`Hour: ${wateringHour.value}, Minute: ${wateringMinute.value}, isAm: ${isAm.value}`);
@@ -2688,7 +2712,103 @@ const saveWateringSchedule = async () => {
     console.error('Error saving watering schedule:', error);
     showToastMessage('Error saving schedule. Please try again.');
   }
+};*/
+
+const saveWateringSchedule = async () => {
+  try {
+    console.log("🚀 Starting saveWateringSchedule...");
+    console.log(`Selected Hour: ${wateringHour.value}, Minute: ${wateringMinute.value}, isAm: ${isAm.value}`);
+
+    const scheduledTime = new Date();
+
+    // If one-time, set full date
+    if (wateringMode.value === 'one-time') {
+      scheduledTime.setFullYear(
+        selectedDate.value.getFullYear(),
+        selectedDate.value.getMonth(),
+        selectedDate.value.getDate()
+      );
+    }
+
+    // Convert time to 24-hour format
+    let hour24 = wateringHour.value;
+    if (isAm.value && hour24 === 12) {
+      hour24 = 0;
+    } else if (!isAm.value && hour24 < 12) {
+      hour24 = hour24 + 12;
+    }
+    scheduledTime.setHours(hour24, wateringMinute.value, 0, 0);
+
+    // Format for user-friendly display
+    const formattedDateTime = (() => {
+      const timeDate = new Date();
+      if (wateringMode.value === 'one-time') {
+        timeDate.setFullYear(
+          selectedDate.value.getFullYear(),
+          selectedDate.value.getMonth(),
+          selectedDate.value.getDate()
+        );
+      }
+      timeDate.setHours(hour24, wateringMinute.value, 0, 0);
+      return timeDate.toLocaleString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    })();
+
+    const now = new Date().getTime();
+    const isCompleted = scheduledTime.getTime() <= now;
+
+    const scheduleData = {
+      dateTime: formattedDateTime,
+      duration: wateringDuration.value,
+      mode: wateringMode.value,
+      days: [...wateringDays.value],
+      skipIfRain: skipIfRain.value,
+      notifyWatering: notifyWatering.value,
+      waterFlowRate: waterFlowRate.value,
+      interval: wateringMode.value === 'custom' ? {
+        value: wateringInterval.value,
+        unit: wateringIntervalUnit.value,
+      } : null,
+      scheduledTime: scheduledTime.getTime(),
+      completed: isCompleted
+    };
+
+    console.log("📦 Sending schedule to backend:", scheduleData);
+
+    const response = await axios.post("http://127.0.0.1:8000/api/watering-schedule", scheduleData);
+
+    if (response.status === 200) {
+      console.log("✅ Schedule successfully saved to backend.");
+      showToastMessage("Schedule saved successfully");
+
+      savedSchedules.value.push({
+        ...scheduleData,
+        id: response.data.id || 'temp-' + Date.now(),
+        createdAt: new Date().toISOString()
+      });
+
+      await calculateNextWateringTime();
+      closeScheduleModal();
+
+      if (currentView.value === 'history') {
+        await fetchWateringSchedules();
+      }
+    } else {
+      console.error("❌ Backend responded with an error:", response);
+      showToastMessage("Error: Backend responded with an error.");
+    }
+  } catch (error) {
+    console.error("❌ Error saving watering schedule:", error);
+    showToastMessage("Error saving schedule. Please try again.");
+  }
 };
+
 
 // Initialize AM/PM based on hour
 watch(() => wateringHour.value, updateAmPm, { immediate: true })
@@ -2707,6 +2827,10 @@ onMounted(() => {
   
   historyFilters.value.startDate = thirtyDaysAgo.toISOString().split('T')[0]
   historyFilters.value.endDate = today.toISOString().split('T')[0]
+
+  setInterval(() => {
+    currentTime.value = Date.now()
+  }, 1000) // every 1 seconds
 })
 
 onUnmounted(() => {
