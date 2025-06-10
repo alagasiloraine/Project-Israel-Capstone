@@ -10,7 +10,7 @@ router = APIRouter(
 )
 
 # ESP32 Configuration
-ESP32_IP = "http://192.168.1.21"   # Change this if your ESP32 has a new IP
+ESP32_IP = "http://192.168.1.18"   # Change this if your ESP32 has a new IP
 ESP32_ENDPOINT = f"{ESP32_IP}/motor-status"
 
 # Data model

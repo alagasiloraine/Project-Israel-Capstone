@@ -1,9 +1,7 @@
-# ✅ FULL BACKEND CODE WITH WATERING LOG SUPPORT
-
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from firebase_admin import firestore
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List, Union
 from datetime import datetime, timedelta
 import requests
@@ -11,7 +9,6 @@ import time
 
 router = APIRouter()
 
-# === Models ===
 class Interval(BaseModel):
     value: int
     unit: str  # "days", "weeks", "hours"
@@ -19,14 +16,14 @@ class Interval(BaseModel):
 class Schedule(BaseModel):
     dateTime: str
     duration: int
-    mode: str  # "one-time", "weekly", "daily", "custom", "calendar-day"
+    mode: str
     days: List[bool]
     skipIfRain: bool
     notifyWatering: bool
     waterFlowRate: Union[float, str]
     interval: Optional[Interval] = None
     scheduledTime: Optional[int] = None
-    completed: Optional[bool] = None
+    completed: bool = Field(default=False)
 
 class WateringLog(BaseModel):
     schedule_id: str
@@ -35,7 +32,6 @@ class WateringLog(BaseModel):
     device_id: str
     status: str
 
-# === Compute next epoch from a schedule ===
 def compute_next_epoch(schedule: Schedule) -> int:
     now = datetime.now()
     try:
@@ -79,10 +75,11 @@ def compute_next_epoch(schedule: Schedule) -> int:
         for i in range(0, 7):
             day_index = (today + i) % 7
             if schedule.days[day_index]:
-                dt = datetime.combine(now.date() + timedelta(days=i), target_time)
+                candidate_date = now.date() + timedelta(days=i)
+                dt = datetime.combine(candidate_date, target_time)
                 if dt > now:
                     return int(dt.timestamp())
-        return 0
+        return int(now.timestamp() + 86400)
 
     if schedule.mode == "custom" and schedule.interval:
         dt = datetime.combine(now.date(), target_time)
@@ -101,36 +98,46 @@ def save_schedule(schedule: Schedule):
 
         if schedule.mode != "one-time":
             schedule.scheduledTime = compute_next_epoch(schedule)
+            print(f"⏱ Computed next epoch: {schedule.scheduledTime}")
 
         if schedule.scheduledTime and schedule.scheduledTime > 1_000_000_000_000:
             print("⚙️ Converting scheduledTime from ms to s...")
             schedule.scheduledTime = int(schedule.scheduledTime / 1000)
 
-        db = firestore.client()
-        doc_ref = db.collection("watering_schedules").add(schedule.dict())
-        doc_id = doc_ref[1].id
-        print(f"✅ Step 2: Schedule saved to Firebase with ID: {doc_id}")
+        print(f"💾 Final scheduledTime to send: {schedule.scheduledTime}")
+
+        # Convert numpy.bool_ values to native Python bool
+        schedule_data = schedule.dict()
+        schedule_data["completed"] = False
+        schedule_data["days"] = [bool(d) for d in schedule_data.get("days", [])]
+
+        # Add createdAt timestamp
+        schedule_data["createdAt"] = datetime.now().isoformat()
+
+        print("✅ Final data being sent to ESP32:", schedule_data)
 
         current_epoch = int(time.time())
-        schedule_payload = schedule.dict()
-        schedule_payload["currentTime"] = current_epoch
+        schedule_payload = {**schedule_data, "currentTime": current_epoch}
 
-        esp_ip = "192.168.1.21"
+        esp_ip = "192.168.1.18"
         esp_url = f"http://{esp_ip}/watering-schedule"
-        print(f"🌐 Step 3: Sending watering schedule to ESP32 at {esp_url}...")
+        print(f"🌐 Step 2: Sending watering schedule to ESP32 at {esp_url}...")
 
-        response = requests.post(esp_url, json=schedule_payload, timeout=5)
+        try:
+            response = requests.post(esp_url, json=schedule_payload, timeout=5)
+            if response.status_code == 200:
+                print("✅ Step 3: ESP32 acknowledged schedule.")
+            else:
+                print(f"⚠️ Step 3: ESP32 responded with status code: {response.status_code}")
+        except Exception as esp_error:
+            print(f"❌ Step 3: Failed to send schedule to ESP32: {esp_error}")
 
-        if response.status_code == 200:
-            print("✅ Step 4: ESP32 acknowledged schedule.")
-        else:
-            print(f"⚠️ Step 4: ESP32 responded with status code: {response.status_code}")
-
-        return JSONResponse(content={"status": "success", "id": doc_id})
+        return JSONResponse(content={"status": "success"})
 
     except Exception as e:
         print(f"❌ Error during schedule processing: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
+
 
 @router.get("/api/watering-schedule")
 def get_next_schedule():

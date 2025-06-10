@@ -2,11 +2,11 @@
   <div class="min-h-screen flex bg-gradient-to-br from-green-50 to-emerald-100 font-poppins overflow-hidden">
     <Sidebar />
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-screen pt-20 sm:pt-24 md:pt-28">
+    <main class="flex-1 flex flex-col h-screen pt-32">
       <!-- Container Wrapper with proper spacing -->
       <div class="flex-1 w-full px-4 sm:px-6 md:px-8 lg:px-10 overflow-hidden">
         <!-- Main Container with adjusted width -->
-        <div class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-green-100 h-[calc(100vh-100px)] overflow-y-auto transition-all duration-300 ease-in-out hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]">
+        <div class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-green-100 h-[calc(100vh-140px)] overflow-y-auto transition-all duration-300 ease-in-out hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]">
           <!-- Content Wrapper -->
           <div class="p-4 sm:p-6">
             <!-- Clean Minimalist Metrics Section -->

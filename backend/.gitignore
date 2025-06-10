@@ -1,5 +1,5 @@
 venv
-serviceAccountKey.json
+hindiItoApiKey.json
 .env
 data
 forecast_log.txt

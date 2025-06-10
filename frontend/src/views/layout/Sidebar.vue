@@ -443,77 +443,77 @@ const sensorReadings = ref([]);
 
 
 
-watch(waterLevel, (newVal) => {
-  const timestamp = new Date().toISOString()
-  const baseId = Date.now().toString() // unique ID per notification
+// watch(waterLevel, (newVal) => {
+//   const timestamp = new Date().toISOString()
+//   const baseId = Date.now().toString() // unique ID per notification
 
-  if (newVal === 50) {
-    const notification = {
-      id: baseId,
-      title: "Water Level Notice",
-      message: "Water level is currently at 50%.",
-      type: "water",
-      severity: "info", // new field
-      timestamp
-    }
-    eventBus.emit('notify', notification)
-    sendPushNotification(notification.message)
-    sendNotificationToBackend(notification)
+//   if (newVal === 50) {
+//     const notification = {
+//       id: baseId,
+//       title: "Water Level Notice",
+//       message: "Water level is currently at 50%.",
+//       type: "water",
+//       severity: "info", // new field
+//       timestamp
+//     }
+//     eventBus.emit('notify', notification)
+//     sendPushNotification(notification.message)
+//     sendNotificationToBackend(notification)
 
-  } else if (newVal < 50 && newVal > 30) {
-    const notification = {
-      id: baseId,
-      title: "Water Level Low",
-      message: "Water level is below 50%. Please check the tank.",
-      type: "water",
-      severity: "warning", // new field
-      timestamp
-    }
-    eventBus.emit('notify', notification)
-    sendPushNotification(notification.message)
-    sendNotificationToBackend(notification)
+//   } else if (newVal < 50 && newVal > 30) {
+//     const notification = {
+//       id: baseId,
+//       title: "Water Level Low",
+//       message: "Water level is below 50%. Please check the tank.",
+//       type: "water",
+//       severity: "warning", // new field
+//       timestamp
+//     }
+//     eventBus.emit('notify', notification)
+//     sendPushNotification(notification.message)
+//     sendNotificationToBackend(notification)
 
-  } else if (newVal <= 30 && newVal > 15) {
-    const notification = {
-      id: baseId,
-      title: "Water Level Warning",
-      message: "Water level has only 30%. Please check the tank.",
-      type: "water",
-      severity: "alert", // new field
-      timestamp
-    }
-    eventBus.emit('notify', notification)
-    sendPushNotification(notification.message)
-    sendNotificationToBackend(notification)
+//   } else if (newVal <= 30 && newVal > 15) {
+//     const notification = {
+//       id: baseId,
+//       title: "Water Level Warning",
+//       message: "Water level has only 30%. Please check the tank.",
+//       type: "water",
+//       severity: "alert", // new field
+//       timestamp
+//     }
+//     eventBus.emit('notify', notification)
+//     sendPushNotification(notification.message)
+//     sendNotificationToBackend(notification)
 
-  } else if (newVal <= 15 && newVal >= 10) {
-    const notification = {
-      id: baseId,
-      title: "Critical Water Level",
-      message: "Water level is critically low! Immediate action required.",
-      type: "water",
-      severity: "critical", // new field
-      timestamp
-    }
-    eventBus.emit('notify', notification)
-    sendPushNotification(notification.message)
-    sendNotificationToBackend(notification)
-  }
+//   } else if (newVal <= 15 && newVal >= 10) {
+//     const notification = {
+//       id: baseId,
+//       title: "Critical Water Level",
+//       message: "Water level is critically low! Immediate action required.",
+//       type: "water",
+//       severity: "critical", // new field
+//       timestamp
+//     }
+//     eventBus.emit('notify', notification)
+//     sendPushNotification(notification.message)
+//     sendNotificationToBackend(notification)
+//   }
 
-})
+// })
 
-function addNotification({ title, message, type, severity = 'info' }) {
-  notifications.value.unshift({
-    id: Date.now(),
-    title,
-    message,
-    type,
-    severity,           // Add severity field
-    time: new Date(),
-    read: false
-  });
+// function addNotification({ title, message, type, severity = 'info' }) {
+//   notifications.value.unshift({
+//     id: Date.now(),
+//     title,
+//     message,
+//     type,
+//     severity,           // Add severity field
+//     time: new Date(),
+//     read: false
+//   });
 
-}
+// }
 
 const fetchSensorData = async () => {
   try {
@@ -531,10 +531,10 @@ let isEventBusRegistered = false
 let fallbackTimeout = null
 
 onMounted(() => {
-  if (!isEventBusRegistered) {
-    eventBus.on('notify', addNotification)
-    isEventBusRegistered = true
-  }
+  // if (!isEventBusRegistered) {
+  //   eventBus.on('notify', addNotification)
+  //   isEventBusRegistered = true
+  // }
 
   initWaterStream()
   onWaterLevelUpdate((level) => {
@@ -548,9 +548,9 @@ onMounted(() => {
 
 let eventWaterSourceInitialized = false
 
-onBeforeUnmount(() => {
-  eventBus.off('notify', addNotification);
-});
+// onBeforeUnmount(() => {
+//   eventBus.off('notify', addNotification);
+// });
 
 const saveToLocalStorage = (notification) => {
   const existing = JSON.parse(localStorage.removeItem('notifications') || '[]')
@@ -1024,5 +1024,4 @@ html {
   }
 }
 </style>    
-
 
