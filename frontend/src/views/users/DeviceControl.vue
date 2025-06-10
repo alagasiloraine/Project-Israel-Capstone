@@ -348,17 +348,17 @@
             </div>
           </div>
 
-
-          <!-- Schedule History View (Modified to match Soil Moisture table) -->
+          <!-- Schedule History View (MODIFIED to use 1/4 - 3/4 layout) -->
           <div v-else-if="currentView === 'history'" class="flex-1 flex flex-col overflow-hidden">
-            <!-- Filter section - SIMPLIFIED AND MINIMALISTIC -->
-            <div class="p-4 bg-white border-b">
-              <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
-                <div>
-                  <h2 class="text-xl font-semibold text-gray-800">Schedule History</h2>
-                </div>
-                <div class="flex items-center gap-2">
-
+            
+            <!-- Modified layout - 1/4 and 3/4 split -->
+            <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+              
+              <!-- LEFT SIDE (1/4) - Filters, Search, Export -->
+              <div class="w-full md:w-1/4 border-r border-gray-100 bg-white p-4 flex flex-col overflow-y-auto">
+                
+                <!-- Search Bar -->
+                <div class="mb-4">
                   <div class="relative">
                     <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
@@ -369,298 +369,6 @@
                     />
                   </div>
                 </div>
-
-              </div>
-              
-              <!-- Simplified Filter Bar - Horizontal layout with all controls visible -->
-              <div class="flex flex-wrap items-center gap-3 mb-2">
-                <!-- Date Range - Simplified with inline labels -->
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-sm text-gray-500">From:</span>
-                  <input 
-                    type="date" 
-                    v-model="historyFilters.startDate" 
-                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                  
-                  <span class="text-sm text-gray-500 ml-2">To:</span>
-                  <input 
-                    type="date" 
-                    v-model="historyFilters.endDate" 
-                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-                
-                <!-- Schedule Type - Simplified dropdown -->
-                <div class="flex items-center gap-2">
-                  <select 
-                    v-model="historyFilters.scheduleType" 
-                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  >
-                    <option value="all">All Types</option>
-                    <option value="one-time">One-time</option>
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="custom">Custom</option>
-                  </select>
-                </div>
-                
-                <!-- Duration - Simplified dropdown -->
-                <div class="flex items-center gap-2">
-                  <select 
-                    v-model="historyFilters.duration" 
-                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  >
-                    <option value="all">All Durations</option>
-                    <option value="short">Short (< 10 min)</option>
-                    <option value="medium">Medium (10-30 min)</option>
-                    <option value="long">Long (> 30 min)</option>
-                  </select>
-                </div>
-                
-                <!-- Apply Filters Button -->
-                <button 
-                  @click="applyHistoryFilters" 
-                  class="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-colors"
-                >
-                  <Filter class="h-4 w-4" />
-                  Apply
-                </button>
-                
-                <!-- Export Button - Simplified -->
-                <div class="relative ml-auto">
-                  <button 
-                    @click.stop="toggleDropdown('export')"
-                    class="flex items-center gap-1.5 px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    <Download class="h-4 w-4" />
-                    Export
-                    <ChevronDown class="h-3.5 w-3.5" :class="{ 'transform rotate-180': activeDropdown === 'export' }" />
-                  </button>
-                  
-                  <div 
-                    v-show="activeDropdown === 'export'"
-                    class="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
-                    @click.stop
-                  >
-                    <div class="py-1">
-                      <button
-                        v-for="format in exportFormats"
-                        :key="format"
-                        @click="exportData(format)"
-                        class="w-full px-3 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                      >
-                        <span v-if="format === 'csv'" class="mr-2 text-emerald-500"><FileText class="h-3.5 w-3.5" /></span>
-                        <span v-else-if="format === 'pdf'" class="mr-2 text-red-500"><FileText class="h-3.5 w-3.5" /></span>
-                        <span v-else class="mr-2 text-blue-500"><FileText class="h-3.5 w-3.5" /></span>
-                        {{ format.toUpperCase() }}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Active Filters Display - Shows what filters are currently applied -->
-              <div v-if="hasActiveFilters" class="flex flex-wrap items-center gap-2 mb-2">
-                <span class="text-xs text-gray-500">Active filters:</span>
-                
-                <!-- Date Range Filter Tag -->
-                <div v-if="historyFilters.startDate || historyFilters.endDate" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
-                  <Calendar class="w-3 h-3" />
-                  <span>{{ formatDateRange }}</span>
-                  <button @click="clearDateFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
-                    <X class="w-3 h-3" />
-                  </button>
-                </div>
-                
-                <!-- Schedule Type Filter Tag -->
-                <div v-if="historyFilters.scheduleType !== 'all'" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
-                  <CalendarClock class="w-3 h-3" />
-                  <span>{{ formatScheduleType }}</span>
-                  <button @click="clearTypeFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
-                    <X class="w-3 h-3" />
-                  </button>
-                </div>
-                
-                <!-- Duration Filter Tag -->
-                <div v-if="historyFilters.duration !== 'all'" class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
-                  <Clock class="w-3 h-3" />
-                  <span>{{ formatDuration }}</span>
-                  <button @click="clearDurationFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
-                    <X class="w-3 h-3" />
-                  </button>
-                </div>
-                
-                <!-- Clear All Filters -->
-                <button 
-                  @click="clearAllFilters" 
-                  class="text-xs text-gray-500 hover:text-gray-700 ml-2 underline"
-                >
-                  Clear all
-                </button>
-              </div>
-            </div>
-            
-            <!-- Table Container with Fixed Header and Scrollable Body -->
-            <div class="flex-1 flex flex-col overflow-hidden">
-              <!-- Fixed Table Header - Will not scroll -->
-              <div class="bg-gray-50 border-b border-gray-200">
-                <table class="min-w-full">
-                  <thead>
-                    <tr>
-                      <th class="w-[25%] py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <div class="text-gray-600">Date & Time</div>
-                        <div class="text-gray-400 text-[10px] normal-case">MMM DD, YYYY HH:MM</div>
-                      </th>
-                      <th class="w-[20%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
-                        <div class="text-blue-600">Duration</div>
-                        <div class="text-gray-400 text-[10px] normal-case">Minutes</div>
-                      </th>
-                      <th class="w-[20%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
-                        <div class="text-emerald-600">Schedule Type</div>
-                        <div class="text-gray-400 text-[10px] normal-case">Mode</div>
-                      </th>
-                      <th class="w-[15%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
-                        <div class="text-gray-600">Status</div>
-                        <div class="text-gray-400 text-[10px] normal-case">Completion</div>
-                      </th>
-                      <th class="w-[20%] py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">
-                        <div class="text-gray-600">Additional Info</div>
-                        <div class="text-gray-400 text-[10px] normal-case">Settings</div>
-                      </th>
-                    </tr>
-                  </thead>
-                </table>
-              </div>
-              
-              <!-- Scrollable Table Body -->
-              <div class="flex-1 overflow-y-auto">
-                <table class="min-w-full">
-                  <tbody>
-                    <!-- Loading state -->
-                    <tr v-if="isLoadingHistory" class="border-b border-gray-50 last:border-0">
-                      <td colspan="5" class="px-4 py-20 text-center">
-                        <div class="flex flex-col items-center justify-center">
-                          <div class="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                          <p class="text-gray-500">Loading schedule history...</p>
-                        </div>
-                      </td>
-                    </tr>
-                    
-                    <!-- Empty state -->
-                    <tr v-else-if="filteredPastSchedules.length === 0" class="border-b border-gray-50 last:border-0">
-                      <td colspan="5" class="px-4 py-20 text-center">
-                        <div class="flex flex-col items-center justify-center">
-                          <History class="h-16 w-16 text-gray-200 mb-4" />
-                          <p class="text-gray-400 font-medium">No schedule history found</p>
-                          <p class="text-xs text-gray-400 mt-2">Completed schedules will appear here</p>
-                        </div>
-                      </td>
-                    </tr>
-                    
-                    <!-- Data rows -->
-                    <tr 
-                      v-else
-                      v-for="(schedule, index) in paginatedPastSchedules" 
-                      :key="index"
-                      class="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0"
-                    >
-                      <!-- Date & Time -->
-                      <td class="w-[25%] px-4 py-3 whitespace-nowrap">
-                        <div class="flex items-center gap-2">
-                          <div class="w-2 h-2 rounded-full bg-gray-400"></div>
-                          <div class="text-sm font-medium text-gray-700">{{ schedule.dateTime }}</div>
-                        </div>
-                      </td>
-                      
-                      <!-- Duration -->
-                      <td class="w-[20%] px-4 py-3 whitespace-nowrap">
-                        <div class="text-sm font-medium text-blue-600">
-                          {{ schedule.duration }} minutes
-                        </div>
-                      </td>
-                      
-                      <!-- Schedule Type -->
-                      <td class="w-[20%] px-4 py-3 whitespace-nowrap">
-                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 capitalize">
-                          {{ schedule.mode }}
-                        </span>
-                      </td>
-                      
-                      <!-- Status -->
-                      <td class="w-[15%] px-4 py-3 whitespace-nowrap">
-                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          Completed
-                        </span>
-                      </td>
-                      
-                      <!-- Additional Info -->
-                      <td class="w-[20%] px-4 py-3">
-                        <div class="flex flex-wrap gap-1">
-                          <div v-if="schedule.skipIfRain" class="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                            <CloudRain class="w-3 h-3" />
-                            <span>Rain skip</span>
-                          </div>
-                          <div v-if="schedule.notifyWatering" class="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
-                            <Bell class="w-3 h-3" />
-                            <span>Notify</span>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            
-            <!-- Pagination - Simplified -->
-            <div class="border-t border-gray-100 py-3 px-6 bg-white">
-              <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="text-sm text-gray-600 flex items-center gap-2">
-                  <span>Showing</span>
-                  <select 
-                    v-model="itemsPerPage" 
-                    class="bg-white border border-gray-200 rounded-lg px-2 py-1 text-sm font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    @change="updatePagination"
-                  >
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                  </select>
-                  <span>of {{ filteredPastSchedules.length }}</span>
-                </div>
-                
-                <div class="flex items-center gap-1">
-                  <button 
-                    @click="prevPage"
-                    :disabled="currentPage === 1"
-                    class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-md
-                      disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400
-                      enabled:text-gray-700 enabled:hover:text-emerald-600 enabled:hover:bg-emerald-50"
-                  >
-                    <ChevronLeft class="w-4 h-4 mr-1" />
-                    Prev
-                  </button>
-                  
-                  <div class="flex items-center">
-                    <button
-                      v-for="page in displayedPages"
-                      :key="page"
-                      @click="goToPage(page)"
-                      :class="[
-                        'relative inline-flex items-center justify-center w-8 h-8 text-sm transition-colors mx-0.5 rounded-md',
-                        page === currentPage
-                          ? 'text-white bg-emerald-500 font-semibold'
-                          : page === '...'
-                            ? 'cursor-default text-gray-400'
-                            : 'text-gray-700 hover:text-emerald-600 hover:bg-emerald-50'
-                      ]"
-                    >
-                      {{ page }}
-                    </button>
-                  </div>
-                </div>
-
                 
                 <!-- Filters Section -->
                 <div class="space-y-4 mb-4">
@@ -978,17 +686,6 @@
                       </button>
                     </div>
                   </div>
-                  
-                  <button 
-                    @click="nextPage"
-                    :disabled="currentPage >= totalPages"
-                    class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-md
-                      disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400
-                      enabled:text-gray-700 enabled:hover:text-emerald-600 enabled:hover:bg-emerald-50"
-                  >
-                    Next
-                    <ChevronRight class="w-4 h-4 ml-1" />
-                  </button>
                 </div>
               </div>
             </div>
@@ -1004,7 +701,7 @@
           class="fixed inset-0 bg-black/50 backdrop-blur-sm" 
           @click="showToggleConfirmationDialog = false"
         ></div>
-        
+
         <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 z-[10001]">
           <div class="flex items-center gap-4 mb-4">
             <div :class="waterPumpActive ? 'bg-red-100' : 'bg-green-100'" class="p-2 rounded-full">
@@ -1014,14 +711,18 @@
               {{ waterPumpActive ? 'Turn OFF Water Pump?' : 'Turn ON Water Pump?' }}
             </h3>
           </div>
-          
+
           <p class="text-gray-600 mb-6">
-            {{ waterPumpActive 
-              ? 'Are you sure you want to turn OFF the water pump?' 
-              : 'Are you sure you want to turn ON the water pump?' 
-            }}
+            <template v-if="!waterPumpActive && soilMoisture !== null && soilMoisture >= 50">
+              The soil moisture is still moist with {{ soilMoisture }}%. Are you sure you want to turn ON?
+            </template>
+            <template v-else>
+              {{ waterPumpActive 
+                ? 'Are you sure you want to turn OFF the water pump?' 
+                : 'Are you sure you want to turn ON the water pump?' }}
+            </template>
           </p>
-          
+
           <div class="flex justify-end gap-3">
             <button 
               @click="showToggleConfirmationDialog = false" 
@@ -1507,24 +1208,29 @@
   
     <!-- Success Toast Notification -->
     <Transition name="toast">
-      <div
-        v-if="showToast"
-        class="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 flex items-center gap-3 z-[10001] max-w-md"
-      >
-        <div class="bg-green-100 p-2 rounded-full">
-          <CheckCircle class="w-5 h-5 text-green-600" />
-        </div>
-        <div>
-          <p class="text-sm font-medium text-gray-800">{{ toastMessage }}</p>
-        </div>
-        <button
-          @click="showToast = false"
-          class="ml-auto text-gray-400 hover:text-gray-600"
-        >
-          <X class="w-4 h-4" />
-        </button>
+    <div
+      v-if="showToast"
+      :class="[
+        'fixed bottom-4 right-4 rounded-lg shadow-lg border p-4 flex items-center gap-3 z-[10001] max-w-md',
+        toastStyles.bg,
+        toastStyles.border
+      ]"
+    >
+      <div :class="[toastStyles.iconBg, 'p-2 rounded-full']">
+        <component :is="toastStyles.icon" class="w-5 h-5" :class="toastStyles.iconColor" />
       </div>
+      <div>
+        <p class="text-sm font-medium text-gray-800">{{ toastMessage }}</p>
+      </div>
+      <button
+        @click="showToast = false"
+        class="ml-auto text-gray-400 hover:text-gray-600"
+      >
+        <X class="w-4 h-4" />
+      </button>
+    </div>
     </Transition>
+
   </div>
 </template>
 
@@ -1558,7 +1264,8 @@ import {
   Download,
   ArrowUpDown,
   FileText,
-  FileSearch
+  FileSearch,
+  Info
 } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
 import {
@@ -1576,11 +1283,12 @@ import {
   getDoc,
   updateDoc,
   deleteDoc,
-  where
+  where,
+  onSnapshot
 } from 'firebase/firestore'
 import axios from 'axios'
 
-// Get Firestore instance - using the existing instance from your backend
+// xGet Firestore instance - using the existing instance from your backend
 const db = getFirestore()
 
 // View state
@@ -1592,6 +1300,7 @@ const motorActivities = ref([])
 const isLoadingActivities = ref(true)
 const isLoadingNextWatering = ref(true)
 const isLoadingHistory = ref(false)
+const soilMoisture = ref(null);
 
 // Search query for history
 const searchQuery = ref('')
@@ -1609,6 +1318,56 @@ const currentPage = ref(1)
 const totalPages = computed(() => Math.ceil(filteredPastSchedules.value.length / itemsPerPage.value))
 const paginationStart = computed(() => ((currentPage.value - 1) * itemsPerPage.value) + 1)
 const paginationEnd = computed(() => Math.min(currentPage.value * itemsPerPage.value, filteredPastSchedules.value.length))
+
+
+// Modal control
+const showScheduleModal = ref(false)
+const showAdvancedSettings = ref(false)
+const showDeleteConfirmation = ref(false)
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastTimeout = ref(null)
+const toastSeverity = ref('info')
+
+// NEW: Toggle confirmation dialog control
+const showToggleConfirmationDialog = ref(false)
+
+// Editing state
+const editingScheduleIndex = ref(null)
+const scheduleToDeleteIndex = ref(null)
+const editingScheduleId = ref(null) // NEW: Store the Firestore document ID when editing
+
+// Motor control values
+const wateringMode = ref('weekly')
+const wateringDays = ref([true, false, true, false, true, false, false]) // Mon, Wed, Fri
+const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const wateringHour = ref(6) // 6 AM
+const wateringMinute = ref(30) // 30 minutes
+const wateringDuration = ref(20)
+const wateringDurationUnit = ref('minutes')
+const wateringInterval = ref(2)
+const wateringIntervalUnit = ref('days')
+const wateringTime = ref('11h')
+const isAm = ref(true)
+
+// Additional settings
+const skipIfRain = ref(false)
+const notifyWatering = ref(true)
+const waterFlowRate = ref('medium')
+
+// Calendar state
+const currentDate = ref(new Date())
+const selectedDate = ref(new Date())
+
+// Saved schedules array
+const savedSchedules = ref([])
+const isLoadingSchedules = ref(false)
+const nextWateringTime = ref('No schedules set')
+const currentTime = ref(Date.now())
+
+const notifiedStartIds = new Set()
+const notifiedEndIds = new Set()
+
 
 // Display pagination buttons
 const displayedPages = computed(() => {
@@ -1732,30 +1491,85 @@ const filteredMotorActivities = computed(() => {
   });
 });
 
-// NEW: Computed properties to separate upcoming and past schedules
 const upcomingSchedules = computed(() => {
-  const now = new Date().getTime();
   return savedSchedules.value.filter(schedule => {
-    // Check if the schedule has a scheduledTime property and it's in the future
-    return schedule.scheduledTime && schedule.scheduledTime > now;
+    if (!schedule.scheduledTime || schedule.completed !== false) return false;
+
+    // Normalize to milliseconds
+    const startTime = schedule.scheduledTime > 1e12
+      ? schedule.scheduledTime
+      : schedule.scheduledTime * 1000;
+
+    // Only show if it's still in the future
+    return startTime > currentTime.value;
   });
 });
 
-// FIXED: Modified to properly identify past schedules
+
 const pastSchedules = computed(() => {
-  // Get all schedules that are not in upcomingSchedules
-  // This ensures we include all schedules that have passed their scheduled time
   return savedSchedules.value.filter(schedule => {
-    // A schedule is considered "past" if:
-    // 1. It has a scheduledTime and it's in the past, OR
-    // 2. It has a completed status flag
-    const now = new Date().getTime();
-    return (schedule.scheduledTime && schedule.scheduledTime <= now) || 
-           (schedule.completed === true) ||
-           // For one-time schedules, check if the date has passed
-           (schedule.mode === 'one-time' && schedule.scheduledTime && schedule.scheduledTime <= now);
+    const now = currentTime.value
+
+    const startTime = schedule.scheduledTime > 1e12
+      ? schedule.scheduledTime
+      : schedule.scheduledTime * 1000
+
+    return schedule.completed === true || startTime <= now
+  })
+})
+
+const isDuplicateSchedule = (newDate, newHour, newMinute, mode) => {
+  const newTime = new Date(newDate);
+  newTime.setHours(newHour, newMinute, 0, 0);
+
+  return savedSchedules.value.some(schedule => {
+    if (schedule.mode !== mode) return false;
+    const scheduled = new Date(schedule.scheduledTime);
+
+    return (
+      scheduled.getFullYear() === newTime.getFullYear() &&
+      scheduled.getMonth() === newTime.getMonth() &&
+      scheduled.getDate() === newTime.getDate() &&
+      scheduled.getHours() === newTime.getHours() &&
+      scheduled.getMinutes() === newTime.getMinutes()
+    );
   });
-});
+};
+
+// const upcomingSchedules = computed(() => {
+//   const now = Date.now()
+//   return savedSchedules.value.filter(schedule =>
+//     schedule.completed === false &&
+//     typeof schedule.scheduledTime === 'number' &&
+//     schedule.scheduledTime > now
+//   )
+// })
+
+
+// FIXED: Modified to properly identify past schedules
+// const pastSchedules = computed(() => {
+//   // Get all schedules that are not in upcomingSchedules
+//   // This ensures we include all schedules that have passed their scheduled time
+//   return savedSchedules.value.filter(schedule => {
+//     // A schedule is considered "past" if:
+//     // 1. It has a scheduledTime and it's in the past, OR
+//     // 2. It has a completed status flag
+//     const now = new Date().getTime();
+//     return (schedule.scheduledTime && schedule.scheduledTime <= now) || 
+//            (schedule.completed === true) ||
+//            // For one-time schedules, check if the date has passed
+//            (schedule.mode === 'one-time' && schedule.scheduledTime && schedule.scheduledTime <= now);
+//   });
+// });
+
+// const pastSchedules = computed(() => {
+//   const now = Date.now()
+//   return savedSchedules.value.filter(schedule =>
+//     (schedule.completed === true) ||
+//     (typeof schedule.scheduledTime === 'number' && schedule.scheduledTime <= now)
+//   )
+// })
+  
 
 // FIXED: Modified to properly filter past schedules based on history filters
 const filteredPastSchedules = computed(() => {
@@ -1970,49 +1784,6 @@ const parseActivityTimestamp = (timestamp) => {
   return new Date();
 };
 
-// Modal control
-const showScheduleModal = ref(false)
-const showAdvancedSettings = ref(false)
-const showDeleteConfirmation = ref(false)
-const showToast = ref(false)
-const toastMessage = ref('')
-const toastTimeout = ref(null)
-
-// NEW: Toggle confirmation dialog control
-const showToggleConfirmationDialog = ref(false)
-
-// Editing state
-const editingScheduleIndex = ref(null)
-const scheduleToDeleteIndex = ref(null)
-const editingScheduleId = ref(null) // NEW: Store the Firestore document ID when editing
-
-// Motor control values
-const wateringMode = ref('weekly')
-const wateringDays = ref([true, false, true, false, true, false, false]) // Mon, Wed, Fri
-const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-const wateringHour = ref(6) // 6 AM
-const wateringMinute = ref(30) // 30 minutes
-const wateringDuration = ref(20)
-const wateringDurationUnit = ref('minutes')
-const wateringInterval = ref(2)
-const wateringIntervalUnit = ref('days')
-const wateringTime = ref('11h')
-const isAm = ref(true)
-
-// Additional settings
-const skipIfRain = ref(false)
-const notifyWatering = ref(true)
-const waterFlowRate = ref('medium')
-
-// Calendar state
-const currentDate = ref(new Date())
-const selectedDate = ref(new Date())
-
-// Saved schedules array
-const savedSchedules = ref([])
-const isLoadingSchedules = ref(false)
-const nextWateringTime = ref('No schedules set')
-
 // NEW: Helper function to get the original index from the savedSchedules array
 const getOriginalIndex = (scheduleId) => {
   return savedSchedules.value.findIndex(schedule => schedule.id === scheduleId);
@@ -2092,6 +1863,16 @@ const showToggleConfirmation = () => {
   showToggleConfirmationDialog.value = true
 }
 
+watch(showToggleConfirmationDialog, async (newVal) => {
+  if (newVal && !waterPumpActive.value) {
+    const q = query(collection(db, "sensor_readings"), orderBy("timestamp", "desc"), limit(1));
+    const snapshot = await getDocs(q);
+    snapshot.forEach(doc => {
+      soilMoisture.value = doc.data().soilMoisture;
+    });
+  }
+});
+
 // NEW: Function to confirm and execute water pump toggle
 const confirmToggleWaterPump = async () => {
 try {
@@ -2145,9 +1926,10 @@ try {
   try {
     const response = await axios.post('http://localhost:8000/api/motor_status/', {
       status: waterPumpActive.value,
-      device_id: 'main_motor',      user: 'system',
+      device_id: 'main_motor',
+      user: 'system',
       timestamp: now.toISOString(),
-      formatted_time: formattedTime
+      formatted_time: formattedTime  // ✅ FIXED: was `formattedTime`
     })
 
     console.log('Motor status sent to FastAPI backend:', response.data)
@@ -2292,58 +2074,51 @@ const formatFirebaseTimestamp = (date) => {
   });
 }
 
-// FIXED: Function to fetch watering schedules from Firebase
 const fetchWateringSchedules = async () => {
   try {
-    console.log('Fetching watering schedules from Firebase...')
-    isLoadingSchedules.value = true
-    isLoadingNextWatering.value = true
-    isLoadingHistory.value = true
-    
-    // Reference to the watering_schedules collection
-    const schedulesRef = collection(db, 'watering_schedules')
-    const schedulesQuery = query(schedulesRef, orderBy('createdAt', 'desc'))
-    
-    const schedulesSnapshot = await getDocs(schedulesQuery)
-    
-    const schedules = []
-    schedulesSnapshot.forEach(doc => {
-      const data = doc.data()
-      
-      // FIXED: Add a completed flag for schedules that have passed their time
-      const now = new Date().getTime()
-      const isCompleted = data.scheduledTime && data.scheduledTime <= now
-      
-      schedules.push({
-        id: doc.id, // Store the document ID for later updates/deletes
-        dateTime: data.dateTime,
-        duration: data.duration,
-        mode: data.mode,
-        days: data.days || [],
-        skipIfRain: data.skipIfRain || false,
-        notifyWatering: data.notifyWatering || false,
-        waterFlowRate: data.waterFlowRate || 'medium',
-        interval: data.interval || null,
-        scheduledTime: data.scheduledTime || null,
-        completed: isCompleted, // Add completed flag
-        createdAt: data.createdAt || null
-      })
-    })
-    
-    savedSchedules.value = schedules
-    console.log('Fetched watering schedules:', schedules.length)
-    
-    // Calculate the next watering time based on the schedules
-    await calculateNextWateringTime()
-    
+    console.log('Fetching watering schedules from Firebase...');
+    isLoadingSchedules.value = true;
+    isLoadingNextWatering.value = true;
+    isLoadingHistory.value = true;
+
+    const schedulesRef = collection(db, 'watering_schedules');
+    const schedulesQuery = query(schedulesRef, orderBy('dateTime', 'desc'));
+    const schedulesSnapshot = await getDocs(schedulesQuery);
+
+    const now = Date.now();
+    const schedules = [];
+
+    for (const doc of schedulesSnapshot.docs) {
+      const data = doc.data();
+
+      // Normalize scheduledTime to ms if needed
+      if (data.scheduledTime && data.scheduledTime < 1e12) {
+        data.scheduledTime = data.scheduledTime * 1000;
+      }
+
+      // ❗️ OPTIONAL: Disable auto-marking to preserve upcoming schedule visibility
+      /*
+      const pastDue = data.scheduledTime && data.scheduledTime <= now;
+      if (pastDue && data.completed === false) {
+        await updateDoc(doc.ref, { completed: true });
+        data.completed = true;
+      }
+      */
+
+      schedules.push({ id: doc.id, ...data });
+    }
+
+    savedSchedules.value = schedules;
+    console.log('Fetched watering schedules:', schedules.length);
   } catch (error) {
-    console.error('Error fetching watering schedules:', error)
-    showToastMessage('Error loading schedules. Please try again.')
+    console.error('Error fetching watering schedules:', error);
+    showToastMessage('Error loading schedules. Please try again.');
   } finally {
-    isLoadingSchedules.value = false
-    isLoadingHistory.value = false
+    isLoadingSchedules.value = false;
+    isLoadingHistory.value = false;
+    isLoadingNextWatering.value = false;
   }
-}
+};
 
 // MODIFIED: Function to calculate the next watering time from the database
 const calculateNextWateringTime = async () => {
@@ -2625,7 +2400,7 @@ const loadScheduleData = (index) => {
   }
 
   // Set time - CRITICAL FIX
-  const timeMatch = schedule.dateTime.match(/(\d+):(\d+)\s+(AM|PM)/);
+const timeMatch = schedule.dateTime.match(/(\d+):(\d+)\s+(AM|PM)/);
   if (timeMatch) {
     const hour12 = parseInt(timeMatch[1]);
     const minute = parseInt(timeMatch[2]);
@@ -2748,6 +2523,52 @@ const removeSchedule = (index) => {
   showDeleteConfirmation.value = true
 }
 
+// const removeSchedule = async (index) => {
+//   // Save index and show confirmation first
+//   scheduleToDeleteIndex.value = index;
+//   showDeleteConfirmation.value = true;
+
+//   // Wait for user confirmation (pseudo-code: adapt based on how your modal works)
+//   const confirmed = await new Promise((resolve) => {
+//     const checkInterval = setInterval(() => {
+//       if (showDeleteConfirmation.value === false) {
+//         clearInterval(checkInterval);
+//         resolve(true); // confirmed
+//       }
+//     }, 100);
+//   });
+
+//   if (!confirmed) return;
+
+//   try {
+//     if (
+//       index === null ||
+//       typeof index !== 'number' ||
+//       index < 0 ||
+//       index >= savedSchedules.value.length
+//     ) {
+//       throw new Error("Invalid index for deletion");
+//     }
+
+//     const schedule = savedSchedules.value[index];
+
+//     if (!schedule?.id) {
+//       throw new Error("Schedule ID not found");
+//     }
+
+//     await deleteDoc(doc(db, 'watering_schedules', schedule.id));
+//     savedSchedules.value.splice(index, 1);
+
+//     showToastMessage("Schedule deleted successfully");
+//   } catch (error) {
+//     console.error("Error deleting schedule:", error);
+//     showToastMessage("Failed to delete schedule.");
+//   } finally {
+//     showDeleteConfirmation.value = false;
+//     scheduleToDeleteIndex.value = null;
+//   }
+// };
+
 // UPDATED: Function to confirm and execute schedule deletion
 const confirmDeleteSchedule = async () => {
   if (scheduleToDeleteIndex.value !== null) {
@@ -2772,23 +2593,6 @@ const confirmDeleteSchedule = async () => {
       scheduleToDeleteIndex.value = null
     }
   }
-}
-
-// Function to show toast message
-const showToastMessage = (message) => {
-  // Clear any existing timeout
-  if (toastTimeout.value) {
-    clearTimeout(toastTimeout.value)
-  }
-
-  // Set message and show toast
-  toastMessage.value = message
-  showToast.value = true
-
-  // Auto-hide after 3 seconds
-  toastTimeout.value = setTimeout(() => {
-    showToast.value = false
-  }, 3000)
 }
 
 // Schedule summary
@@ -2826,164 +2630,10 @@ const timeDisplay = computed(() => {
   return `${hour12}:${minute} ${ampm}`;
 });
 
-// // FIXED: Save or update watering schedule
-// const saveWateringSchedule = async () => {
-//   try {
-//     console.log("Starting saveWateringSchedule with current values:");
-//     console.log(`Hour: ${wateringHour.value}, Minute: ${wateringMinute.value}, isAm: ${isAm.value}`);
-    
-//     // Create scheduled time as a timestamp for easier querying
-//     const scheduledTime = new Date();
-
-//     if (wateringMode.value === 'one-time') {
-//       // Use the selected date for one-time schedules
-//       scheduledTime.setFullYear(
-//         selectedDate.value.getFullYear(),
-//         selectedDate.value.getMonth(),
-//         selectedDate.value.getDate()
-//       );
-//     }
-
-//     // CRITICAL FIX: Properly convert 12-hour format to 24-hour format
-//     let hour24 = wateringHour.value;
-    
-//     // Debug the current state
-//     console.log(`Before conversion - hour24: ${hour24}, isAm: ${isAm.value}`);
-    
-//     // Handle 12 AM special case
-//     if (isAm.value && hour24 === 12) {
-//       hour24 = 0;
-//     } 
-//     // Handle PM conversion (except 12 PM which stays as 12)
-//     else if (!isAm.value && hour24 < 12) {
-//       hour24 = hour24 + 12;
-//     }
-    
-//     console.log(`After conversion - hour24: ${hour24}, isAm: ${isAm.value}`);
-    
-//     // Set the time component
-//     scheduledTime.setHours(hour24, wateringMinute.value, 0, 0);
-    
-//     // Format the time string for display
-//     const formattedDateTime = (() => {
-//       const timeDate = new Date();
-      
-//       // Set the date part if it's a one-time schedule
-//       if (wateringMode.value === 'one-time') {
-//         timeDate.setFullYear(
-//           selectedDate.value.getFullYear(),
-//           selectedDate.value.getMonth(),
-//           selectedDate.value.getDate()
-//         );
-//       }
-      
-//       // Set the time part
-//       timeDate.setHours(hour24, wateringMinute.value, 0, 0);
-      
-//       // Format with explicit AM/PM
-//       const formattedTime = timeDate.toLocaleString('en-US', {
-//         weekday: 'short',
-//         month: 'short',
-//         day: 'numeric',
-//         hour: '2-digit',
-//         minute: '2-digit',
-//         hour12: true
-//       });
-      
-//       console.log(`Formatted time for Firebase: ${formattedTime}`);
-//       return formattedTime;
-//     })();
-
-//     // FIXED: Check if the schedule is already completed (in the past)
-//     const now = new Date().getTime();
-//     const isCompleted = scheduledTime.getTime() <= now;
-
-//     // Create a new schedule object with all the data
-//     const scheduleData = {
-//       dateTime: formattedDateTime,
-//       duration: wateringDuration.value,
-//       mode: wateringMode.value,
-//       days: [...wateringDays.value], // Create a copy of the array
-//       skipIfRain: skipIfRain.value,
-//       notifyWatering: notifyWatering.value,
-//       waterFlowRate: waterFlowRate.value,
-//       interval:
-//         wateringMode.value === 'custom'
-//           ? {
-//               value: wateringInterval.value,
-//               unit: wateringIntervalUnit.value,
-//             }
-//           : null,
-//       updatedAt: serverTimestamp(),
-//       // Add a scheduled time as a numeric timestamp for easier querying
-//       scheduledTime: scheduledTime.getTime(),
-//       // FIXED: Add completed flag
-//       completed: isCompleted
-//     };
-
-//     console.log('Saving schedule to Firebase:', scheduleData);
-//     console.log(`DateTime being saved: ${scheduleData.dateTime}`);
-
-//     // If editing, update existing schedule
-//     if (editingScheduleId.value) {
-//       // Update in Firebase - only update the fields we have in scheduleData
-//       await updateDoc(doc(db, 'watering_schedules', editingScheduleId.value), scheduleData);
-
-//       // Update in local array
-//       if (editingScheduleIndex.value !== null) {
-//         // Preserve the original createdAt when updating the local array
-//         const originalCreatedAt = savedSchedules.value[editingScheduleIndex.value].createdAt;
-
-//         savedSchedules.value[editingScheduleIndex.value] = {
-//           ...scheduleData,
-//           id: editingScheduleId.value,
-//           createdAt: originalCreatedAt, // Keep the original createdAt
-//         };
-//       }
-
-//       showToastMessage('Schedule updated successfully');
-//     } else {
-//       // Add createdAt only for new schedules
-//       const newScheduleData = {
-//         ...scheduleData,
-//         createdAt: serverTimestamp(),
-//       };
-
-//       // Add new schedule to Firebase
-//       const docRef = await addDoc(collection(db, 'watering_schedules'), newScheduleData);
-
-//       // Add to local array with the document ID
-//       savedSchedules.value.push({
-//         ...newScheduleData,
-//         id: docRef.id,
-//       });
-
-//       showToastMessage('New schedule saved successfully');
-//     }
-
-//     // Recalculate next watering time
-//     await calculateNextWateringTime();
-
-//     // Close the modal after saving
-//     closeScheduleModal();
-    
-//     // If we're in history view, refresh the data to show the new schedule
-//     if (currentView.value === 'history') {
-//       await fetchWateringSchedules();
-//     }
-//   } catch (error) {
-//     console.error('Error saving watering schedule:', error);
-//     showToastMessage('Error saving schedule. Please try again.');
-//   }
-// };
-
 const saveWateringSchedule = async () => {
   try {
-    const deviceIp = 'http://192.168.1.50'; // Replace with your ESP32's IP or fetch dynamically from Firebase
+    console.log("Starting saveWateringSchedule...");
 
-    console.log("Starting saveWateringSchedule with current values:");
-    console.log(`Hour: ${wateringHour.value}, Minute: ${wateringMinute.value}, isAm: ${isAm.value}`);
-    
     const scheduledTime = new Date();
 
     if (wateringMode.value === 'one-time') {
@@ -2995,13 +2645,23 @@ const saveWateringSchedule = async () => {
     }
 
     let hour24 = wateringHour.value;
-    if (isAm.value && hour24 === 12) {
-      hour24 = 0;
-    } else if (!isAm.value && hour24 < 12) {
-      hour24 = hour24 + 12;
-    }
+    if (isAm.value && hour24 === 12) hour24 = 0;
+    else if (!isAm.value && hour24 < 12) hour24 += 12;
 
     scheduledTime.setHours(hour24, wateringMinute.value, 0, 0);
+
+    // ✅ Duplicate check before saving
+    const isDuplicate = isDuplicateSchedule(
+      wateringMode.value === 'one-time' ? selectedDate.value : new Date(),
+      wateringHour.value,
+      wateringMinute.value,
+      wateringMode.value
+    );
+
+    if (isDuplicate && !editingScheduleId.value) {
+      showToastMessage("A schedule for this date already exists.", 'warning');
+      return;
+    }
 
     const formattedDateTime = (() => {
       const timeDate = new Date();
@@ -3019,14 +2679,13 @@ const saveWateringSchedule = async () => {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        hour12: true
+        hour12: true,
       });
     })();
 
     const now = new Date().getTime();
-    const isCompleted = scheduledTime.getTime() <= now;
 
-    const scheduleData = {
+    const schedulePayload = {
       dateTime: formattedDateTime,
       duration: wateringDuration.value,
       mode: wateringMode.value,
@@ -3034,37 +2693,49 @@ const saveWateringSchedule = async () => {
       skipIfRain: skipIfRain.value,
       notifyWatering: notifyWatering.value,
       waterFlowRate: waterFlowRate.value,
-      interval:
-        wateringMode.value === 'custom'
-          ? {
-              value: wateringInterval.value,
-              unit: wateringIntervalUnit.value,
-            }
-          : null,
-      updatedAt: serverTimestamp(),
+      interval: wateringMode.value === 'custom'
+        ? {
+            value: wateringInterval.value,
+            unit: wateringIntervalUnit.value,
+          }
+        : null,
       scheduledTime: scheduledTime.getTime(),
-      completed: isCompleted
+      completed: false,
     };
 
-    console.log('Saving schedule to Firebase:', scheduleData);
+    // 👉 Step 1: Send to FastAPI backend (same for create/update)
+    const backendResponse = await fetch("http://127.0.0.1:8000/api/watering-schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(schedulePayload),
+    });
 
+    const backendData = await backendResponse.json();
+
+    if (!backendResponse.ok) throw new Error(backendData.error || "Failed to save schedule in backend");
+
+    // Check if we're editing (i.e. updating an existing schedule)
     if (editingScheduleId.value) {
-      await updateDoc(doc(db, 'watering_schedules', editingScheduleId.value), scheduleData);
+      const docRef = doc(db, 'watering_schedules', editingScheduleId.value);
+      await updateDoc(docRef, {
+        ...schedulePayload,
+        updatedAt: serverTimestamp(),
+      });
 
-      if (editingScheduleIndex.value !== null) {
-        const originalCreatedAt = savedSchedules.value[editingScheduleIndex.value].createdAt;
-
-        savedSchedules.value[editingScheduleIndex.value] = {
-          ...scheduleData,
-          id: editingScheduleId.value,
-          createdAt: originalCreatedAt,
+      const index = savedSchedules.value.findIndex(s => s.id === editingScheduleId.value);
+      if (index !== -1) {
+        savedSchedules.value[index] = {
+          ...savedSchedules.value[index],
+          ...schedulePayload,
         };
       }
 
-      showToastMessage('Schedule updated successfully');
+      showToastMessage('Schedule updated successfully','success');
     } else {
+      // Create new schedule
       const newScheduleData = {
-        ...scheduleData,
+        ...schedulePayload,
+        updatedAt: serverTimestamp(),
         createdAt: serverTimestamp(),
       };
 
@@ -3075,7 +2746,7 @@ const saveWateringSchedule = async () => {
         id: docRef.id,
       });
 
-      showToastMessage('New schedule saved successfully');
+      showToastMessage('New schedule saved successfully','success');
     }
 
     await calculateNextWateringTime();
@@ -3085,38 +2756,116 @@ const saveWateringSchedule = async () => {
       await fetchWateringSchedules();
     }
 
-    // ✅ Send watering schedule to ESP32 after saving to Firebase
-    try {
-      const esp32Response = await axios.post(`${deviceIp}/set-schedule`, {
-        mode: wateringMode.value,
-        duration: wateringDuration.value,
-        timestamp: scheduledTime.getTime(),
-        days: wateringDays.value,
-        skipIfRain: skipIfRain.value,
-        interval:
-          wateringMode.value === 'custom'
-            ? {
-                value: wateringInterval.value,
-                unit: wateringIntervalUnit.value,
-              }
-            : null,
-        waterFlowRate: waterFlowRate.value,
-      });
+    // Clear editing state
+    editingScheduleId.value = null;
 
-      console.log("✅ Schedule sent to ESP32:", esp32Response.data);
-    } catch (espError) {
-      console.error("❌ Failed to send schedule to ESP32:", espError);
-      showToastMessage("Saved to Firebase, but failed to sync with ESP32");
-    }
   } catch (error) {
-    console.error('Error saving watering schedule:', error);
-    showToastMessage('Error saving schedule. Please try again.');
+    console.error("Error saving schedule:", error);
+    showToastMessage("Failed to save schedule. Please try again.");
   }
 };
 
+const showToastMessage = (message, severity = 'info') => {
+  if (toastTimeout.value) clearTimeout(toastTimeout.value)
+
+  toastMessage.value = message
+  toastSeverity.value = severity
+  showToast.value = true
+
+  toastTimeout.value = setTimeout(() => {
+    showToast.value = false
+  }, 5000)
+}
+
+const toastStyles = computed(() => {
+  switch (toastSeverity.value) {
+    case 'success':
+      return {
+        icon: CheckCircle,
+        iconColor: 'text-green-600',
+        iconBg: 'bg-green-100',
+        bg: 'bg-white',
+        border: 'border-green-200'
+      }
+    case 'info':
+      return {
+        icon: Info,
+        iconColor: 'text-blue-600',
+        iconBg: 'bg-blue-100',
+        bg: 'bg-white',
+        border: 'border-blue-200'
+      }
+    case 'warning':
+      return {
+        icon: AlertTriangle,
+        iconColor: 'text-yellow-600',
+        iconBg: 'bg-yellow-100',
+        bg: 'bg-white',
+        border: 'border-yellow-200'
+      }
+    case 'critical':
+      return {
+        icon: XCircle,
+        iconColor: 'text-red-600',
+        iconBg: 'bg-red-100',
+        bg: 'bg-white',
+        border: 'border-red-200'
+      }
+    case 'failed':
+      return {
+        icon: XCircle,
+        iconColor: 'text-gray-600',
+        iconBg: 'bg-gray-100',
+        bg: 'bg-white',
+        border: 'border-gray-300'
+      }
+    default:
+      return {
+        icon: Info,
+        iconColor: 'text-gray-600',
+        iconBg: 'bg-gray-100',
+        bg: 'bg-white',
+        border: 'border-gray-300'
+      }
+  }
+})
+
+defineExpose({ showToastMessage })
+
+// const sendNotification = async (schedule, status) => {
+//   try {
+//     const dateTimeFormatted = new Date(schedule.scheduledTime).toLocaleString('en-US', {
+//       weekday: 'short',
+//       year: 'numeric',
+//       month: 'short',
+//       day: 'numeric',
+//       hour: '2-digit',
+//       minute: '2-digit'
+//     })
 
 
-// Initialize AM/PM based on hour
+//     const message =
+//       status === 'started'
+//         ? `The watering scheduled at ${dateTimeFormatted} is now starting.`
+//         : `The watering scheduled at ${dateTimeFormatted} has ended.`
+
+//     const notification = {
+//       id: Date.now().toString(), // Optional: you can omit this if Firestore auto-generates an ID
+//       title: 'Scheduled Watering',
+//       message,
+//       severity: 'info',
+//       type: 'motor',
+//       read: false,
+//       timestamp: serverTimestamp()
+//     }
+
+//     await addDoc(collection(db, 'notifications'), notification)
+//     showToastMessage(`Schedule ${status}: ${dateTimeFormatted}`)
+//   } catch (error) {
+//     console.error('Notification error:', error)
+//   }
+// }
+
 watch(() => wateringHour.value, updateAmPm, { immediate: true })
 
 onMounted(() => {
@@ -3133,6 +2882,53 @@ onMounted(() => {
   
   historyFilters.value.startDate = thirtyDaysAgo.toISOString().split('T')[0]
   historyFilters.value.endDate = today.toISOString().split('T')[0]
+
+  setInterval(() => {
+    currentTime.value = Date.now()
+    
+    const now = Date.now()
+
+    savedSchedules.value.forEach(schedule => {
+      if (!schedule.notifyWatering) return
+
+      const start = schedule.scheduledTime
+      const end = start + (schedule.duration || 0) * 60000
+
+      // Check if it's starting
+      const isStarting = Math.abs(now - start) < 1000 * 30 // within 30 sec
+      if (isStarting && !notifiedStartIds.has(schedule.id)) {
+        // sendNotification(schedule, 'started')
+        notifiedStartIds.add(schedule.id)
+      }
+
+      // Check if it's ending
+      const isEnding = Math.abs(now - end) < 1000 * 30
+      if (isEnding && !notifiedEndIds.has(schedule.id)) {
+        // sendNotification(schedule, 'ended')
+        notifiedEndIds.add(schedule.id)
+      }
+    })
+  }, 1000) // already in place
+
+
+  // onSnapshot(collection(db, 'watering_schedules'), async (snapshot) => {
+  //   const now = Date.now()
+  //   const schedules = []
+
+  //   for (const doc of snapshot.docs) {
+  //     const data = doc.data()
+  //     const pastDue = data.scheduledTime && data.scheduledTime <= now
+
+  //     if (pastDue && data.completed === false) {
+  //       await updateDoc(doc.ref, { completed: true })
+  //       data.completed = true
+  //     }
+
+  //     schedules.push({ id: doc.id, ...data })
+  //   }
+
+  //   savedSchedules.value = schedules
+  // })
 })
 
 onUnmounted(() => {
