@@ -6,14 +6,14 @@
         <!-- Enhanced main container with more appealing design -->
         <div class="bg-white rounded-lg shadow-lg border border-gray-100 h-[calc(100vh-140px)] flex flex-col overflow-hidden">
           <!-- Gradient header for visual appeal -->
-          <div class="bg-gradient-to-r from-emerald-50 to-white p-6 border-b border-gray-100 rounded-t-lg">
+          <div class="bg-gradient-to-r from-green-50 to-white p-6 border-b border-gray-100 rounded-t-lg">
             <!-- Header with controls aligned side by side -->
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <!-- Title and breadcrumb with enhanced styling -->
               <div>
-                <h1 class="text-xl font-semibold text-gray-800 mb-1">Temperature & Humidity Data Table</h1>
+                <h1 class="text-xl font-semibold text-gray-800 mb-1">NPK Data Table</h1>
                 <div class="flex items-center text-sm text-gray-500">
-                  <span class="text-emerald-600 font-medium">Temperature & Humidity</span>
+                  <span class="text-green-600 font-medium">NPK Analysis</span>
                   <ChevronRight class="h-3.5 w-3.5 mx-1 text-gray-400" />
                   <span class="text-gray-600">Data Table</span>
                 </div>
@@ -26,8 +26,8 @@
                   <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search measurements..."
-                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 text-sm text-gray-700 placeholder-gray-400 shadow-sm"
+                    placeholder="Search NPK measurements..."
+                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 text-sm text-gray-700 placeholder-gray-400 shadow-sm"
                     v-model="searchQuery"
                     @input="performSearch"
                   />
@@ -37,7 +37,7 @@
                 <div class="relative">
                   <button 
                     @click.stop="toggleDropdown('filter')"
-                    class="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 hover:text-emerald-600 transition-colors shadow-sm"
+                    class="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 hover:text-green-600 transition-colors shadow-sm"
                   >
                     <Filter class="h-4 w-4 text-gray-500" />
                     Filter
@@ -57,20 +57,20 @@
                             v-model="filters[field.key].min"
                             type="number"
                             placeholder="Min"
-                            class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                            class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-green-500 focus:border-green-500"
                           />
                           <span class="text-gray-400">-</span>
                           <input
                             v-model="filters[field.key].max"
                             type="number"
                             placeholder="Max"
-                            class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                            class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-green-500 focus:border-green-500"
                           />
                         </div>
                       </div>
                       <button 
                         @click="applyFilters"
-                        class="w-full px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-colors"
+                        class="w-full px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors"
                       >
                         Apply Filters
                       </button>
@@ -82,7 +82,7 @@
                 <div class="relative">
                   <button 
                     @click.stop="toggleDropdown('sort')"
-                    class="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 hover:text-emerald-600 transition-colors shadow-sm"
+                    class="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 hover:text-green-600 transition-colors shadow-sm"
                   >
                     <ArrowUpDown class="h-4 w-4 text-gray-500" />
                     Sort
@@ -102,7 +102,7 @@
                         class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-between"
                       >
                         {{ header.label }}
-                        <ArrowUpDown v-if="sortKey === header.key" class="h-3 w-3 text-emerald-500" />
+                        <ArrowUpDown v-if="sortKey === header.key" class="h-3 w-3 text-green-500" />
                       </button>
                     </div>
                   </div>
@@ -112,7 +112,7 @@
                 <div class="relative">
                   <button 
                     @click.stop="toggleDropdown('export')"
-                    class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 transition-colors shadow-sm"
+                    class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-500 text-white text-sm font-medium hover:bg-green-600 transition-colors shadow-sm"
                   >
                     <Download class="h-4 w-4" />
                     Export
@@ -131,7 +131,7 @@
                         @click="exportData(format)"
                         class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                       >
-                        <span v-if="format === 'csv'" class="mr-2 text-emerald-500"><FileText class="h-4 w-4" /></span>
+                        <span v-if="format === 'csv'" class="mr-2 text-green-500"><FileText class="h-4 w-4" /></span>
                         <span v-else-if="format === 'pdf'" class="mr-2 text-red-500"><FileText class="h-4 w-4" /></span>
                         <span v-else class="mr-2 text-blue-500"><FileText class="h-4 w-4" /></span>
                         Export as {{ format.toUpperCase() }}
@@ -145,138 +145,177 @@
   
           <!-- Table and Graph Section - Flex container for side-by-side layout -->
           <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
-            <!-- Live Graph Container - Smaller width compared to table, now scrollable -->
-            <div class="w-full md:w-1/3 lg:w-1/3 border-r border-gray-200 bg-white p-4 overflow-y-auto">
-              <div class="mb-3">
-                <h3 class="text-sm font-semibold text-gray-700">Live Temperature & Humidity</h3>
-                <p class="text-xs text-gray-500">Real-time monitoring</p>
-              </div>
-              
-              <!-- Enhanced Combined Graph Container -->
-              <div class="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden flex flex-col mb-4">
-                <!-- Graph Header with improved styling -->
-                <div class="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                  <div class="flex items-center gap-4">
-                    <div class="flex items-center">
-                      <div class="w-3 h-3 rounded-full bg-red-500 mr-1.5"></div>
-                      <span class="text-xs font-medium text-gray-700">Temp (°C)</span>
-                    </div>
-                    <div class="flex items-center">
-                      <div class="w-3 h-3 rounded-full bg-blue-500 mr-1.5"></div>
-                      <span class="text-xs font-medium text-gray-700">Humidity (%)</span>
-                    </div>
-                  </div>
-                  <div class="text-xs text-gray-500">
-                    Last updated: {{ lastUpdated }}
-                  </div>
-                </div>
-                
-                <!-- Graph Canvas with current values overlay -->
-                <div class="h-[280px] p-3 relative">
-                  <canvas ref="chartCanvas" class="w-full h-full"></canvas>
-                  
-                  <!-- Repositioned and Resized Current Values Indicator -->
-                  <div class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-md px-2 py-1 shadow-sm border border-gray-100" style="max-width: 80px; z-index: 10;">
-                    <div class="text-[10px] font-medium text-gray-500 mb-0.5">Current</div>
-                    <div class="flex items-center mb-0.5">
-                      <div class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1"></div>
-                      <div class="text-xs font-bold text-red-600">
-                        {{ currentTempValue }}°C
-                      </div>
-                    </div>
-                    <div class="flex items-center">
-                      <div class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1"></div>
-                      <div class="text-xs font-bold text-blue-600">
-                        {{ currentHumidityValue }}%
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Enhanced Graph Footer with Stats -->
-                <div class="border-t border-gray-100 p-3">
-                  <!-- Temperature Stats -->
-                  <div class="mb-3">
-                    <div class="flex items-center mb-2">
-                      <div class="w-3 h-3 rounded-full bg-red-500 mr-1.5"></div>
-                      <div class="text-sm font-medium text-gray-700">Temperature</div>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2 bg-red-50/50 rounded-md p-2">
-                      <div class="flex flex-col items-center p-1.5 bg-white rounded shadow-sm">
-                        <div class="text-xs text-gray-500 mb-1">Min</div>
-                        <div class="text-sm font-semibold text-red-600">{{ tempStats.min }}°C</div>
-                      </div>
-                      <div class="flex flex-col items-center p-1.5 bg-white rounded shadow-sm">
-                        <div class="text-xs text-gray-500 mb-1">Avg</div>
-                        <div class="text-sm font-semibold text-red-600">{{ tempStats.avg }}°C</div>
-                      </div>
-                      <div class="flex flex-col items-center p-1.5 bg-white rounded shadow-sm">
-                        <div class="text-xs text-gray-500 mb-1">Max</div>
-                        <div class="text-sm font-semibold text-red-600">{{ tempStats.max }}°C</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Humidity Stats -->
-                  <div>
-                    <div class="flex items-center mb-2">
-                      <div class="w-3 h-3 rounded-full bg-blue-500 mr-1.5"></div>
-                      <div class="text-sm font-medium text-gray-700">Humidity</div>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2 bg-blue-50/50 rounded-md p-2">
-                      <div class="flex flex-col items-center p-1.5 bg-white rounded shadow-sm">
-                        <div class="text-xs text-gray-500 mb-1">Min</div>
-                        <div class="text-sm font-semibold text-blue-600">{{ humidityStats.min }}%</div>
-                      </div>
-                      <div class="flex flex-col items-center p-1.5 bg-white rounded shadow-sm">
-                        <div class="text-xs text-gray-500 mb-1">Avg</div>
-                        <div class="text-sm font-semibold text-blue-600">{{ humidityStats.avg }}%</div>
-                      </div>
-                      <div class="flex flex-col items-center p-1.5 bg-white rounded shadow-sm">
-                        <div class="text-xs text-gray-500 mb-1">Max</div>
-                        <div class="text-sm font-semibold text-blue-600">{{ humidityStats.max }}%</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Optimal Ranges section (kept this as it's useful) -->
-              <div class="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
-                <h4 class="text-sm font-semibold text-gray-700 mb-2">Optimal Ranges</h4>
-                <div class="space-y-3">
-                  <div>
-                    <div class="flex items-center mb-1">
-                      <div class="w-2 h-2 rounded-full bg-red-500 mr-1"></div>
-                      <span class="text-xs font-medium text-gray-700">Temperature</span>
-                    </div>
-                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div class="h-full bg-gradient-to-r from-green-200 via-green-500 to-yellow-500 rounded-full" style="width: 70%"></div>
-                    </div>
-                    <div class="flex justify-between mt-1 text-[10px] text-gray-500">
-                      <span>20°C</span>
-                      <span>25°C</span>
-                      <span>30°C</span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div class="flex items-center mb-1">
-                      <div class="w-2 h-2 rounded-full bg-blue-500 mr-1"></div>
-                      <span class="text-xs font-medium text-gray-700">Humidity</span>
-                    </div>
-                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div class="h-full bg-gradient-to-r from-blue-200 via-blue-500 to-indigo-500 rounded-full" style="width: 60%"></div>
-                    </div>
-                    <div class="flex justify-between mt-1 text-[10px] text-gray-500">
-                      <span>30%</span>
-                      <span>50%</span>
-                      <span>70%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <!-- Live Graph Container - Three Separate Charts -->
+<div class="w-full md:w-1/3 lg:w-1/3 border-r border-gray-200 bg-white p-4 overflow-y-auto">
+  <div class="mb-3 flex items-center justify-between">
+    <div>
+      <h3 class="text-sm font-semibold text-gray-700">Live NPK Analysis</h3>
+      <p class="text-xs text-gray-500">Real-time soil monitoring</p>
+    </div>
+    
+    <!-- Minimalist Last Updated Status -->
+    <div class="text-right">
+      <div class="flex items-center gap-1.5 text-xs text-gray-500 mb-0.5">
+        <Clock class="h-3 w-3" />
+        <span>Last Updated</span>
+        <div class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+      </div>
+      <div class="text-sm font-mono font-semibold text-gray-800">
+        {{ lastUpdated || '--:--:--' }}
+      </div>
+      <div class="text-xs text-gray-400">
+        {{ currentDate }}
+      </div>
+    </div>
+  </div>
+  
+  <!-- Nitrogen Graph -->
+  <div class="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden flex flex-col mb-4">
+    <div class="p-3 border-b border-gray-100 bg-green-50 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+        <span class="text-sm font-semibold text-green-700">Nitrogen (mg/kg)</span>
+      </div>
+      <div class="text-xs text-gray-500">
+        Current: <span class="font-bold text-green-600">{{ currentNitrogenValue }}</span>
+      </div>
+    </div>
+    
+    <div class="h-[180px] p-3 relative">
+      <canvas ref="nitrogenChartCanvas" class="w-full h-full"></canvas>
+    </div>
+    
+    <div class="border-t border-gray-100 p-3 bg-green-50/30">
+      <div class="grid grid-cols-3 gap-2">
+        <div class="flex flex-col items-center p-2 bg-white rounded shadow-sm">
+          <div class="text-xs text-gray-500 mb-1">Min</div>
+          <div class="text-sm font-semibold text-green-600">{{ nitrogenStats.min }}</div>
+        </div>
+        <div class="flex flex-col items-center p-2 bg-white rounded shadow-sm">
+          <div class="text-xs text-gray-500 mb-1">Avg</div>
+          <div class="text-sm font-semibold text-green-600">{{ nitrogenStats.avg }}</div>
+        </div>
+        <div class="flex flex-col items-center p-2 bg-white rounded shadow-sm">
+          <div class="text-xs text-gray-500 mb-1">Max</div>
+          <div class="text-sm font-semibold text-green-600">{{ nitrogenStats.max }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Phosphorus Graph -->
+  <div class="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden flex flex-col mb-4">
+    <div class="p-3 border-b border-gray-100 bg-blue-50 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+        <span class="text-sm font-semibold text-blue-700">Phosphorus (mg/kg)</span>
+      </div>
+      <div class="text-xs text-gray-500">
+        Current: <span class="font-bold text-blue-600">{{ currentPhosphorusValue }}</span>
+      </div>
+    </div>
+    
+    <div class="h-[180px] p-3 relative">
+      <canvas ref="phosphorusChartCanvas" class="w-full h-full"></canvas>
+    </div>
+    
+    <div class="border-t border-gray-100 p-3 bg-blue-50/30">
+      <div class="grid grid-cols-3 gap-2">
+        <div class="flex flex-col items-center p-2 bg-white rounded shadow-sm">
+          <div class="text-xs text-gray-500 mb-1">Min</div>
+          <div class="text-sm font-semibold text-blue-600">{{ phosphorusStats.min }}</div>
+        </div>
+        <div class="flex flex-col items-center p-2 bg-white rounded shadow-sm">
+          <div class="text-xs text-gray-500 mb-1">Avg</div>
+          <div class="text-sm font-semibold text-blue-600">{{ phosphorusStats.avg }}</div>
+        </div>
+        <div class="flex flex-col items-center p-2 bg-white rounded shadow-sm">
+          <div class="text-xs text-gray-500 mb-1">Max</div>
+          <div class="text-sm font-semibold text-blue-600">{{ phosphorusStats.max }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Potassium Graph -->
+  <div class="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden flex flex-col mb-4">
+    <div class="p-3 border-b border-gray-100 bg-purple-50 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+        <span class="text-sm font-semibold text-purple-700">Potassium (mg/kg)</span>
+      </div>
+      <div class="text-xs text-gray-500">
+        Current: <span class="font-bold text-purple-600">{{ currentPotassiumValue }}</span>
+      </div>
+    </div>
+    
+    <div class="h-[180px] p-3 relative">
+      <canvas ref="potassiumChartCanvas" class="w-full h-full"></canvas>
+    </div>
+    
+    <div class="border-t border-gray-100 p-3 bg-purple-50/30">
+      <div class="grid grid-cols-3 gap-2">
+        <div class="flex flex-col items-center p-2 bg-white rounded shadow-sm">
+          <div class="text-xs text-gray-500 mb-1">Min</div>
+          <div class="text-sm font-semibold text-purple-600">{{ potassiumStats.min }}</div>
+        </div>
+        <div class="flex flex-col items-center p-2 bg-white rounded shadow-sm">
+          <div class="text-xs text-gray-500 mb-1">Avg</div>
+          <div class="text-sm font-semibold text-purple-600">{{ potassiumStats.avg }}</div>
+        </div>
+        <div class="flex flex-col items-center p-2 bg-white rounded shadow-sm">
+          <div class="text-xs text-gray-500 mb-1">Max</div>
+          <div class="text-sm font-semibold text-purple-600">{{ potassiumStats.max }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Optimal Ranges section -->
+  <div class="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
+    <h4 class="text-sm font-semibold text-gray-700 mb-3">Optimal NPK Ranges</h4>
+    <div class="space-y-4">
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center">
+            <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+            <span class="text-xs font-medium text-gray-700">Nitrogen</span>
+          </div>
+          <span class="text-xs text-green-600 font-medium">20-60 mg/kg</span>
+        </div>
+        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-green-200 via-green-500 to-green-600 rounded-full" style="width: 70%"></div>
+        </div>
+      </div>
+      
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center">
+            <div class="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
+            <span class="text-xs font-medium text-gray-700">Phosphorus</span>
+          </div>
+          <span class="text-xs text-blue-600 font-medium">50-150 mg/kg</span>
+        </div>
+        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-blue-200 via-blue-500 to-blue-600 rounded-full" style="width: 60%"></div>
+        </div>
+      </div>
+      
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center">
+            <div class="w-2 h-2 rounded-full bg-purple-500 mr-2"></div>
+            <span class="text-xs font-medium text-gray-700">Potassium</span>
+          </div>
+          <span class="text-xs text-purple-600 font-medium">80-160 mg/kg</span>
+        </div>
+        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-purple-200 via-purple-500 to-purple-600 rounded-full" style="width: 65%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
             
             <!-- Table Container - Larger width -->
             <div class="w-full md:w-2/3 lg:w-2/3 flex flex-col">
@@ -288,19 +327,23 @@
                       <th class="w-[10%] py-3.5 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                         ID
                       </th>
-                      <th class="w-[25%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
-                        <div class="text-red-600">Temperature</div>
-                        <div class="text-gray-400 text-[10px]">(°C)</div>
-                      </th>
-                      <th class="w-[25%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
-                        <div class="text-blue-600">Humidity</div>
-                        <div class="text-gray-400 text-[10px]">(%)</div>
+                      <th class="w-[20%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
+                        <div class="text-green-600">Nitrogen</div>
+                        <div class="text-gray-400 text-[10px]">(mg/kg)</div>
                       </th>
                       <th class="w-[20%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
+                        <div class="text-blue-600">Phosphorus</div>
+                        <div class="text-gray-400 text-[10px]">(mg/kg)</div>
+                      </th>
+                      <th class="w-[20%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
+                        <div class="text-purple-600">Potassium</div>
+                        <div class="text-gray-400 text-[10px]">(mg/kg)</div>
+                      </th>
+                      <th class="w-[15%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
                         <div class="text-gray-600">Date</div>
                         <div class="text-gray-400 text-[10px]">MMM DD, YYYY</div>
                       </th>
-                      <th class="w-[20%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
+                      <th class="w-[15%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
                         <div class="text-gray-600">Time</div>
                         <div class="text-gray-400 text-[10px]">HH:MM:SS</div>
                       </th>
@@ -321,29 +364,34 @@
                       <td class="w-[10%] px-4 py-3.5 whitespace-nowrap">
                         <div class="text-sm font-medium text-gray-700">{{ row.id }}</div>
                       </td>
-                      <td class="w-[25%] px-4 py-3.5 whitespace-nowrap">
-                        <div class="text-sm font-medium" :class="getTemperatureTextClass(row.temperature)">
-                          {{ row.temperature }}°C
-                        </div>
-                      </td>
-                      <td class="w-[25%] px-4 py-3.5 whitespace-nowrap">
-                        <div class="text-sm font-medium" :class="getHumidityTextClass(row.humidity)">
-                          {{ row.humidity }}%
+                      <td class="w-[20%] px-4 py-3.5 whitespace-nowrap">
+                        <div class="text-sm font-medium" :class="getNitrogenTextClass(row.nitrogen)">
+                          {{ row.nitrogen }}
                         </div>
                       </td>
                       <td class="w-[20%] px-4 py-3.5 whitespace-nowrap">
+                        <div class="text-sm font-medium" :class="getPhosphorusTextClass(row.phosphorus)">
+                          {{ row.phosphorus }}
+                        </div>
+                      </td>
+                      <td class="w-[20%] px-4 py-3.5 whitespace-nowrap">
+                        <div class="text-sm font-medium" :class="getPotassiumTextClass(row.potassium)">
+                          {{ row.potassium }}
+                        </div>
+                      </td>
+                      <td class="w-[15%] px-4 py-3.5 whitespace-nowrap">
                         <div class="text-sm font-medium text-gray-700">{{ row.date }}</div>
                       </td>
-                      <td class="w-[20%] px-4 py-3.5 whitespace-nowrap">
+                      <td class="w-[15%] px-4 py-3.5 whitespace-nowrap">
                         <div class="text-sm font-medium text-gray-700">{{ row.time }}</div>
                       </td>
                     </tr>
                     <!-- Empty state when no data - Enhanced styling -->
                     <tr v-if="paginatedData.length === 0 && !isLoading">
-                      <td colspan="5" class="px-6 py-16 text-center">
+                      <td colspan="6" class="px-6 py-16 text-center">
                         <div class="flex flex-col items-center justify-center">
                           <FileSearch class="h-16 w-16 text-gray-300 mb-4" />
-                          <p class="text-gray-500 text-lg font-medium">No temperature & humidity data found</p>
+                          <p class="text-gray-500 text-lg font-medium">No NPK data found</p>
                           <p class="text-gray-400 text-sm mt-1">Try adjusting your search or filters</p>
                         </div>
                       </td>
@@ -355,14 +403,14 @@
           </div>
   
           <!-- Fixed Pagination Section with enhanced styling -->
-          <div class="border-t border-gray-100 py-4 px-6 bg-gradient-to-r from-white to-emerald-50 rounded-b-lg">
+          <div class="border-t border-gray-100 py-4 px-6 bg-gradient-to-r from-white to-green-50 rounded-b-lg">
             <!-- Enhanced Pagination -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div class="text-sm text-gray-600 flex items-center gap-2">
                 <span class="hidden sm:inline">Showing</span>
                 <select 
                   v-model="itemsPerPage" 
-                  class="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+                  class="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 shadow-sm"
                   @change="updatePagination"
                 >
                   <option value="20">20</option>
@@ -385,7 +433,7 @@
                   :disabled="currentPage === 1"
                   class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-md
                     disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400
-                    enabled:text-gray-700 enabled:hover:text-emerald-600 enabled:hover:bg-emerald-50"
+                    enabled:text-gray-700 enabled:hover:text-green-600 enabled:hover:bg-green-50"
                 >
                   <ChevronLeft class="w-4 h-4 mr-1" />
                   Prev
@@ -399,10 +447,10 @@
                     :class="[
                       'relative inline-flex items-center justify-center w-8 h-8 text-sm transition-colors mx-0.5 rounded-md',
                       page === currentPage
-                        ? 'text-white bg-emerald-500 font-semibold'
+                        ? 'text-white bg-green-500 font-semibold'
                         : page === '...'
                           ? 'cursor-default text-gray-400'
-                          : 'text-gray-700 hover:text-emerald-600 hover:bg-emerald-50'
+                          : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
                     ]"
                   >
                     {{ page }}
@@ -414,7 +462,7 @@
                   :disabled="currentPage >= totalPages"
                   class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors rounded-md
                     disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400
-                    enabled:text-gray-700 enabled:hover:text-emerald-600 enabled:hover:bg-emerald-50"
+                    enabled:text-gray-700 enabled:hover:text-green-600 enabled:hover:bg-green-50"
                 >
                   Next
                   <ChevronRight class="w-4 h-4 ml-1" />
@@ -429,16 +477,17 @@
     <!-- Loading Page Component -->
     <LoadingPage 
       :isVisible="isLoading" 
-      title="Loading Temperature & Humidity Data" 
-      message="Please wait while we fetch the latest temperature and humidity measurements"
+      title="Loading NPK Data" 
+      message="Please wait while we fetch the latest soil nutrient measurements"
     />
+    <Settings />
   </div>
-  <Settings />
 </template>
   
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown, FileText, FileSearch } from 'lucide-vue-next'
+// Add Clock to the imports
+import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown, FileText, FileSearch, Clock } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
 import LoadingPage from '../layout/LoadingPage.vue'
 import Settings from '../layout/Settings.vue'
@@ -456,26 +505,38 @@ import {
 import Chart from 'chart.js/auto'
 
 const db = getFirestore()
-const tempHumidityData = ref([])
+const npkData = ref([])
 const isLoading = ref(true)
 
-// Chart references
-const chartCanvas = ref(null)
-const chart = ref(null)
+// Chart references - Update to have separate charts
+const nitrogenChartCanvas = ref(null)
+const phosphorusChartCanvas = ref(null)
+const potassiumChartCanvas = ref(null)
+const nitrogenChart = ref(null)
+const phosphorusChart = ref(null)
+const potassiumChart = ref(null)
 
 // Chart data
 const chartData = ref([])
 
 // Current values and stats
-const currentTempValue = ref('--')
-const currentHumidityValue = ref('--')
+const currentNitrogenValue = ref('--')
+const currentPhosphorusValue = ref('--')
+const currentPotassiumValue = ref('--')
 const lastUpdated = ref('--')
-const tempStats = ref({
+// Add currentDate reactive variable after the other refs
+const currentDate = ref('')
+const nitrogenStats = ref({
   min: '--',
   max: '--',
   avg: '--'
 })
-const humidityStats = ref({
+const phosphorusStats = ref({
+  min: '--',
+  max: '--',
+  avg: '--'
+})
+const potassiumStats = ref({
   min: '--',
   max: '--',
   avg: '--'
@@ -484,19 +545,19 @@ const humidityStats = ref({
 // Prefetch data cache
 const dataCache = ref(null)
 
-// ✅ UPDATED: Modified to fetch from new 3sensor_readings collection structure
-const fetchTempHumidityData = async () => {
+// Fetch NPK data from Firebase
+const fetchNPKData = async () => {
   try {
     // If we already have cached data, use it immediately to show something
     if (dataCache.value) {
-      tempHumidityData.value = dataCache.value
+      npkData.value = dataCache.value
       isLoading.value = false
       initializeChartData(dataCache.value)
     } else {
       isLoading.value = true
     }
     
-    // Fetch from the new 3sensor_readings collection structure
+    // Fetch from the 3sensor_readings collection structure
     const allReadings = []
     const deviceIds = ['esp32-1', 'esp32-2', 'esp32-3']
     
@@ -516,8 +577,8 @@ const fetchTempHumidityData = async () => {
           const timestamp = data.timestamp
           const jsDate = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp.seconds * 1000)
 
-          // Only include readings that have both temperature and humidity
-          if (data.temperature !== undefined && data.humidity !== undefined) {
+          // Only include readings that have NPK data
+          if (data.nitrogen !== undefined && data.phosphorus !== undefined && data.potassium !== undefined) {
             allReadings.push({
               id: doc.id,
               deviceId: deviceId,
@@ -536,9 +597,9 @@ const fetchTempHumidityData = async () => {
     // Sort all readings by timestamp (latest first)
     allReadings.sort((a, b) => b.timestamp - a.timestamp)
     
-    console.log(`📊 Total temperature & humidity readings fetched: ${allReadings.length}`)
+    console.log(`📊 Total NPK readings fetched: ${allReadings.length}`)
     
-    // Process temperature and humidity readings
+    // Process NPK readings
     const processedData = allReadings
       .map((reading, index) => {
         // Handle timestamp
@@ -569,21 +630,26 @@ const fetchTempHumidityData = async () => {
           console.error("Error formatting date:", e)
         }
 
-        // Format temperature and humidity - handle missing values from different devices
-        const temperature = reading.temperature !== undefined && reading.temperature !== null 
-          ? Number(reading.temperature).toFixed(2) 
+        // Format NPK values - handle missing values from different devices
+        const nitrogen = reading.nitrogen !== undefined && reading.nitrogen !== null 
+          ? Number(reading.nitrogen).toFixed(2) 
           : '--'
         
-        const humidity = reading.humidity !== undefined && reading.humidity !== null 
-          ? Number(reading.humidity).toFixed(2) 
+        const phosphorus = reading.phosphorus !== undefined && reading.phosphorus !== null 
+          ? Number(reading.phosphorus).toFixed(2) 
+          : '--'
+          
+        const potassium = reading.potassium !== undefined && reading.potassium !== null 
+          ? Number(reading.potassium).toFixed(2) 
           : '--'
 
         // Return processed data
         return {
           id: index + 1,
           timestamp: timestampSeconds,
-          temperature: temperature,
-          humidity: humidity,
+          nitrogen: nitrogen,
+          phosphorus: phosphorus,
+          potassium: potassium,
           date: formattedDate,
           time: formattedTime,
           rawTimestamp: reading.timestamp,
@@ -595,24 +661,24 @@ const fetchTempHumidityData = async () => {
     dataCache.value = processedData
     
     // Update the UI with minimal delay
-    tempHumidityData.value = processedData
+    npkData.value = processedData
     isLoading.value = false
     
     // Initialize chart data after loading
     initializeChartData(processedData)
   } catch (error) {
-    console.error("❌ Error fetching temperature and humidity data:", error)
+    console.error("❌ Error fetching NPK data:", error)
     isLoading.value = false
     
     // If we have cached data, use it as fallback
     if (dataCache.value) {
-      tempHumidityData.value = dataCache.value
+      npkData.value = dataCache.value
       initializeChartData(dataCache.value)
     }
   }
 }
 
-// ✅ UPDATED: Modified real-time listener for new collection structure
+// Setup real-time listener for NPK data
 const setupRealtimeListener = () => {
   const deviceIds = ['esp32-1', 'esp32-2', 'esp32-3']
   const unsubscribeFunctions = []
@@ -658,7 +724,7 @@ const setupRealtimeListener = () => {
     const deviceData = snapshot.docs
       .filter(doc => {
         const data = doc.data()
-        return data.temperature !== undefined && data.humidity !== undefined
+        return data.nitrogen !== undefined && data.phosphorus !== undefined && data.potassium !== undefined
       })
       .map(doc => {
         const data = doc.data()
@@ -667,8 +733,9 @@ const setupRealtimeListener = () => {
         
         return {
           timestamp,
-          temperature: Number(data.temperature),
-          humidity: Number(data.humidity),
+          nitrogen: Number(data.nitrogen),
+          phosphorus: Number(data.phosphorus),
+          potassium: Number(data.potassium),
           deviceId: deviceId
         }
       })
@@ -688,8 +755,9 @@ const setupRealtimeListener = () => {
     if (combinedRealtimeData.length > 0) {
       // Get the most recent values
       const latestReading = combinedRealtimeData[combinedRealtimeData.length - 1]
-      currentTempValue.value = latestReading.temperature.toFixed(2)
-      currentHumidityValue.value = latestReading.humidity.toFixed(2)
+      currentNitrogenValue.value = latestReading.nitrogen.toFixed(2)
+      currentPhosphorusValue.value = latestReading.phosphorus.toFixed(2)
+      currentPotassiumValue.value = latestReading.potassium.toFixed(2)
       
       // Update last updated time
       const formattedTime = latestReading.timestamp.toLocaleTimeString('en-US', {
@@ -700,20 +768,28 @@ const setupRealtimeListener = () => {
       })
       lastUpdated.value = formattedTime
       
-      // Calculate temperature stats
-      const tempValues = combinedRealtimeData.map(item => item.temperature)
-      tempStats.value = {
-        min: Math.min(...tempValues).toFixed(2),
-        max: Math.max(...tempValues).toFixed(2),
-        avg: (tempValues.reduce((sum, val) => sum + val, 0) / tempValues.length).toFixed(2)
+      // Calculate nitrogen stats
+      const nitrogenValues = combinedRealtimeData.map(item => item.nitrogen)
+      nitrogenStats.value = {
+        min: Math.min(...nitrogenValues).toFixed(2),
+        max: Math.max(...nitrogenValues).toFixed(2),
+        avg: (nitrogenValues.reduce((sum, val) => sum + val, 0) / nitrogenValues.length).toFixed(2)
       }
       
-      // Calculate humidity stats
-      const humidityValues = combinedRealtimeData.map(item => item.humidity)
-      humidityStats.value = {
-        min: Math.min(...humidityValues).toFixed(2),
-        max: Math.max(...humidityValues).toFixed(2),
-        avg: (humidityValues.reduce((sum, val) => sum + val, 0) / humidityValues.length).toFixed(2)
+      // Calculate phosphorus stats
+      const phosphorusValues = combinedRealtimeData.map(item => item.phosphorus)
+      phosphorusStats.value = {
+        min: Math.min(...phosphorusValues).toFixed(2),
+        max: Math.max(...phosphorusValues).toFixed(2),
+        avg: (phosphorusValues.reduce((sum, val) => sum + val, 0) / phosphorusValues.length).toFixed(2)
+      }
+      
+      // Calculate potassium stats
+      const potassiumValues = combinedRealtimeData.map(item => item.potassium)
+      potassiumStats.value = {
+        min: Math.min(...potassiumValues).toFixed(2),
+        max: Math.max(...potassiumValues).toFixed(2),
+        avg: (potassiumValues.reduce((sum, val) => sum + val, 0) / potassiumValues.length).toFixed(2)
       }
     }
     
@@ -733,11 +809,12 @@ const setupRealtimeListener = () => {
 const initializeChartData = (data) => {
   // Take the most recent 20 entries for initial chart data
   const initialChartData = data.slice(0, 20)
-    .filter(item => item.temperature !== '--' && item.humidity !== '--') // Filter out missing data
+    .filter(item => item.nitrogen !== '--' && item.phosphorus !== '--' && item.potassium !== '--') // Filter out missing data
     .map(item => ({
       timestamp: item.rawTimestamp || new Date(),
-      temperature: Number(item.temperature),
-      humidity: Number(item.humidity)
+      nitrogen: Number(item.nitrogen),
+      phosphorus: Number(item.phosphorus),
+      potassium: Number(item.potassium)
     }))
     .sort((a, b) => a.timestamp - b.timestamp) // Sort by timestamp ascending for the chart
 
@@ -747,8 +824,9 @@ const initializeChartData = (data) => {
   // Set initial current values and stats
   if (initialChartData.length > 0) {
     const latestReading = initialChartData[initialChartData.length - 1]
-    currentTempValue.value = latestReading.temperature.toFixed(2)
-    currentHumidityValue.value = latestReading.humidity.toFixed(2)
+    currentNitrogenValue.value = latestReading.nitrogen.toFixed(2)
+    currentPhosphorusValue.value = latestReading.phosphorus.toFixed(2)
+    currentPotassiumValue.value = latestReading.potassium.toFixed(2)
     
     const formattedTime = latestReading.timestamp.toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -758,20 +836,28 @@ const initializeChartData = (data) => {
     })
     lastUpdated.value = formattedTime
     
-    // Calculate temperature stats
-    const tempValues = initialChartData.map(item => item.temperature)
-    tempStats.value = {
-      min: Math.min(...tempValues).toFixed(2),
-      max: Math.max(...tempValues).toFixed(2),
-      avg: (tempValues.reduce((sum, val) => sum + val, 0) / tempValues.length).toFixed(2)
+    // Calculate nitrogen stats
+    const nitrogenValues = initialChartData.map(item => item.nitrogen)
+    nitrogenStats.value = {
+      min: Math.min(...nitrogenValues).toFixed(2),
+      max: Math.max(...nitrogenValues).toFixed(2),
+      avg: (nitrogenValues.reduce((sum, val) => sum + val, 0) / nitrogenValues.length).toFixed(2)
     }
     
-    // Calculate humidity stats
-    const humidityValues = initialChartData.map(item => item.humidity)
-    humidityStats.value = {
-      min: Math.min(...humidityValues).toFixed(2),
-      max: Math.max(...humidityValues).toFixed(2),
-      avg: (humidityValues.reduce((sum, val) => sum + val, 0) / humidityValues.length).toFixed(2)
+    // Calculate phosphorus stats
+    const phosphorusValues = initialChartData.map(item => item.phosphorus)
+    phosphorusStats.value = {
+      min: Math.min(...phosphorusValues).toFixed(2),
+      max: Math.max(...phosphorusValues).toFixed(2),
+      avg: (phosphorusValues.reduce((sum, val) => sum + val, 0) / phosphorusValues.length).toFixed(2)
+    }
+    
+    // Calculate potassium stats
+    const potassiumValues = initialChartData.map(item => item.potassium)
+    potassiumStats.value = {
+      min: Math.min(...potassiumValues).toFixed(2),
+      max: Math.max(...potassiumValues).toFixed(2),
+      avg: (potassiumValues.reduce((sum, val) => sum + val, 0) / potassiumValues.length).toFixed(2)
     }
   }
   
@@ -779,247 +865,382 @@ const initializeChartData = (data) => {
   initializeChart()
 }
 
-// Initialize the chart with enhanced styling
+// Initialize separate charts with enhanced styling for NPK data
 const initializeChart = () => {
   nextTick(() => {
-    if (chartCanvas.value) {
-      // Destroy existing chart if it exists
-      if (chart.value) {
-        chart.value.destroy()
-      }
-      
-      const ctx = chartCanvas.value.getContext('2d')
-      
-      // Create new chart with both temperature and humidity datasets and enhanced styling
-      chart.value = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: chartData.value.map(item => {
-            return item.timestamp.toLocaleTimeString('en-US', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false
-            })
-          }),
-          datasets: [
-            {
-              label: 'Temperature (°C)',
-              data: chartData.value.map(item => item.temperature),
-              borderColor: '#ef4444', // red-500
-              backgroundColor: 'rgba(239, 68, 68, 0.15)', // red-500 with opacity
-              borderWidth: 2.5,
-              tension: 0.4,
-              fill: true,
-              pointRadius: 3,
-              pointHoverRadius: 5,
-              pointBackgroundColor: '#ffffff',
-              pointBorderColor: '#ef4444',
-              pointBorderWidth: 1.5,
-              yAxisID: 'y-temperature'
-            },
-            {
-              label: 'Humidity (%)',
-              data: chartData.value.map(item => item.humidity),
-              borderColor: '#3b82f6', // blue-500
-              backgroundColor: 'rgba(59, 130, 246, 0.15)', // blue-500 with opacity
-              borderWidth: 2.5,
-              tension: 0.4,
-              fill: true,
-              pointRadius: 3,
-              pointHoverRadius: 5,
-              pointBackgroundColor: '#ffffff',
-              pointBorderColor: '#3b82f6',
-              pointBorderWidth: 1.5,
-              yAxisID: 'y-humidity'
-            }
-          ]
+    initializeNitrogenChart()
+    initializePhosphorusChart()
+    initializePotassiumChart()
+  })
+}
+
+// Initialize Nitrogen Chart
+const initializeNitrogenChart = () => {
+  if (nitrogenChartCanvas.value) {
+    if (nitrogenChart.value) {
+      nitrogenChart.value.destroy()
+    }
+    
+    const ctx = nitrogenChartCanvas.value.getContext('2d')
+    
+    nitrogenChart.value = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chartData.value.map(item => {
+          return item.timestamp.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          })
+        }),
+        datasets: [{
+          label: 'Nitrogen (mg/kg)',
+          data: chartData.value.map(item => item.nitrogen),
+          borderColor: '#22c55e',
+          backgroundColor: 'rgba(34, 197, 94, 0.1)',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#22c55e',
+          pointBorderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
-          animation: {
-            duration: 500, // Reduced for better performance
-            easing: 'easeOutQuart'
-          },
-          layout: {
-            padding: {
-              top: 10,
-              left: 10,
-              right: 10,
-              bottom: 10
+        animation: {
+          duration: 750,
+          easing: 'easeOutQuart'
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            min: Math.max(0, Math.floor(nitrogenStats.value.min * 0.9)),
+            max: Math.ceil(nitrogenStats.value.max * 1.1),
+            ticks: {
+              font: { size: 11 },
+              color: '#22c55e',
+              padding: 8
+            },
+            grid: {
+              color: 'rgba(34, 197, 94, 0.1)',
+              drawBorder: false
             }
           },
-          scales: {
-            'y-temperature': {
-              type: 'linear',
-              display: true,
-              position: 'left',
-              title: {
-                display: true,
-                text: 'Temperature (°C)',
-                color: '#ef4444',
-                font: {
-                  size: 11,
-                  weight: '600'
-                },
-                padding: {
-                  bottom: 10
-                }
-              },
-              beginAtZero: false,
-              min: Math.max(0, Math.floor(tempStats.value.min * 0.95)),
-              max: Math.ceil(tempStats.value.max * 1.05),
-              ticks: {
-                font: {
-                  size: 10
-                },
-                color: '#ef4444',
-                padding: 8
-              },
-              grid: {
-                color: 'rgba(0, 0, 0, 0.04)',
-                drawBorder: false
-              }
+          x: {
+            ticks: {
+              font: { size: 10 },
+              maxRotation: 45,
+              color: '#64748b'
             },
-            'y-humidity': {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              title: {
-                display: true,
-                text: 'Humidity (%)',
-                color: '#3b82f6',
-                font: {
-                  size: 11,
-                  weight: '600'
-                },
-                padding: {
-                  bottom: 10
-                }
-              },
-              beginAtZero: false,
-              min: Math.max(0, Math.floor(humidityStats.value.min * 0.95)),
-              max: Math.min(100, Math.ceil(humidityStats.value.max * 1.05)),
-              ticks: {
-                font: {
-                  size: 10
-                },
-                color: '#3b82f6',
-                padding: 8
-              },
-              grid: {
-                drawOnChartArea: false,
-                drawBorder: false
-              }
-            },
-            x: {
-              ticks: {
-                font: {
-                  size: 10
-                },
-                maxRotation: 0,
-                padding: 8,
-                color: '#64748b' // slate-500
-              },
-              grid: {
-                display: false,
-                drawBorder: false
-              }
-            }
-          },
-          plugins: {
-            legend: {
-              display: false, // Hide legend to improve performance
-            },
-            tooltip: {
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              titleColor: '#334155', // slate-700
-              bodyColor: '#334155', // slate-700
-              borderColor: '#e2e8f0', // slate-200
-              borderWidth: 1,
-              padding: 12,
-              cornerRadius: 6,
-              displayColors: true,
-              boxWidth: 8,
-              boxHeight: 8,
-              usePointStyle: true,
-              titleFont: {
-                size: 12,
-                weight: '600'
-              },
-              bodyFont: {
-                size: 12
-              },
-              callbacks: {
-                label: function(context) {
-                  const label = context.dataset.label || '';
-                  const value = context.raw !== null ? context.raw.toFixed(2) : '--';
-                  return `${label}: ${value}`;
-                }
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            titleColor: '#22c55e',
+            bodyColor: '#22c55e',
+            borderColor: '#22c55e',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 8,
+            displayColors: false,
+            titleFont: { size: 12, weight: '600' },
+            bodyFont: { size: 12 },
+            callbacks: {
+              label: function(context) {
+                return `${context.raw.toFixed(2)} mg/kg`;
               }
             }
           }
         }
-      })
-    }
-  })
+      }
+    })
+  }
 }
 
-// Update the chart with new data - optimized for performance
+// Initialize Phosphorus Chart
+const initializePhosphorusChart = () => {
+  if (phosphorusChartCanvas.value) {
+    if (phosphorusChart.value) {
+      phosphorusChart.value.destroy()
+    }
+    
+    const ctx = phosphorusChartCanvas.value.getContext('2d')
+    
+    phosphorusChart.value = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chartData.value.map(item => {
+          return item.timestamp.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          })
+        }),
+        datasets: [{
+          label: 'Phosphorus (mg/kg)',
+          data: chartData.value.map(item => item.phosphorus),
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#3b82f6',
+          pointBorderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        animation: {
+          duration: 750,
+          easing: 'easeOutQuart'
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            min: Math.max(0, Math.floor(phosphorusStats.value.min * 0.9)),
+            max: Math.ceil(phosphorusStats.value.max * 1.1),
+            ticks: {
+              font: { size: 11 },
+              color: '#3b82f6',
+              padding: 8
+            },
+            grid: {
+              color: 'rgba(59, 130, 246, 0.1)',
+              drawBorder: false
+            }
+          },
+          x: {
+            ticks: {
+              font: { size: 10 },
+              maxRotation: 45,
+              color: '#64748b'
+            },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            titleColor: '#3b82f6',
+            bodyColor: '#3b82f6',
+            borderColor: '#3b82f6',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 8,
+            displayColors: false,
+            titleFont: { size: 12, weight: '600' },
+            bodyFont: { size: 12 },
+            callbacks: {
+              label: function(context) {
+                return `${context.raw.toFixed(2)} mg/kg`;
+              }
+            }
+          }
+        }
+      }
+    })
+  }
+}
+
+// Initialize Potassium Chart
+const initializePotassiumChart = () => {
+  if (potassiumChartCanvas.value) {
+    if (potassiumChart.value) {
+      potassiumChart.value.destroy()
+    }
+    
+    const ctx = potassiumChartCanvas.value.getContext('2d')
+    
+    potassiumChart.value = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chartData.value.map(item => {
+          return item.timestamp.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          })
+        }),
+        datasets: [{
+          label: 'Potassium (mg/kg)',
+          data: chartData.value.map(item => item.potassium),
+          borderColor: '#a855f7',
+          backgroundColor: 'rgba(168, 85, 247, 0.1)',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#a855f7',
+          pointBorderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        animation: {
+          duration: 750,
+          easing: 'easeOutQuart'
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            min: Math.max(0, Math.floor(potassiumStats.value.min * 0.9)),
+            max: Math.ceil(potassiumStats.value.max * 1.1),
+            ticks: {
+              font: { size: 11 },
+              color: '#a855f7',
+              padding: 8
+            },
+            grid: {
+              color: 'rgba(168, 85, 247, 0.1)',
+              drawBorder: false
+            }
+          },
+          x: {
+            ticks: {
+              font: { size: 10 },
+              maxRotation: 45,
+              color: '#64748b'
+            },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            titleColor: '#a855f7',
+            bodyColor: '#a855f7',
+            borderColor: '#a855f7',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 8,
+            displayColors: false,
+            titleFont: { size: 12, weight: '600' },
+            bodyFont: { size: 12 },
+            callbacks: {
+              label: function(context) {
+                return `${context.raw.toFixed(2)} mg/kg`;
+              }
+            }
+          }
+        }
+      }
+    })
+  }
+}
+
+// Update the updateChart function to update all three charts:
 const updateChart = () => {
-  if (chart.value && chartData.value.length > 0) {
-    // Update only what's needed
-    chart.value.data.labels = chartData.value.map(item => {
+  updateNitrogenChart()
+  updatePhosphorusChart()
+  updatePotassiumChart()
+}
+
+const updateNitrogenChart = () => {
+  if (nitrogenChart.value && chartData.value.length > 0) {
+    nitrogenChart.value.data.labels = chartData.value.map(item => {
       return item.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
       })
     })
-    
-    // Update temperature dataset
-    chart.value.data.datasets[0].data = chartData.value.map(item => item.temperature)
-    
-    // Update humidity dataset
-    chart.value.data.datasets[1].data = chartData.value.map(item => item.humidity)
-    
-    // Update y-axis scales based on new data
-    chart.value.options.scales['y-temperature'].min = Math.max(0, Math.floor(tempStats.value.min * 0.95))
-    chart.value.options.scales['y-temperature'].max = Math.ceil(tempStats.value.max * 1.05)
-    
-    chart.value.options.scales['y-humidity'].min = Math.max(0, Math.floor(humidityStats.value.min * 0.95))
-    chart.value.options.scales['y-humidity'].max = Math.min(100, Math.ceil(humidityStats.value.max * 1.05))
-    
-    // Use a more performant update
-    chart.value.update('none') // 'none' mode skips animations for better performance
+    nitrogenChart.value.data.datasets[0].data = chartData.value.map(item => item.nitrogen)
+    nitrogenChart.value.options.scales.y.min = Math.max(0, Math.floor(nitrogenStats.value.min * 0.9))
+    nitrogenChart.value.options.scales.y.max = Math.ceil(nitrogenStats.value.max * 1.1)
+    nitrogenChart.value.update('none')
   }
 }
 
-// Helper functions for text color
-const getTemperatureTextClass = (temp) => {
-  const temperature = parseFloat(temp)
-  if (temperature >= 32) return 'text-red-600'
-  if (temperature >= 28) return 'text-orange-600'
-  if (temperature >= 24) return 'text-yellow-600'
-  return 'text-green-600'
+const updatePhosphorusChart = () => {
+  if (phosphorusChart.value && chartData.value.length > 0) {
+    phosphorusChart.value.data.labels = chartData.value.map(item => {
+      return item.timestamp.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      })
+    })
+    phosphorusChart.value.data.datasets[0].data = chartData.value.map(item => item.phosphorus)
+    phosphorusChart.value.options.scales.y.min = Math.max(0, Math.floor(phosphorusStats.value.min * 0.9))
+    phosphorusChart.value.options.scales.y.max = Math.ceil(phosphorusStats.value.max * 1.1)
+    phosphorusChart.value.update('none')
+  }
 }
 
-const getHumidityTextClass = (humidity) => {
-  const humidityValue = parseFloat(humidity)
-  if (humidityValue >= 70) return 'text-blue-600'
-  if (humidityValue >= 60) return 'text-sky-600'
-  if (humidityValue >= 40) return 'text-indigo-600'
-  return 'text-purple-600'
+const updatePotassiumChart = () => {
+  if (potassiumChart.value && chartData.value.length > 0) {
+    potassiumChart.value.data.labels = chartData.value.map(item => {
+      return item.timestamp.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      })
+    })
+    potassiumChart.value.data.datasets[0].data = chartData.value.map(item => item.potassium)
+    potassiumChart.value.options.scales.y.min = Math.max(0, Math.floor(potassiumStats.value.min * 0.9))
+    potassiumChart.value.options.scales.y.max = Math.ceil(potassiumStats.value.max * 1.1)
+    potassiumChart.value.update('none')
+  }
+}
+
+// Helper functions for text color based on NPK values
+const getNitrogenTextClass = (nitrogen) => {
+  const nitrogenValue = parseFloat(nitrogen)
+  if (nitrogenValue >= 50) return 'text-green-600'
+  if (nitrogenValue >= 30) return 'text-green-500'
+  if (nitrogenValue >= 20) return 'text-yellow-600'
+  return 'text-red-600'
+}
+
+const getPhosphorusTextClass = (phosphorus) => {
+  const phosphorusValue = parseFloat(phosphorus)
+  if (phosphorusValue >= 120) return 'text-blue-600'
+  if (phosphorusValue >= 80) return 'text-blue-500'
+  if (phosphorusValue >= 50) return 'text-sky-600'
+  return 'text-red-600'
+}
+
+const getPotassiumTextClass = (potassium) => {
+  const potassiumValue = parseFloat(potassium)
+  if (potassiumValue >= 140) return 'text-purple-600'
+  if (potassiumValue >= 100) return 'text-purple-500'
+  if (potassiumValue >= 80) return 'text-indigo-600'
+  return 'text-red-600'
 }
 
 // Initialize filters object
 const filters = ref({
-  temperature: { min: '', max: '' },
-  humidity: { min: '', max: '' }
+  nitrogen: { min: '', max: '' },
+  phosphorus: { min: '', max: '' },
+  potassium: { min: '', max: '' }
 })
 
 // Reactive state
@@ -1032,14 +1253,16 @@ const sortDirection = ref('asc')
 const activeFilters = ref({})
 
 const filterFields = [
-  { key: 'temperature', label: 'Temperature (°C)' },
-  { key: 'humidity', label: 'Humidity (%)' }
+  { key: 'nitrogen', label: 'Nitrogen (mg/kg)' },
+  { key: 'phosphorus', label: 'Phosphorus (mg/kg)' },
+  { key: 'potassium', label: 'Potassium (mg/kg)' }
 ]
 
 const headers = [
   { key: 'id', label: 'ID' },
-  { key: 'temperature', label: 'Temperature (°C)' },
-  { key: 'humidity', label: 'Humidity (%)' },
+  { key: 'nitrogen', label: 'Nitrogen (mg/kg)' },
+  { key: 'phosphorus', label: 'Phosphorus (mg/kg)' },
+  { key: 'potassium', label: 'Potassium (mg/kg)' },
   { key: 'date', label: 'Date' },
   { key: 'time', label: 'Time' }
 ]
@@ -1048,7 +1271,7 @@ const exportFormats = ['csv', 'pdf', 'docs']
 
 // Computed properties with memoization for better performance
 const filteredData = computed(() => {
-  let result = [...tempHumidityData.value]
+  let result = [...npkData.value]
 
   // Apply search filter
   if (searchQuery.value) {
@@ -1249,7 +1472,7 @@ const exportAsCSV = (data) => {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.setAttribute('href', url)
-  link.setAttribute('download', 'temperature_humidity_data.csv')
+  link.setAttribute('download', 'npk_data.csv')
   link.style.visibility = 'hidden'
   document.body.appendChild(link)
   link.click()
@@ -1283,37 +1506,50 @@ onMounted(() => {
   // Implement progressive loading strategy
   // 1. First try to get data from cache (if any)
   // 2. Then fetch fresh data
-  fetchTempHumidityData()
+  fetchNPKData()
   
   // Set up realtime listener
   unsubscribe = setupRealtimeListener()
   
   // Set up window resize handler for chart responsiveness
   const handleResize = () => {
-    if (chart.value) {
-      chart.value.resize()
-    }
+    if (nitrogenChart.value) nitrogenChart.value.resize()
+    if (phosphorusChart.value) phosphorusChart.value.resize()
+    if (potassiumChart.value) potassiumChart.value.resize()
   }
   
   // Use ResizeObserver for better performance than window resize
   if (typeof ResizeObserver !== 'undefined') {
     const resizeObserver = new ResizeObserver(handleResize)
-    if (chartCanvas.value) {
-      resizeObserver.observe(chartCanvas.value.parentElement)
+    if (nitrogenChartCanvas.value) {
+      resizeObserver.observe(nitrogenChartCanvas.value.parentElement)
+    }
+    if (phosphorusChartCanvas.value) {
+      resizeObserver.observe(phosphorusChartCanvas.value.parentElement)
+    }
+    if (potassiumChartCanvas.value) {
+      resizeObserver.observe(potassiumChartCanvas.value.parentElement)
     }
   } else {
     // Fallback to window resize
     window.addEventListener('resize', handleResize)
   }
+  
+  // Update current date initially and every minute
+  updateCurrentDate()
+  const dateInterval = setInterval(updateCurrentDate, 60000) // Update every minute
+  
+  // Store interval reference for cleanup
+  window.dateUpdateInterval = dateInterval
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   
-  // Clean up chart
-  if (chart.value) {
-    chart.value.destroy()
-  }
+  // Clean up all charts
+  if (nitrogenChart.value) nitrogenChart.value.destroy()
+  if (phosphorusChart.value) phosphorusChart.value.destroy()
+  if (potassiumChart.value) potassiumChart.value.destroy()
   
   // Clean up realtime listener
   if (unsubscribe) {
@@ -1322,7 +1558,22 @@ onUnmounted(() => {
   
   // Remove resize listener
   window.removeEventListener('resize', () => {})
+  
+  // Clear date update interval
+  if (window.dateUpdateInterval) {
+    clearInterval(window.dateUpdateInterval)
+  }
 })
+
+// Add a function to update the current date
+const updateCurrentDate = () => {
+  const now = new Date()
+  currentDate.value = now.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric'
+  })
+}
 </script>
   
 <style>
@@ -1400,7 +1651,7 @@ onUnmounted(() => {
   transform: none !important;
 }
 
-.from-emerald-50 {
+.from-green-50 {
   transition: none !important;
   animation: none !important;
   transform: none !important;
@@ -1418,7 +1669,7 @@ onUnmounted(() => {
   transform: none !important;
 }
 
-.to-emerald-50 {
+.to-green-50 {
   transition: none !important;
   animation: none !important;
   transform: none !important;
@@ -1491,6 +1742,12 @@ thead th, tbody td {
     padding-left: 0.25rem !important;
     padding-right: 0.25rem !important;
     font-size: 0.75rem;
+  }
+
+  th div, td div {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 

@@ -413,6 +413,7 @@
       title="Loading Motor Control Data" 
       message="Please wait while we fetch the latest motor control logs"
     />
+    <Settings />
   </div>
 </template>
   
@@ -421,6 +422,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown, FileText, FileSearch} from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
 import LoadingPage from '../layout/LoadingPage.vue'
+import Settings from '../layout/Settings.vue'
 import {
   getFirestore,
   collection,
@@ -566,7 +568,7 @@ const setupRealtimeListener = () => {
   const realtimeQuery = query(
     collection(db, "motor_status", "history", "logs"),
     orderBy("timestamp", "desc"),
-    limit(20)
+    // limit(20)
   )
   
   // Set up the listener

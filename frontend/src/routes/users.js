@@ -12,6 +12,9 @@ import About from '../views/users/About.vue'
 import OrganicSection from '../views/users/OrganicSection.vue'
 import WeatherForecast from '../views/users/WeatherForecast.vue'
 import Notifications from '../views/users/Notifications.vue'
+import SoilPH from '../views/users/SoilPH.vue'
+import npkData from '../views/users/npkData.vue'
+import ManualGuide from '../views/users/ManualGuide.vue'
 
 export const userRoutes = [
   {
@@ -43,6 +46,16 @@ export const userRoutes = [
     path: '/control',
     name: 'DeviceControl',
     component: DeviceControl
+  },
+    {
+    path: '/npkData',
+    name: 'npkData',
+    component: npkData
+  },
+  {
+    path: '/soilph',
+    name: 'SoilPH',
+    component: SoilPH
   },
   {
     path: '/soil-moisture',
@@ -83,5 +96,10 @@ export const userRoutes = [
     path: "/notifications",
     name: "Notifications",
     component: Notifications,
+  },
+  {
+    path: "/manual-guide",
+    name: "ManualGuide",
+    component: ManualGuide,
   },
 ]

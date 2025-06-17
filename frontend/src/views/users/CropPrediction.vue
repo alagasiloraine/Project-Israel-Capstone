@@ -1091,6 +1091,8 @@
         </div>
       </div>
     </div>
+
+    <Settings />
   </div>
 </template>
 
@@ -1129,6 +1131,7 @@ import {
   TableIcon
 } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
+import Settings from '../layout/Settings.vue'
 // import Pagination from '../layout/Pagination.vue'
 import api from '../../api/index.js'
 import toastr from 'toastr'
@@ -1321,32 +1324,51 @@ onMounted(async () => {
   fetchRecommendationStats()
 })
 
+// ✅ MODIFIED: Updated to fetch from new 3sensor_readings collection structure
 const fetchLatestSensorDataFromFirebase = async () => {
   try {
-    const q = query(collection(db, "sensor_readings"), orderBy("timestamp", "desc"), limit(1))
-    const snapshot = await getDocs(q)
+    // Fetch from esp32-1 (NPK + pH)
+    const esp32_1_query = query(
+      collection(db, "3sensor_readings", "esp32-1", "readings"), 
+      orderBy("timestamp", "desc"), 
+      limit(1)
+    );
+    const esp32_1_snapshot = await getDocs(esp32_1_query);
+    
+    if (!esp32_1_snapshot.empty) {
+      const esp32_1_data = esp32_1_snapshot.docs[0].data();
+      const timestamp = esp32_1_data.timestamp;
+      esp32_1_data.timestamp = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp.seconds * 1000);
+      
+      nitrogen.value = esp32_1_data.nitrogen;
+      phosphorus.value = esp32_1_data.phosphorus;
+      potassium.value = esp32_1_data.potassium;
+      soilpH.value = esp32_1_data.soilPh;
+      
+      console.log("📥 ESP32-1 Data (NPK + pH):", esp32_1_data);
+    }
 
-    if (!snapshot.empty) {
-      const latestDoc = snapshot.docs[0]
-      const latestData = latestDoc.data()
-
-      // ✅ Convert Firestore timestamp to JS Date
-      const timestamp = latestData.timestamp
-      latestData.timestamp = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp.seconds * 1000)
-
-      // Now assign the values
-      nitrogen.value = latestData.nitrogen
-      phosphorus.value = latestData.phosphorus
-      potassium.value = latestData.potassium
-      soilpH.value = latestData.soilPh
-      temperature.value = latestData.temperature
-      humidity.value = latestData.humidity
-      soilMoisture.value = latestData.soilMoisture
-
-      console.log("📥 Latest Firebase Data with Date:", latestData)
+    // Fetch from esp32-2 (Temperature, humidity, soil moisture)
+    const esp32_2_query = query(
+      collection(db, "3sensor_readings", "esp32-2", "readings"), 
+      orderBy("timestamp", "desc"), 
+      limit(1)
+    );
+    const esp32_2_snapshot = await getDocs(esp32_2_query);
+    
+    if (!esp32_2_snapshot.empty) {
+      const esp32_2_data = esp32_2_snapshot.docs[0].data();
+      const timestamp = esp32_2_data.timestamp;
+      esp32_2_data.timestamp = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp.seconds * 1000);
+      
+      temperature.value = esp32_2_data.temperature;
+      humidity.value = esp32_2_data.humidity;
+      soilMoisture.value = esp32_2_data.soilMoisture;
+      
+      console.log("📥 ESP32-2 Data (DHT21):", esp32_2_data);
     }
   } catch (err) {
-    console.error("❌ Error fetching from Firebase:", err)
+    console.error("❌ Error fetching from new Firebase collection:", err)
   }
 }
 
@@ -1498,20 +1520,29 @@ const saveRecommendation = async () => {
   }
 
   try {
-    // First save the soil reading
-    const soilReadingRef = await addDoc(collection(db, "sensor_readings"), {
+    // ✅ MODIFIED: Save soil reading to new collection structure
+    // Save to esp32-1 for NPK + pH data
+    const esp32_1_ref = await addDoc(collection(db, "3sensor_readings", "esp32-1", "readings"), {
       nitrogen: nitrogen.value,
       phosphorus: phosphorus.value,
       potassium: potassium.value,
       soilPh: soilpH.value,
+      timestamp: serverTimestamp()
+    });
+
+    // Save to esp32-2 for environmental data
+    const esp32_2_ref = await addDoc(collection(db, "3sensor_readings", "esp32-2", "readings"), {
       soilMoisture: soilMoisture.value,
       temperature: temperature.value,
       humidity: humidity.value,
       timestamp: serverTimestamp()
     });
 
-    // Add the soil reading reference to the payload
-    payload.soilReadingId = soilReadingRef.id;
+    // Add the soil reading references to the payload
+    payload.soilReadingIds = {
+      esp32_1: esp32_1_ref.id,
+      esp32_2: esp32_2_ref.id
+    };
 
     const res = await api.post('/crop/save', payload)
     console.log("send to back:", payload)

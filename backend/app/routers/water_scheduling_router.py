@@ -119,7 +119,7 @@ def save_schedule(schedule: Schedule):
         current_epoch = int(time.time())
         schedule_payload = {**schedule_data, "currentTime": current_epoch}
 
-        esp_ip = "192.168.1.18"
+        esp_ip = "192.168.254.102"
         esp_url = f"http://{esp_ip}/watering-schedule"
         print(f"🌐 Step 2: Sending watering schedule to ESP32 at {esp_url}...")
 

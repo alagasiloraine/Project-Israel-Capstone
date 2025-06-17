@@ -139,8 +139,9 @@
           
           <!-- Notification Icon -->
           <div class="relative">
-            <button 
-              @click="toggleNotifications"
+            <a 
+            
+              href="/notifications"
               class="relative flex items-center justify-center h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 text-white"
               :class="{ 'bg-white/30': showNotifications }"
             >
@@ -149,10 +150,10 @@
               <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">
                 {{ notifications.filter(n => n && !n.read).length }}
               </span>
-            </button>
+            </a>
             
             <!-- Notification Panel -->
-            <div 
+            <!-- <div 
               v-show="showNotifications"
               class="absolute right-0 top-full mt-2 w-80 origin-top-right bg-white rounded-lg shadow-lg overflow-hidden z-50 border border-gray-100 transform transition-all duration-200"
               :class="notificationAnimation"
@@ -189,7 +190,6 @@
                 </div>
                 
                 <div v-else>
-                  <!-- Today's Notifications -->
                   <div v-if="todayNotifications.filter(n => n).length > 0">
                     <div class="px-3 py-1.5 bg-gray-50 border-y border-gray-100">
                       <span class="text-xs font-medium text-gray-500">Today</span>
@@ -223,7 +223,6 @@
                     </div>
                   </div>
                   
-                  <!-- Earlier Notifications -->
                   <div v-if="earlierNotifications.filter(n => n).length > 0">
                     <div class="px-3 py-1.5 bg-gray-50 border-y border-gray-100">
                       <span class="text-xs font-medium text-gray-500">Earlier</span>
@@ -270,15 +269,15 @@
                   Close
                 </button>
               </div>
-            </div>
+            </div> -->
           </div>
 
           
-          <div class="relative ml-4">
+          <div class="relative ml-4 cursor-pointer" @click="goToProfile">
             <div class="absolute inset-0 bg-gradient-to-r from-[#00A572] to-[#008F61] rounded-full blur-md opacity-0 group-hover:opacity-50 transition-opacity"></div>
             <img 
               :src="user?.profilePicture || '/public/images/profile.jpg'"
-              class="w-8 h-8 rounded-full border-2 border-white/30 hover:border-white/60 transition-all duration-300 relative z-10 object-cover"
+              class="w-8 h-8 rounded-full border-2 border-white/30 hover:border-white/60 transition-all duration-300 relative z-10 object-cover hover:scale-110"
               alt="Profile"
             />
           </div>
@@ -359,6 +358,30 @@
     class="fixed inset-0 z-40"
     @click="showNotifications = false"
   ></div>
+  <Transition name="toast">
+    <div
+      v-if="showToast"
+      :class="[
+        'fixed bottom-4 right-4 rounded-lg shadow-lg border p-4 flex items-center gap-3 z-[10001] max-w-md',
+        toastStyles.bg,
+        toastStyles.border
+      ]"
+    >
+      <div :class="[toastStyles.iconBg, 'p-2 rounded-full']">
+        <component :is="toastStyles.icon" class="w-5 h-5" :class="toastStyles.iconColor" />
+      </div>
+      <div>
+        <p class="text-sm font-medium text-gray-800">{{ toastMessage }}</p>
+      </div>
+      <button
+        @click="showToast = false"
+        class="ml-auto text-gray-400 hover:text-gray-600"
+      >
+        <X class="w-4 h-4" />
+      </button>
+    </div>
+  </Transition>
+
 </template>
 
 <script setup>
@@ -381,15 +404,19 @@ import {
   Wifi,
   Zap,
   Check,
-  AlertTriangle,
-  Info,
   AlertCircle,
-  Droplet,
+  // Droplet, // Already imported
   Leaf,
   BarChart,
   Cog,
-  Beaker
+  Beaker,
+  CheckCircle,
+  Info,
+  AlertTriangle,
+  XCircle,
+  X 
 } from 'lucide-vue-next'
+import axios from 'axios'
 import { eventBus } from '../../eventBus'
 import { sendPushNotification } from '../../utils/notify.js'
 import { initWaterStream, onWaterLevelUpdate } from '../../utils/water.js'
@@ -410,6 +437,7 @@ import {
   updateDoc,
   deleteDoc,
   where,
+  getDocsFromServer,
   onSnapshot 
 } from 'firebase/firestore'
 
@@ -441,119 +469,359 @@ const notifications = ref([])
 const waterLevel = ref(0);
 const sensorReadings = ref([]);
 
+const currentTime = ref(Date.now())
+const savedSchedules = ref([])
 
+const notifiedStartIds = new Set()
+const notifiedEndIds = new Set()
 
-// watch(waterLevel, (newVal) => {
-//   const timestamp = new Date().toISOString()
-//   const baseId = Date.now().toString() // unique ID per notification
+// Keep track of previous states of schedules to detect changes for end notifications
+const previousSchedulesMap = new Map();
 
-//   if (newVal === 50) {
-//     const notification = {
-//       id: baseId,
-//       title: "Water Level Notice",
-//       message: "Water level is currently at 50%.",
-//       type: "water",
-//       severity: "info", // new field
-//       timestamp
+// Toast handling
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastSeverity = ref('info')
+const toastTimeout = ref(null)
+
+// const sendSMS = async (phone, message) => {
+//   try {
+//     const response = await axios.post('http://127.0.0.1:8000/send-sms', {
+//       phone,
+//       message
+//     })
+//     console.log('✅ SMS sent:', response.data)
+//   } catch (error) {
+//     if (error.response) {
+//       console.error('❌ SMS send error:', error.response.data)
+//     } else {
+//       console.error('❌ SMS send error:', error)
 //     }
-//     eventBus.emit('notify', notification)
-//     sendPushNotification(notification.message)
-//     sendNotificationToBackend(notification)
-
-//   } else if (newVal < 50 && newVal > 30) {
-//     const notification = {
-//       id: baseId,
-//       title: "Water Level Low",
-//       message: "Water level is below 50%. Please check the tank.",
-//       type: "water",
-//       severity: "warning", // new field
-//       timestamp
-//     }
-//     eventBus.emit('notify', notification)
-//     sendPushNotification(notification.message)
-//     sendNotificationToBackend(notification)
-
-//   } else if (newVal <= 30 && newVal > 15) {
-//     const notification = {
-//       id: baseId,
-//       title: "Water Level Warning",
-//       message: "Water level has only 30%. Please check the tank.",
-//       type: "water",
-//       severity: "alert", // new field
-//       timestamp
-//     }
-//     eventBus.emit('notify', notification)
-//     sendPushNotification(notification.message)
-//     sendNotificationToBackend(notification)
-
-//   } else if (newVal <= 15 && newVal >= 10) {
-//     const notification = {
-//       id: baseId,
-//       title: "Critical Water Level",
-//       message: "Water level is critically low! Immediate action required.",
-//       type: "water",
-//       severity: "critical", // new field
-//       timestamp
-//     }
-//     eventBus.emit('notify', notification)
-//     sendPushNotification(notification.message)
-//     sendNotificationToBackend(notification)
 //   }
-
-// })
-
-// function addNotification({ title, message, type, severity = 'info' }) {
-//   notifications.value.unshift({
-//     id: Date.now(),
-//     title,
-//     message,
-//     type,
-//     severity,           // Add severity field
-//     time: new Date(),
-//     read: false
-//   });
-
 // }
 
-const fetchSensorData = async () => {
+const showToastMessage = (message, severity = 'info') => {
+  if (toastTimeout.value) clearTimeout(toastTimeout.value)
+
+  toastMessage.value = message
+  toastSeverity.value = severity
+  showToast.value = true
+
+  toastTimeout.value = setTimeout(() => {
+    showToast.value = false
+  }, 10000)
+}
+
+const toastStyles = computed(() => {
+  switch (toastSeverity.value) {
+    case 'success':
+      return {
+        icon: CheckCircle,
+        iconColor: 'text-green-600',
+        iconBg: 'bg-green-100',
+        bg: 'bg-white',
+        border: 'border-green-200'
+      }
+    case 'info':
+      return {
+        icon: Info,
+        iconColor: 'text-blue-600',
+        iconBg: 'bg-blue-100',
+        bg: 'bg-white',
+        border: 'border-blue-200'
+      }
+    case 'warning':
+      return {
+        icon: AlertTriangle,
+        iconColor: 'text-yellow-600',
+        iconBg: 'bg-yellow-100',
+        bg: 'bg-white',
+        border: 'border-yellow-200'
+      }
+    case 'critical':
+      return {
+        icon: XCircle,
+        iconColor: 'text-red-600',
+        iconBg: 'bg-red-100',
+        bg: 'bg-white',
+        border: 'border-red-200'
+      }
+    case 'failed':
+      return {
+        icon: XCircle,
+        iconColor: 'text-gray-600',
+        iconBg: 'bg-gray-100',
+        bg: 'bg-white',
+        border: 'border-gray-300'
+      }
+    default:
+      return {
+        icon: Info,
+        iconColor: 'text-gray-600',
+        iconBg: 'bg-gray-100',
+        bg: 'bg-white',
+        border: 'border-gray-300'
+      }
+  }
+})
+
+defineExpose({ showToastMessage })
+
+const localNotifiedCache = {
+  critical: null,
+  warning: null,
+  info: null,
+}
+
+const isSameDay = (d1, d2) =>
+  d1.getFullYear() === d2.getFullYear() &&
+  d1.getMonth() === d2.getMonth() &&
+  d1.getDate() === d2.getDate()
+
+const sendNotification = async (message, title, severity = 'info') => {
+  // Default: show toast for non-critical notifications
+  if (severity !== 'critical') {
+    showToastMessage(message, severity)
+  }
+
+  let shouldSend = true
+
+  if (severity === 'critical') {
+    const today = new Date().toISOString().split('T')[0]
+
+    const q = query(
+      collection(db, 'notifications'),
+      where('severity', '==', 'critical'),
+      where('type', '==', 'water'),
+      where('date', '==', today)
+    )
+
+    try {
+      const snapshot = await getDocsFromServer(q)
+
+      if (!snapshot.empty) {
+        console.log('[DEBUG] Critical water notification already exists for today:', snapshot.docs[0].data())
+        shouldSend = false
+      } else {
+        console.log('[DEBUG] No critical water notification found for today')
+      }
+    } catch (error) {
+      console.error('❌ Error checking for existing notification:', error)
+      shouldSend = false // Prevent duplicate on query error
+    }
+  }
+
+  if (!shouldSend) return
+
+  // Show toast only if allowed to send
+  showToastMessage(message, severity)
+
+  const notification = {
+    id: Date.now().toString(),
+    message,
+    title,
+    type: 'water',
+    severity,
+    read: false,
+    date: new Date().toISOString().split('T')[0],
+    timestamp: serverTimestamp(),
+  }
+
   try {
-    const res = await api.get('/sensor/readings')
-    sensorReadings.value = res.data
-    console.log(sensorReadings)
-    await nextTick();
-    // initAllCharts()
-  } catch (err) {
-    console.error("Error fetching sensor data:", err)
+    const docRef = await addDoc(collection(db, 'notifications'), notification)
+    console.log('✅ Notification saved to Firestore:', docRef.id)
+
+    const savedDoc = await getDoc(docRef)
+    console.log('[DEBUG] Saved notification:', savedDoc.data())
+
+    if (severity === 'critical') {
+      const phone = '+639627080157'
+      // await sendSMS(phone, `${title}: ${message}`) // Assuming sendSMS is defined elsewhere or re-added
+    }
+  } catch (error) {
+    console.error('❌ Error saving notification:', error)
   }
 }
 
-let isEventBusRegistered = false
-let fallbackTimeout = null
+const evaluateWaterLevel = (level) => {
+  if (level <= 15) {
+    sendNotification(
+      'Water level is critically low! Immediate action required.',
+      'Critical Water Level',
+      'critical'
+    )
+  } else if (level <= 30 && level > 15) {
+    sendNotification(
+      'Water level is low (20–30%). Consider refilling soon.',
+      'Low Water Level',
+      'warning'
+    )
+  } else if (level === 50) {
+    sendNotification(
+      'Water level is at 50%. Monitoring status.',
+      'Water Level Update',
+      'info'
+    )
+  }
+}
+
+const sendScheduleNotification = async (schedule, status) => { // `status` is 'started' or 'ended'
+  try {
+    const dateTimeFormatted = new Date(schedule.scheduledTime).toLocaleString('en-US', {
+      weekday: 'short',
+      // year: 'numeric', // Year might be too verbose for a quick notification
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const eventType = status === 'started' ? 'watering_start' : 'watering_end';
+
+    const message =
+      status === 'started'
+        ? `The watering scheduled at ${dateTimeFormatted} is now starting.`
+        : `The watering scheduled at ${dateTimeFormatted} has ended.`;
+
+    // --- Duplicate Check ---
+    const notificationsRef = collection(db, 'notifications');
+    const q = query(notificationsRef,
+      where('scheduleId', '==', schedule.id),
+      where('eventType', '==', eventType)
+    );
+
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      console.log(`Notification for schedule ${schedule.id} (${eventType}) already exists. Skipping.`);
+      // Ensure local cache is also up-to-date if somehow missed
+      if (status === 'started') notifiedStartIds.add(schedule.id);
+      else notifiedEndIds.add(schedule.id);
+      return; // Exit if duplicate
+    }
+    // --- End Duplicate Check ---
+
+    const notification = {
+      title: 'Scheduled Watering',
+      message,
+      severity: 'info',
+      type: 'watering_schedule', // More specific type for this category of notification
+      scheduleId: schedule.id,   // Store the ID of the schedule this notification relates to
+      eventType: eventType,      // Store 'watering_start' or 'watering_end'
+      read: false,
+      timestamp: serverTimestamp()
+    };
+
+    await addDoc(collection(db, 'notifications'), notification);
+    showToastMessage(`Schedule ${status}: ${dateTimeFormatted}`);
+
+    // Update local notification caches after successful send
+    if (status === 'started') notifiedStartIds.add(schedule.id);
+    else notifiedEndIds.add(schedule.id);
+
+  } catch (error) {
+    console.error('Notification error:', error);
+  }
+};
+
 
 onMounted(() => {
-  // if (!isEventBusRegistered) {
-  //   eventBus.on('notify', addNotification)
-  //   isEventBusRegistered = true
-  // }
+  const waterLevelQuery = query(
+    collection(db, 'water_level_readings'),
+    orderBy('timestamp', 'desc'),
+    limit(1)
+  );
 
-  initWaterStream()
-  onWaterLevelUpdate((level) => {
-    waterLevel.value = level
-    console.log("💧 Water Level:", level + "%")
-  })
+  onSnapshot(waterLevelQuery, (snapshot) => {
+    if (!snapshot.empty) {
+      const data = snapshot.docs[0].data();
+      evaluateWaterLevel(data.waterLevel);
+      waterLevel.value = data.waterLevel; // Update local ref if needed elsewhere
+    }
+  });
 
-  fetchSensorData();
-  saveToLocalStorage()
+  // fetchWateringSchedules(); // This is now called inside the onSnapshot for schedules
+
+  setInterval(() => {
+    currentTime.value = Date.now();
+    const now = Date.now();
+    savedSchedules.value.forEach((schedule) => {
+      // Skip if no notification needed, no scheduled time, or already completed (for start)
+      if (!schedule.notifyWatering || !schedule.scheduledTime || schedule.completed) return;
+
+      const start = schedule.scheduledTime;
+
+      // START notification
+      const isStarting = Math.abs(now - start) <= 2000; // Check if current time is within 2s of start
+      if (isStarting && !notifiedStartIds.has(schedule.id)) {
+        sendScheduleNotification(schedule, 'started'); // sendScheduleNotification now handles notifiedStartIds
+      }
+      // END notification logic moved to onSnapshot for watering_schedules
+    });
+  }, 1000);
 });
 
-let eventWaterSourceInitialized = false
+let unsubscribeSchedules = null;
 
-// onBeforeUnmount(() => {
-//   eventBus.off('notify', addNotification);
-// });
+const fetchWateringSchedules = () => {
+  const schedulesRef = collection(db, 'watering_schedules');
+  const schedulesQuery = query(schedulesRef, orderBy('dateTime', 'desc')); // Consider ordering by scheduledTime for consistency
+
+  if (unsubscribeSchedules) unsubscribeSchedules();
+
+  unsubscribeSchedules = onSnapshot(
+    schedulesQuery,
+    (snapshot) => {
+      const now = Date.now();
+      const schedules = [];
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const scheduleId = doc.id;
+        const currentScheduleData = { id: scheduleId, ...data };
+
+        // Normalize scheduledTime to ms
+        if (currentScheduleData.scheduledTime && currentScheduleData.scheduledTime < 1e12) {
+          currentScheduleData.scheduledTime *= 1000;
+        }
+
+        const previousScheduleState = previousSchedulesMap.get(scheduleId);
+
+        // Auto-mark as completed if past and not recurring
+        if (currentScheduleData.mode === 'one-time' && currentScheduleData.scheduledTime < now && currentScheduleData.completed === false) {
+          updateDoc(doc(db, 'watering_schedules', scheduleId), { completed: true, updatedAt: serverTimestamp() })
+            .then(() => console.log(`Auto-marked schedule ${scheduleId} as completed.`))
+            .catch(err => console.error("Error auto-updating schedule:", err));
+          // The onSnapshot will pick this change up again, and currentScheduleData.completed will be true in a subsequent callback.
+        }
+
+        // Check for 'completed' transition for END notification
+        if (previousScheduleState && previousScheduleState.completed === false && currentScheduleData.completed === true) {
+          if (!notifiedEndIds.has(scheduleId)) {
+            // Check if the schedule's end time was relatively recent to avoid old notifications
+            const scheduleEndTime = currentScheduleData.scheduledTime + (currentScheduleData.duration || 0) * 60000;
+            if (Math.abs(now - scheduleEndTime) < 5 * 60 * 1000) { // e.g., within last 5 minutes
+              sendScheduleNotification(currentScheduleData, 'ended'); // sendScheduleNotification now handles notifiedEndIds
+            } else {
+              console.log(`Schedule ${scheduleId} completed, but end time was not recent. Not sending 'ended' notification.`);
+              notifiedEndIds.add(scheduleId); // Still mark to prevent future attempts if logic changes
+            }
+          }
+        }
+        schedules.push(currentScheduleData);
+        previousSchedulesMap.set(scheduleId, { ...currentScheduleData }); // Store a copy for next comparison
+      });
+
+      savedSchedules.value = schedules;
+    },
+    (error) => {
+      console.error('Error listening to watering schedules:', error);
+    }
+  );
+};
+
 
 const saveToLocalStorage = (notification) => {
-  const existing = JSON.parse(localStorage.removeItem('notifications') || '[]')
+  const existing = JSON.parse(localStorage.getItem('notifications') || '[]') // Corrected: localStorage.getItem
   // Prevent duplicates based on ID
   const exists = existing.find(n => n.id === notification.id)
   if (!exists) {
@@ -564,7 +832,7 @@ const saveToLocalStorage = (notification) => {
 
 onMounted(async () => {
   // const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-  // const host = location.hostname + ':800'
+  // const host = location.hostname + ':800' // Assuming port 8000 for backend
   // const ws = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
 
 
@@ -616,39 +884,6 @@ onMounted(async () => {
     }
   }
 
-  if (!eventWaterSourceInitialized) {
-    const eventWaterSource = new EventSource('http://localhost:8000/api/water-stream')
-
-    let dataReceived = false
-
-    eventWaterSource.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-
-      if (data.type === 'water') {
-        waterLevel.value = data.data.waterLevel
-        console.log('💧 Updated Water Level:', waterLevel.value + '%')
-        dataReceived = true
-        if (fallbackTimeout) clearTimeout(fallbackTimeout)
-      }
-    }
-
-    eventWaterSource.onerror = (err) => {
-      console.error('❌ EventSource error:', err)
-      if (fallbackTimeout) clearTimeout(fallbackTimeout)
-      fetchLatestWaterLevelFromFirestore()
-    }
-
-    // Fallback if no message received within 5 seconds
-    fallbackTimeout = setTimeout(() => {
-      if (!dataReceived) {
-        console.warn('⚠️ No data from stream, falling back to Firestore.')
-        fetchLatestWaterLevelFromFirestore()
-      }
-    }, 5000)
-
-    eventWaterSourceInitialized = true
-  }
-
   const saved = localStorage.getItem('notifications')
   if (saved) {
     notifications.value = JSON.parse(saved)
@@ -663,183 +898,16 @@ onMounted(async () => {
   } catch (err) {
     console.error("Error fetching notifications from Firebase:", err);
   }
-
+  
+  // Call fetchWateringSchedules here to set up the listener
+  fetchWateringSchedules(); 
 })
 
-const fetchLatestWaterLevelFromFirestore = async () => {
-  try {
-    const q = query(
-      collection(db, 'water_level_readings'),
-      orderBy('timestamp', 'desc'),
-      limit(1)
-    )
-    const snapshot = await getDocs(q)
-    if (!snapshot.empty) {
-      const latestData = snapshot.docs[0].data()
-      waterLevel.value = latestData.waterLevel || 0
-      console.log('💧 Fallback: Water level from Firestore:', waterLevel.value + '%')
-    }
-  } catch (error) {
-    console.error('🔥 Failed to fetch water level from Firestore:', error)
-  }
-}
-
-// const sendNotificationToBackend = async (notification) => {
-//   try {
-//     await api.post("/notifications", notification); // This is enough
-//     console.log(notification)
-//     console.log("Notification sent to backend");
-//   } catch (error) {
-//     console.error("Failed to send notification to backend", error);
-//     console.log(notification)
-//   }
-// };
-
-const sendNotificationToBackend = async (notification) => {
-  try {
-    await api.post("/notifications", notification);
-    console.log(notification);
-    console.log("✅ Notification sent to backend");
-
-    // ✅ Emit event to notify Notification.vue
-    eventBus.emit("notification-saved-success");
-  } catch (error) {
-    console.error("❌ Failed to send notification to backend", error);
-    console.log(notification);
-  }
-};
-
-// Mark one as read
-const markAsRead = async (id) => {
-  const notification = notifications.value.find(n => n.id === id)
-  if (notification && !notification.read) {
-    try {
-      await api.post(`/notifications/${id}/read`)
-      notification.read = true
-      updateLocalStorage()
-    } catch (error) {
-      console.error("Failed to mark as read:", error)
-    }
-  }
-}
-
-const markAllAsRead = async () => {
-  try {
-    await api.post("/notifications/read-all")
-    notifications.value.forEach(notification => {
-      notification.read = true
-    })
-    updateLocalStorage()
-  } catch (error) {
-    console.error("Failed to mark all as read:", error)
-  }
-}
 
 const getSignalStrengthClass = (strength) => {
   if (strength >= 70) return 'bg-green-500'
   if (strength >= 40) return 'bg-yellow-500'
   return 'bg-red-500'
-}
-
-const todayNotifications = computed(() => {
-const today = new Date()
-today.setHours(0, 0, 0, 0)
-
-return notifications.value.filter(notification => {
-  if (!notification || !notification.time) return false
-  const notificationDate = new Date(notification.time)
-  return notificationDate >= today
-})
-})
-
-const earlierNotifications = computed(() => {
-const today = new Date()
-today.setHours(0, 0, 0, 0)
-
-return notifications.value.filter(notification => {
-  if (!notification || !notification.time) return false
-  const notificationDate = new Date(notification.time)
-  return notificationDate < today
-})
-})
-
-const formatTime = (time) => {
-if (!time) return ''
-
-const now = new Date()
-const notificationTime = new Date(time)
-const diffMs = now - notificationTime
-const diffMins = Math.floor(diffMs / 60000)
-const diffHours = Math.floor(diffMs / 3600000)
-const diffDays = Math.floor(diffMs / 86400000)
-
-if (diffMins < 60) {
-  return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`
-} else if (diffHours < 24) {
-  return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
-} else if (diffDays < 7) {
-  return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
-} else {
-  return notificationTime.toLocaleDateString()
-}
-}
-
-const toggleNotifications = () => {
-  showNotifications.value = !showNotifications.value
-  
-  // Add animation
-  if (showNotifications.value) {
-    setTimeout(() => {
-      notificationAnimation.value = 'scale-100 opacity-100'
-    }, 10)
-  } else {
-    notificationAnimation.value = 'scale-95 opacity-0'
-  }
-}
-
-const getNotificationTypeClass = (type) => {
-  switch (type) {
-    case 'alert':
-      return { 
-        bgColor: 'bg-red-500',
-        icon: AlertCircle
-      }
-    case 'warning':
-      return { 
-        bgColor: 'bg-orange-500',
-        icon: AlertTriangle
-      }
-    case 'info':
-      return { 
-        bgColor: 'bg-blue-500',
-        icon: Info
-      }
-    case 'success':
-      return { 
-        bgColor: 'bg-green-500',
-        icon: Check
-      }
-    case 'water':
-      return { 
-        bgColor: 'bg-cyan-500',
-        icon: Droplet
-      }
-    case 'system':
-      return { 
-        bgColor: 'bg-purple-500',
-        icon: Cog
-      }
-    case 'data':
-      return { 
-        bgColor: 'bg-indigo-500',
-        icon: BarChart
-      }
-    default:
-      return { 
-        bgColor: 'bg-gray-500',
-        icon: Bell
-      }
-  }
 }
 
 const menuItems = [
@@ -851,10 +919,12 @@ const menuItems = [
 ]
 
 const sensorTypes = [
+  { name: 'NPK Data', href: '/npkData', icon: Sprout },
+  { name: 'Soil pH', href: '/soilph', icon: Beaker },
   { name: 'Soil Moisture', href: '/soil-moisture', icon: Droplets },
-  { name: 'Water Level', href: '/water-level', icon: Gauge },
   { name: 'Temp/Humid', href: '/temperature-humidity', icon: Thermometer },
-  { name: 'Motor Control', href: '/motor-control', icon: Power },
+  { name: 'Water Level', href: '/water-level', icon: Gauge },
+  { name: 'Motor Control', href: '/motor-control', icon: Power }
 ]
 
 const toggleSensorDropdown = () => {
@@ -870,9 +940,13 @@ const isInSensorRoutes = computed(() => {
 })
 
 const closeDropdown = (e) => {
-  if (!e.target.closest('.relative')) {
+  if (!e.target.closest('.relative.group')) { // More specific selector for sensor dropdown
     isSensorDropdownOpen.value = false
   }
+}
+
+const goToProfile = () => {
+  router.push({ name: 'UserProfile' })
 }
 
 let resizeTimeout
@@ -909,7 +983,9 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', closeDropdown)
   window.removeEventListener('resize', handleResize)
   clearTimeout(resizeTimeout)
+  if (unsubscribeSchedules) unsubscribeSchedules(); // Clean up Firestore listener
 })
+
 
 watch(() => route.path, () => {
   isSensorDropdownOpen.value = false
@@ -1023,5 +1099,4 @@ html {
     display: none;
   }
 }
-</style>    
-
+</style>

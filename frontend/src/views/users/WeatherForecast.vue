@@ -482,14 +482,13 @@
                     </div>
                   </div>
                 </div>
-
-                
               </div>
             </div>
           </div>
         </div>
       </div>
     </main>
+    <Settings />
   </div>
 </template>
 
@@ -520,6 +519,7 @@ import {
 } from 'lucide-vue-next'
 import { getWeatherData, getWeatherDataForPopularCities, mapWeatherCode  } from '../../utils/weather';
 import Sidebar from '../layout/Sidebar.vue'
+import Settings from '../layout/Settings.vue'
 import api from '../../api/index.js'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'

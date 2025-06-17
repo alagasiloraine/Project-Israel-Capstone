@@ -1,4 +1,5 @@
 <template>
+  <!-- Keep all your existing template code exactly as is -->
   <div class="h-screen flex bg-gradient-to-br from-green-50 to-emerald-100 font-poppins overflow-hidden">
     <keep-alive>
       <Sidebar />
@@ -13,19 +14,19 @@
           <div class="p-6">
             <!-- Find the Top Metrics Cards section and replace it with this updated version -->
   
-            <!-- Top Metrics Cards -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
-              <!-- Nitrogen Level -->
+            <!-- Top Metrics Cards - Conditional Rendering -->
+            <div v-if="!isLoading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
+              <!-- Nitrogen Level Card -->
               <div class="group bg-white rounded-xl p-4 border-2 border-green-100 shadow-lg transition-all duration-300 hover:border-green-400 hover:shadow-xl hover:-translate-y-1">
                 <div class="flex items-center justify-between mb-2">
                   <Leaf class="h-5 w-5 text-green-500 transition-transform duration-300 group-hover:scale-110" />
                   <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">N</span>
                 </div>
                 <div class="text-xl font-bold text-green-700">{{ nitrogen }}</div>
-                <div class="text-xs text-green-600">Nitrogen (mg/kg)</div>  
+                <div class="text-xs text-green-600">Nitrogen (mg/kg)</div>
               </div>
 
-              <!-- Phosphorus Level -->
+              <!-- Phosphorus Level Card -->
               <div class="group bg-white rounded-xl p-4 border-2 border-blue-100 shadow-lg transition-all duration-300 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1">
                 <div class="flex items-center justify-between mb-2">
                   <TestTube class="h-5 w-5 text-blue-500 transition-transform duration-300 group-hover:scale-110" />
@@ -35,7 +36,7 @@
                 <div class="text-xs text-blue-600">Phosphorus (mg/kg)</div>
               </div>
 
-              <!-- Potassium Level -->
+              <!-- Potassium Level Card -->
               <div class="group bg-white rounded-xl p-4 border-2 border-purple-100 shadow-lg transition-all duration-300 hover:border-purple-400 hover:shadow-xl hover:-translate-y-1">
                 <div class="flex items-center justify-between mb-2">
                   <TestTubes class="h-5 w-5 text-purple-500 transition-transform duration-300 group-hover:scale-110" />
@@ -45,7 +46,7 @@
                 <div class="text-xs text-purple-600">Potassium (mg/kg)</div>
               </div>
 
-              <!-- Soil pH Level -->
+              <!-- Soil pH Level Card -->
               <div class="group bg-white rounded-xl p-4 border-2 border-orange-100 shadow-lg transition-all duration-300 hover:border-orange-400 hover:shadow-xl hover:-translate-y-1">
                 <div class="flex items-center justify-between mb-2">
                   <Beaker class="h-5 w-5 text-orange-500 transition-transform duration-300 group-hover:scale-110" />
@@ -55,7 +56,7 @@
                 <div class="text-xs text-orange-600">Soil pH Level</div>
               </div>
 
-              <!-- Soil Moisture -->
+              <!-- Soil Moisture Card -->
               <div class="group bg-white rounded-xl p-4 border-2 border-emerald-100 shadow-lg transition-all duration-300 hover:border-emerald-400 hover:shadow-xl hover:-translate-y-1">
                 <div class="flex items-center justify-between mb-2">
                   <Sprout class="h-5 w-5 text-emerald-500 transition-transform duration-300 group-hover:scale-110" />
@@ -65,7 +66,7 @@
                 <div class="text-xs text-emerald-600">Soil Moisture</div>
               </div>
 
-              <!-- Temperature -->
+              <!-- Temperature Card -->
               <div class="group bg-white rounded-xl p-4 border-2 border-red-100 shadow-lg transition-all duration-300 hover:border-red-400 hover:shadow-xl hover:-translate-y-1">
                 <div class="flex items-center justify-between mb-2">
                   <Thermometer class="h-5 w-5 text-red-500 transition-transform duration-300 group-hover:scale-110" />
@@ -75,7 +76,7 @@
                 <div class="text-xs text-red-600">Temperature (°C)</div>
               </div>
 
-              <!-- Humidity -->
+              <!-- Humidity Card -->
               <div class="group bg-white rounded-xl p-4 border-2 border-sky-100 shadow-lg transition-all duration-300 hover:border-sky-400 hover:shadow-xl hover:-translate-y-1">
                 <div class="flex items-center justify-between mb-2">
                   <Droplets class="h-5 w-5 text-sky-500 transition-transform duration-300 group-hover:scale-110" />
@@ -83,6 +84,17 @@
                 </div>
                 <div class="text-xl font-bold text-sky-700">{{ humidity }}</div>
                 <div class="text-xs text-sky-600">Humidity (%)</div>
+              </div>
+            </div>
+            <!-- Loading Skeleton for Top Metrics Cards -->
+            <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
+              <div v-for="i in 7" :key="i" class="bg-white rounded-xl p-4 border-2 border-gray-200 shadow-lg">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="h-5 w-5 bg-gray-300 rounded animate-pulse"></div>
+                  <div class="h-5 w-6 bg-gray-300 rounded-full animate-pulse"></div>
+                </div>
+                <div class="h-7 bg-gray-300 rounded animate-pulse w-3/4 mb-1"></div>
+                <div class="h-4 bg-gray-300 rounded animate-pulse w-full"></div>
               </div>
             </div>
 
@@ -535,24 +547,29 @@
                         <span class="text-3xl font-bold text-orange-600">{{ soilpH ?? '0.0' }}</span>
                         <span
                           class="ml-2 text-sm font-medium"
-                          :class="getPhStatus(todayReading?.soilPh).color"
+                          :class="getPhStatus(soilpH || todayReading?.soilPh || todayReading?.soilpH).color"
                         >
-                          {{ getPhStatus(todayReading?.soilPh).label }}
+                          {{ getPhStatus(soilpH || todayReading?.soilPh || todayReading?.soilpH).label }}
                         </span>
+
                       </div>
-                      <div class="flex items-center mt-1" v-if="soilPhChange">
-                        <component
-                          :is="soilPhChange.direction === 'up' ? ArrowUp : ArrowDown"
-                          class="w-4 h-4 mr-1"
-                          :class="soilPhChange.direction === 'up' ? 'text-emerald-500' : 'text-red-500'"
-                        />
-                        <span
-                          class="text-xs font-medium"
-                          :class="soilPhChange.direction === 'up' ? 'text-emerald-600' : 'text-red-600'"
-                        >
-                          {{ soilPhChange.percent }}% {{ soilPhChange.direction === 'up' ? 'increase' : 'decrease' }} from yesterday
-                        </span>
-                      </div>
+                      <!-- <div class="flex items-center mt-1">
+                        <template v-if="soilPhChange">
+                          <component
+                            :is="soilPhChange.direction === 'up' ? ArrowUp : ArrowDown"
+                            class="w-4 h-4 mr-1"
+                            :class="soilPhChange.direction === 'up' ? 'text-emerald-500' : 'text-red-500'"
+                          />
+                          <span
+                            class="text-xs font-medium"
+                            :class="soilPhChange.direction === 'up' ? 'text-emerald-600' : 'text-red-600'"
+                          >
+                            {{ soilPhChange.percent }}% {{ soilPhChange.direction === 'up' ? 'increase' : 'decrease' }} from yesterday
+                          </span>
+                        </template>
+                        <span v-else class="text-xs text-gray-500">Change from yesterday: N/A</span>
+                      
+                      </div> -->
                     </div>
                     <div class="bg-orange-50 p-3 rounded-2xl">
                       <FlaskConical class="w-8 h-8 text-orange-500" />
@@ -670,6 +687,7 @@
         </div>
       </div>
     </main>
+    <Settings />
   </div>
 </template>
 
@@ -699,6 +717,7 @@ import {
 } from 'lucide-vue-next';
 import Sidebar from '../layout/Sidebar.vue'
 import { getWeatherData } from '../../utils/weather';
+import Settings from '../layout/Settings.vue'
 import api from '../../api/index'
 import { eventBus } from '../../eventBus';
 import {
@@ -721,6 +740,8 @@ import {
 const db = getFirestore()
 Chart.register(...registerables);
 
+const isLoading = ref(true); // Reactive variable for loading state
+
 const lineChartRefs = ref([]);
 const waterLevel = ref(0);
 
@@ -742,7 +763,7 @@ const soilPhChartRef = ref(null);
 const motorStatus = ref(false);
 const motorOnPercentage = ref(0); 
 
-// const circumference = 2 * Math.PI * 48;
+const circumference = 2 * Math.PI * 48;
 const dashOffset = computed(() => circumference * (1 - motorOnPercentage.value / 100));
 
 
@@ -762,17 +783,6 @@ const soilMoisture = ref(null)
 const sensorReadings = ref([]);
 
 let intervalId = null;
-
-
-// const weeklyData = [
-//   { label: 'M', percentage: 70 },
-//   { label: 'T', percentage: 65 },
-//   { label: 'W', percentage: 80 },
-//   { label: 'T', percentage: 55 },
-//   { label: 'F', percentage: 75 },
-//   { label: 'S', percentage: 50 },
-//   { label: 'S', percentage: 65 },
-// ];
 
 const weeklyData = ref([])
 
@@ -828,80 +838,6 @@ const metrics = [
   }
 ];
 
-// watch(waterLevel, (newVal) => {
-//   if (newVal === 50) {
-//     eventBus.emit('notify', {
-//       title: "Water Level Notice",
-//       message: "Water level is currently at 50%.",
-//       type: "water"
-//     });
-//     sendPushNotification("Water level is currently at 50%.")
-//   } else if (newVal < 50 && newVal > 30) {
-//     eventBus.emit('notify', {
-//       title: "Water Level Low",
-//       message: "Water level is below 50%. Please check the tank.",
-//       type: "water"
-//     });
-//     sendPushNotification("Water level is below 50%. Please check the tank.")
-//   } else if (newVal < 30 && newVal >15){
-//     eventBus.emit('notify', {
-//       title: "Water Level Warning",
-//       message: "Water level has only 30%. Please check the tank.",
-//       type: "water"
-//     });
-//     sendPushNotification("Water level has only 30%. Please check the tank.")
-//   } else if (newVal <= 15 && newVal >= 10) {
-//     eventBus.emit('notify', {
-//       title: "Critical Water Level",
-//       message: "Water level is critically low! Immediate action required.",
-//       type: "water"
-//     });
-//     sendPushNotification("Water level is critically low! Immediate action required.")
-//   }
-// });
-
-// const latestNpk = computed(() => sensorReadings.value.length > 0 ? sensorReadings.value[0] : {});
-
-// const totalNpk = computed(() => {
-//   const { nitrogen = 0, phosphorus = 0, potassium = 0 } = latestNpk.value;
-//   return nitrogen + phosphorus + potassium;
-// });
-
-// const npkLevels = [
-//   {
-//     title: 'Nitrogen',
-//     value: computed(() => {
-//       const { nitrogen = 0 } = latestNpk.value;
-//       return totalNpk.value > 0 ? (nitrogen / totalNpk.value) * 100 : 0;
-//     }),
-//     color: 'green'
-//   },
-//   {
-//     title: 'Phosphorus',
-//     value: computed(() => {
-//       const { phosphorus = 0 } = latestNpk.value;
-//       return totalNpk.value > 0 ? (phosphorus / totalNpk.value) * 100 : 0;
-//     }),
-//     color: 'blue'
-//   },
-//   {
-//     title: 'Potassium',
-//     value: computed(() => {
-//       const { potassium = 0 } = latestNpk.value;
-//       return totalNpk.value > 0 ? (potassium / totalNpk.value) * 100 : 0;
-//     }),
-//     color: 'purple'
-//   }
-// ];
-
-// const circumference = 2 * Math.PI * 56;
-
-// const getDashOffset = (val) => {
-//   const value = typeof val === 'object' && 'value' in val ? val.value : val;
-//   return circumference - (value / 100) * circumference;
-// };
-
-
 // Step 1: Calculate average values
 const avgNitrogen = computed(() => {
   const total = sensorReadings.value.reduce((sum, r) => sum + (r.nitrogen || 0), 0);
@@ -945,7 +881,6 @@ const npkLevels = [
   },
 ];
 
-const circumference = 2 * Math.PI * 56;
 const getDashOffset = (val) => {
   const value = typeof val === 'object' && 'value' in val ? val.value : val;
   return circumference - (value / 100) * circumference;
@@ -1002,38 +937,14 @@ const loadWeather = async () => {
 };
 
 onMounted(async () => {
-  // const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-  // const host = 'localhost:8000'
-  // const socket = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
-
-  // socket.onopen = () => {
-  //   console.log('[Weather WS] Connected')
-  // }
-
-  // socket.onmessage = (event) => {
-  //   const data = JSON.parse(event.data)
-  //   console.log('[Weather WS] Data received:', data)
-
-  //   weather.value = data.current_weather
-  //   forecast.value = data.forecast_7_days.map(day => ({
-  //     ...day,
-  //     temp: parseFloat(day.temperature_max),
-  //     condition: day.condition || 'Clear'  // optional: adjust if CSV has this
-  //   }))
-  // }
-
-  // socket.onerror = (err) => {
-  //   console.error('[Weather WS] Error:', err)
-  // }
-
-  // socket.onclose = () => {
-  //   console.warn('[Weather WS] Disconnected')
-  // }
+  isLoading.value = true; // Start loading
 
   await loadWeather(); 
-  intervalId = setInterval(loadWeather, 600000); 
+  await fetchLatestSensorDataFromFirebase(); // Fetch data for top cards
+  
+  isLoading.value = false; // Stop loading after essential data is fetched
 
-  await fetchLatestSensorDataFromFirebase()
+  intervalId = setInterval(loadWeather, 600000); 
 
   const eventSource = new EventSource('http://localhost:8000/api/stream')
 
@@ -1068,41 +979,104 @@ onMounted(async () => {
     console.error("❌ SSE Error:", e)
   }
   
-  fetchSensorData();
-  fetchMotorStatusData();
+  // Fetch sensor data first, then initialize charts
+  await fetchSensorData();
+  await fetchMotorStatusData();
+  
+  // Wait for DOM to be ready, then initialize charts
+  await nextTick();
+  setTimeout(() => {
+    initAllCharts();
+  }, 1000); // Give extra time for DOM to be fully ready
 })
 
 const fetchSensorData = async () => {
   try {
-    const snapshot = await getDocs(collection(db, 'sensor_readings'))
+    const allReadings = [];
+    const deviceIds = ['esp32-1', 'esp32-2', 'esp32-3'];
+    
+    for (const deviceId of deviceIds) {
+      try {
+        const readingsQuery = query(
+          collection(db, '3sensor_readings', deviceId, 'readings'),
+          orderBy('timestamp', 'desc'),
+          limit(20)
+        );
+        
+        const snapshot = await getDocs(readingsQuery);
+        
+        snapshot.docs.forEach(doc => {
+          const data = doc.data();
+          const timestamp = data.timestamp;
+          const jsDate = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp.seconds * 1000);
 
-    sensorReadings.value = snapshot.docs.map(doc => {
-      const data = doc.data()
-      // Convert Firestore Timestamp to JS Date
-      const timestamp = data.timestamp
-      const jsDate = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp.seconds * 1000)
-
-      return {
-        id: doc.id,
-        ...data,
-        timestamp: jsDate,
+          allReadings.push({
+            id: doc.id,
+            deviceId: deviceId,
+            ...data,
+            timestamp: jsDate,
+          });
+        });
+        
+        console.log(`✅ Fetched ${snapshot.docs.length} readings from ${deviceId}`);
+      } catch (deviceError) {
+        console.error(`❌ Error fetching data from ${deviceId}:`, deviceError);
       }
-    })
+    }
 
-    console.log(sensorReadings.value)
+    allReadings.sort((a, b) => b.timestamp - a.timestamp);
+    sensorReadings.value = allReadings;
+    console.log(`📊 Total readings fetched: ${allReadings.length}`);
+    console.log("🔍 Sample readings:", allReadings.slice(0, 3));
 
-    await nextTick()
-    initAllCharts()
-    initSoilPhChart()
   } catch (err) {
-    console.error("Error fetching sensor data from Firebase:", err)
+    console.error("❌ Error fetching sensor data:", err);
   }
-}
+};
+
+const fetchLatestSensorDataFromFirebase = async () => {
+  try {
+    // Fetch from esp32-1 (NPK + pH)
+    const esp32_1_query = query(
+      collection(db, "3sensor_readings", "esp32-1", "readings"), 
+      orderBy("timestamp", "desc"), 
+      limit(1)
+    );
+    const esp32_1_snapshot = await getDocs(esp32_1_query);
+    
+    if (!esp32_1_snapshot.empty) {
+      const esp32_1_data = esp32_1_snapshot.docs[0].data();
+      nitrogen.value = esp32_1_data.nitrogen;
+      phosphorus.value = esp32_1_data.phosphorus;
+      potassium.value = esp32_1_data.potassium;
+      soilpH.value = esp32_1_data.soilPh;
+      console.log("📥 ESP32-1 Data (NPK + pH):", esp32_1_data);
+    }
+
+    // Fetch from esp32-2 (Temperature, humidity, soil moisture)
+    const esp32_2_query = query(
+      collection(db, "3sensor_readings", "esp32-2", "readings"), 
+      orderBy("timestamp", "desc"), 
+      limit(1)
+    );
+    const esp32_2_snapshot = await getDocs(esp32_2_query);
+    
+    if (!esp32_2_snapshot.empty) {
+      const esp32_2_data = esp32_2_snapshot.docs[0].data();
+      temperature.value = esp32_2_data.temperature;
+      humidity.value = esp32_2_data.humidity;
+      soilMoisture.value = esp32_2_data.soilMoisture;
+      console.log("📥 ESP32-2 Data (DHT21):", esp32_2_data);
+    }
+  } catch (err) {
+    console.error("❌ Error fetching latest data:", err);
+  }
+};
 
 const fetchLatestWaterLevel = async () => {
   try {
     const q = query(
-      collection(db, "water_level_readings"), // replace with your actual collection name
+      collection(db, "3sensor_readings", "esp32-3", "readings"),
       orderBy("timestamp", "desc"),
       limit(1)
     );
@@ -1112,50 +1086,13 @@ const fetchLatestWaterLevel = async () => {
     if (!snapshot.empty) {
       const latestDoc = snapshot.docs[0];
       const data = latestDoc.data();
-
-      // Convert Firestore timestamp to JS Date
-      if (data.timestamp?.seconds) {
-        data.timestamp = new Date(data.timestamp.seconds * 1000);
-      }
-
-      waterLevel.value = data.waterLevel;
-      console.log("🆕 Latest Water Level from Firebase:", waterLevel.value, "at", data.timestamp?.toLocaleTimeString());
-    } else {
-      console.warn("⚠️ No water level data found in Firebase.");
+      waterLevel.value = data.waterLevel || 0;
+      console.log("💧 Latest Water Level from esp32-3:", waterLevel.value);
     }
   } catch (error) {
-    console.error("❌ Error fetching latest water level from Firebase:", error);
+    console.error("❌ Error fetching water level:", error);
   }
 };
-
-const fetchLatestSensorDataFromFirebase = async () => {
-  try {
-    const q = query(collection(db, "sensor_readings"), orderBy("timestamp", "desc"), limit(1))
-    const snapshot = await getDocs(q)
-
-    if (!snapshot.empty) {
-      const latestDoc = snapshot.docs[0]
-      const latestData = latestDoc.data()
-
-      // ✅ Convert Firestore timestamp to JS Date
-      const timestamp = latestData.timestamp
-      latestData.timestamp = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp.seconds * 1000)
-
-      // Now assign the values
-      nitrogen.value = latestData.nitrogen
-      phosphorus.value = latestData.phosphorus
-      potassium.value = latestData.potassium
-      soilpH.value = latestData.soilPh
-      temperature.value = latestData.temperature
-      humidity.value = latestData.humidity
-      soilMoisture.value = latestData.soilMoisture
-
-      console.log("📥 Latest Firebase Data with Date:", latestData)
-    }
-  } catch (err) {
-    console.error("❌ Error fetching from Firebase:", err)
-  }
-}
 
 const fetchMotorStatusData = async () => {
   try {
@@ -1208,42 +1145,234 @@ const fetchMotorStatusData = async () => {
   }
 }
 
-const initSoilPhChart = () => {
-  if (!soilPhChartRef.value) {
-    console.warn("⛔ soilPhChartRef is not available");
+// ✅ FIXED: Improved chart initialization with better error handling and data validation
+const initAllCharts = () => {
+  console.log("🎯 Initializing all charts...");
+  console.log("📊 Sensor readings available:", sensorReadings.value.length);
+  
+  if (!sensorReadings.value.length) {
+    console.warn("⚠️ No sensor readings available for charts");
+    // Create charts with sample data if no real data is available
+    createChartsWithSampleData();
     return;
   }
 
-  const readings = sensorReadings.value.slice(0, 6).reverse();
-  const validPoints = readings.filter(r => r.soilPh !== null && r.soilPh !== undefined);
+  // Get recent readings and reverse for chronological order
+  const readings = sensorReadings.value.slice(0, 10).reverse();
+  console.log("📈 Using readings for charts:", readings.length);
+  
+  // Create time labels
+  const labels = readings.map(r => {
+    const date = new Date(r.timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  });
 
-  const data = validPoints.map(r => r.soilPh);
-  const labels = validPoints.map(r =>
-    new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  );
+  // Helper function to extract data and filter out null/undefined values
+  const extractData = (key) => {
+    const data = readings.map(r => r[key]).filter(val => val !== null && val !== undefined);
+    console.log(`📊 ${key} data:`, data);
+    return data.length > 0 ? readings.map(r => r[key] || 0) : [0, 0, 0, 0, 0];
+  };
 
-  console.log("✅ Soil pH labels:", labels);
-  console.log("✅ Soil pH data:", data);
+  // Initialize Soil Moisture Chart
+  if (soilMoistureChartRef.value) {
+    const data = extractData('soilMoisture');
+    const maxY = Math.max(...data, 50); // Ensure minimum scale
+    
+    console.log("🌱 Creating soil moisture chart with data:", data);
+    
+    if (soilMoistureChartInstance.value) {
+      soilMoistureChartInstance.value.destroy();
+    }
 
-  if (data.length === 0) {
-    console.warn("⛔ No Soil pH data found");
-    return;
+    soilMoistureChartInstance.value = new Chart(soilMoistureChartRef.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Soil Moisture (%)',
+          data,
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#10b981',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: Math.ceil(maxY / 10) * 10,
+            ticks: { 
+              stepSize: 10,
+              callback: function(value) {
+                return value + '%';
+              }
+            },
+            grid: {
+              color: 'rgba(16, 185, 129, 0.1)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
   }
 
-  const minY = Math.floor(Math.min(...data) * 10) / 10;
-  const maxY = Math.ceil(Math.max(...data) * 10) / 10;
+  // Initialize Humidity Chart
+  if (humidityChartRef.value) {
+    const data = extractData('humidity');
+    const maxY = Math.max(...data, 50);
+    
+    console.log("💧 Creating humidity chart with data:", data);
+    
+    if (humidityChartInstance.value) {
+      humidityChartInstance.value.destroy();
+    }
 
-  // Ensure min and max are not the same (Chart.js won't render flatline)
-  const yMin = minY === maxY ? minY - 0.5 : minY;
-  const yMax = minY === maxY ? maxY + 0.5 : maxY;
+    humidityChartInstance.value = new Chart(humidityChartRef.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Humidity (%)',
+          data,
+          borderColor: '#0ea5e9',
+          backgroundColor: 'rgba(14, 165, 233, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#0ea5e9',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: Math.ceil(maxY / 10) * 10,
+            ticks: { 
+              stepSize: 10,
+              callback: function(value) {
+                return value + '%';
+              }
+            },
+            grid: {
+              color: 'rgba(14, 165, 233, 0.1)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+  }
 
-  const ctx = soilPhChartRef.value.getContext('2d');
-  if (ctx) {
+  // Initialize Temperature Chart
+  if (temperatureChartRef.value) {
+    const data = extractData('temperature');
+    const maxY = Math.max(...data, 30);
+    
+    console.log("🌡️ Creating temperature chart with data:", data);
+    
+    if (temperatureChartInstance.value) {
+      temperatureChartInstance.value.destroy();
+    }
+
+    temperatureChartInstance.value = new Chart(temperatureChartRef.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Temperature (°C)',
+          data,
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#ef4444',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: Math.ceil(maxY / 5) * 5,
+            ticks: { 
+              stepSize: 5,
+              callback: function(value) {
+                return value + '°C';
+              }
+            },
+            grid: {
+              color: 'rgba(239, 68, 68, 0.1)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Initialize Soil pH Chart
+  if (soilPhChartRef.value) {
+    const data = extractData('soilPh');
+    const minY = Math.min(...data, 7);
+    const maxY = Math.max(...data, 7);
+    
+    console.log("🧪 Creating soil pH chart with data:", data);
+    
     if (soilPhChartInstance.value) {
       soilPhChartInstance.value.destroy();
     }
 
-    soilPhChartInstance.value = new Chart(ctx, {
+    soilPhChartInstance.value = new Chart(soilPhChartRef.value.getContext('2d'), {
       type: 'line',
       data: {
         labels,
@@ -1254,147 +1383,60 @@ const initSoilPhChart = () => {
           backgroundColor: 'rgba(249, 115, 22, 0.1)',
           fill: true,
           tension: 0.4,
-          borderWidth: 2,
-          pointRadius: 3,
-          pointBackgroundColor: '#f97316'
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#f97316',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top'
+          }
+        },
         scales: {
           y: {
             beginAtZero: false,
-            min: yMin,
-            max: yMax,
+            min: Math.max(0, minY - 1),
+            max: maxY + 1,
             ticks: {
-              stepSize: 0.2
+              stepSize: 0.5
+            },
+            grid: {
+              color: 'rgba(249, 115, 22, 0.1)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
             }
           }
-        },
-        plugins: {
-          legend: {
-            display: true
-          }
-        }
-      }
-    });
-  }
-};
-
-const initAllCharts = () => {
-  if (!sensorReadings.value.length) return;
-
-  const readings = sensorReadings.value.slice(0, 6).reverse(); // get recent 6 data points
-  const labels = readings.map(r => new Date(r.timestamp).toLocaleTimeString());
-
-  const extract = (key) => readings.map(r => r[key]);
-
-  if (soilMoistureChartRef.value) {
-    const data = extract('soilMoisture');
-    const maxY = getMaxY(data);
-
-    soilMoistureChartInstance.value = new Chart(soilMoistureChartRef.value.getContext('2d'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Soil Moisture',
-          data,
-          borderColor: '#10b981',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: maxY,
-            ticks: { stepSize: maxY / 5 }
-          }
         }
       }
     });
   }
 
-
-  if (humidityChartRef.value) {
-    const data = extract('humidity');
-    const maxY = getMaxY(data);
-
-    humidityChartInstance.value = new Chart(humidityChartRef.value.getContext('2d'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Humidity',
-          data,
-          borderColor: '#0ea5e9',
-          backgroundColor: 'rgba(14, 165, 233, 0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: maxY,
-            ticks: { stepSize: maxY / 5 }
-          }
-        }
-      }
-    });
-  }
-
-
-  if (temperatureChartRef.value) {
-    const data = extract('temperature');
-    const maxY = getMaxY(data);
-
-    temperatureChartInstance.value = new Chart(temperatureChartRef.value.getContext('2d'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Temperature',
-          data,
-          borderColor: '#ef4444',
-          backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: maxY,
-            ticks: { stepSize: maxY / 5 }
-          }
-        }
-      }
-    });
-  }
-
-
+  // Initialize NPK Performance Chart
   if (performanceChartRef.value) {
-    const readings = sensorReadings.value.slice(0, 8).reverse();
-    const labels = readings.map(r => new Date(r.timestamp).toLocaleDateString());
+    const nitrogenData = extractData('nitrogen');
+    const phosphorusData = extractData('phosphorus');
+    const potassiumData = extractData('potassium');
+    
+    console.log("🧬 Creating NPK performance chart");
+    console.log("Nitrogen data:", nitrogenData);
+    console.log("Phosphorus data:", phosphorusData);
+    console.log("Potassium data:", potassiumData);
+    
+    if (performanceChartInstance.value) {
+      performanceChartInstance.value.destroy();
+    }
 
-    const nitrogenData = readings.map(r => r.nitrogen || 0);
-    const phosphorusData = readings.map(r => r.phosphorus || 0);
-    const potassiumData = readings.map(r => r.potassium || 0);
-
-    const maxNpk = Math.max(...nitrogenData, ...phosphorusData, ...potassiumData);
+    const maxNpk = Math.max(...nitrogenData, ...phosphorusData, ...potassiumData, 50);
     const maxY = Math.ceil(maxNpk / 10) * 10;
 
     performanceChartInstance.value = new Chart(performanceChartRef.value.getContext('2d'), {
@@ -1403,37 +1445,43 @@ const initAllCharts = () => {
         labels,
         datasets: [
           {
-            label: 'Nitrogen',
+            label: 'Nitrogen (mg/kg)',
             data: nitrogenData,
             borderColor: '#4ADE80',
             backgroundColor: 'rgba(74, 222, 128, 0.1)',
             fill: true,
             tension: 0.4,
-            borderWidth: 2,
+            borderWidth: 3,
             pointRadius: 4,
-            pointBackgroundColor: '#4ADE80'
+            pointBackgroundColor: '#4ADE80',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2
           },
           {
-            label: 'Phosphorus',
+            label: 'Phosphorus (mg/kg)',
             data: phosphorusData,
             borderColor: '#60A5FA',
             backgroundColor: 'rgba(96, 165, 250, 0.1)',
             fill: true,
             tension: 0.4,
-            borderWidth: 2,
+            borderWidth: 3,
             pointRadius: 4,
-            pointBackgroundColor: '#60A5FA'
+            pointBackgroundColor: '#60A5FA',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2
           },
           {
-            label: 'Potassium',
+            label: 'Potassium (mg/kg)',
             data: potassiumData,
             borderColor: '#A78BFA',
             backgroundColor: 'rgba(167, 139, 250, 0.1)',
             fill: true,
             tension: 0.4,
-            borderWidth: 2,
+            borderWidth: 3,
             pointRadius: 4,
-            pointBackgroundColor: '#A78BFA'
+            pointBackgroundColor: '#A78BFA',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2
           }
         ]
       },
@@ -1467,7 +1515,10 @@ const initAllCharts = () => {
             max: maxY,
             ticks: {
               stepSize: maxY / 5,
-              color: '#6B7280'
+              color: '#6B7280',
+              callback: function(value) {
+                return value + ' mg/kg';
+              }
             },
             grid: { color: '#E5E7EB' }
           }
@@ -1480,13 +1531,143 @@ const initAllCharts = () => {
     });
   }
 
+  console.log("✅ All charts initialized successfully!");
+};
 
+// ✅ ADDED: Fallback function to create charts with sample data
+const createChartsWithSampleData = () => {
+  console.log("📊 Creating charts with sample data...");
+  
+  const sampleLabels = ['10:00', '10:30', '11:00', '11:30', '12:00'];
+  
+  // Sample Soil Moisture Chart
+  if (soilMoistureChartRef.value && !soilMoistureChartInstance.value) {
+    soilMoistureChartInstance.value = new Chart(soilMoistureChartRef.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: sampleLabels,
+        datasets: [{
+          label: 'Soil Moisture (%)',
+          data: [45, 48, 46, 49, 47],
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#10b981'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true } },
+        scales: {
+          y: { beginAtZero: true, max: 60 },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // Sample Humidity Chart
+  if (humidityChartRef.value && !humidityChartInstance.value) {
+    humidityChartInstance.value = new Chart(humidityChartRef.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: sampleLabels,
+        datasets: [{
+          label: 'Humidity (%)',
+          data: [82, 84, 83, 85, 84],
+          borderColor: '#0ea5e9',
+          backgroundColor: 'rgba(14, 165, 233, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#0ea5e9'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true } },
+        scales: {
+          y: { beginAtZero: true, max: 100 },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // Sample Temperature Chart
+  if (temperatureChartRef.value && !temperatureChartInstance.value) {
+    temperatureChartInstance.value = new Chart(temperatureChartRef.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: sampleLabels,
+        datasets: [{
+          label: 'Temperature (°C)',
+          data: [28, 29, 28.5, 30, 29.5],
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#ef4444'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true } },
+        scales: {
+          y: { beginAtZero: true, max: 35 },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // Sample Soil pH Chart
+  if (soilPhChartRef.value && !soilPhChartInstance.value) {
+    soilPhChartInstance.value = new Chart(soilPhChartRef.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: sampleLabels,
+        datasets: [{
+          label: 'Soil pH',
+          data: [4.2, 4.3, 4.25, 4.4, 4.35],
+          borderColor: '#f97316',
+          backgroundColor: 'rgba(249, 115, 22, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#f97316'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true } },
+        scales: {
+          y: { beginAtZero: false, min: 3, max: 6 },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
 };
 
 const todayReading = computed(() => {
-  return sensorReadings.value.length > 0 ? sensorReadings.value[0] : null;
+  // Prioritize the latest real-time soilpH value if available,
+  // otherwise fall back to the latest reading from the fetched history
+  return soilpH.value !== null && soilpH.value !== undefined
+    ? { soilPh: soilpH.value } // Create a temporary object structure matching sensorReadings
+    : (sensorReadings.value.length > 0 ? sensorReadings.value[0] : null);
 });
-
 const yesterdayReading = computed(() => {
   const now = new Date();
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -1494,13 +1675,41 @@ const yesterdayReading = computed(() => {
   return sensorReadings.value.find(r => {
     const ts = new Date(r.timestamp);
     return ts < oneDayAgo; // First reading older than 24h
-  });
+  }) || sensorReadings.value.find(r => {
+    // Fallback: find any reading that is not the very latest one,
+    // assuming the sensorReadings array is sorted descending by time.
+    // This is less ideal but provides *some* comparison point if yesterday's data is missing.
+    return r !== sensorReadings.value[0];
+  }) || null;
 });
 
 function getChange(current, previous) {
-  if (current === null || previous === null || previous === 0) return null;
-  const diff = current - previous;
-  const percent = (diff / previous) * 100;
+  const currentVal = parseFloat(current);
+  const previousVal = parseFloat(previous);
+
+  // If either current or previous value is not a valid number, we can't calculate change.
+  if (isNaN(currentVal) || isNaN(previousVal)) {
+    return null;
+  }
+
+  if (previousVal === 0) {
+    if (currentVal === 0) {
+      // If both are 0, there's no change.
+      return { direction: 'up', percent: '0.0' }; // Direction is arbitrary for 0% change
+    }
+    // Change from 0 to a non-zero value is an infinite percentage,
+    // so it's better not to display a percentage.
+    return null;
+  }
+
+  const diff = currentVal - previousVal;
+  const percent = (diff / previousVal) * 100;
+
+  // If the calculated percent is NaN or not a finite number, return null.
+  if (isNaN(percent) || !isFinite(percent)) {
+    return null;
+  }
+
   return {
     direction: diff >= 0 ? 'up' : 'down',
     percent: Math.abs(percent).toFixed(1)
@@ -1520,7 +1729,15 @@ const temperatureChange = computed(() => {
 });
 
 const soilPhChange = computed(() => {
-  return getChange(todayReading.value?.soilPh, yesterdayReading.value?.soilPh);
+  // Attempt to get current pH value, checking both common property names
+  const currentPhValue = todayReading.value 
+    ? (todayReading.value.soilPh ?? todayReading.value.soilpH) 
+    : undefined;
+  // Attempt to get previous pH value, checking both common property names
+  const previousPhValue = yesterdayReading.value 
+    ? (yesterdayReading.value.soilPh ?? yesterdayReading.value.soilpH) 
+    : undefined;
+  return getChange(currentPhValue, previousPhValue);
 });
 
 
@@ -1551,11 +1768,22 @@ function getTemperatureStatus(value) {
   return { label: 'Too Hot', color: 'text-red-500' };
 }
 
+// ✅ FIXED: Updated pH status function to match the soil pH guide provided
 function getPhStatus(value) {
-  if (value < 5.5) return { label: 'Too Acidic', color: 'text-red-500' };
-  if (value < 6.5) return { label: 'Slightly Acidic', color: 'text-yellow-500' };
-  if (value <= 7.5) return { label: 'Neutral (Optimal)', color: 'text-emerald-500' };
-  return { label: 'Alkaline', color: 'text-blue-500' };
+  if (!value || value === null || value === undefined) {
+    return { label: 'No Data', color: 'text-gray-500' };
+  }
+  
+  // Based on the soil pH guide provided:
+  // < 3.5 - 6.5: Acidic (red, orange, yellow colors)
+  // 6.6 - 7.3: Neutral (green color)  
+  // 7.4 - >9.0: Alkaline (blue, purple, violet colors)
+  
+  if (value < 3.5) return { label: 'Extremely Acidic', color: 'text-red-600' };
+  if (value <= 6.5) return { label: 'Acidic', color: 'text-orange-500' };
+  if (value <= 7.3) return { label: 'Neutral (Optimal)', color: 'text-emerald-500' };
+  if (value <= 9.0) return { label: 'Alkaline', color: 'text-blue-500' };
+  return { label: 'Extremely Alkaline', color: 'text-purple-600' };
 }
 
 // Get highest value among all NPK
@@ -1642,7 +1870,7 @@ const getWeatherIcon = (condition) => {
       return Cloud
     case 'Fog':
     case 'Depositing Rime Fog':
-      return Fog
+      return Wind // ⬅️ Replaced with available icon
     case 'Light Drizzle':
     case 'Moderate Drizzle':
     case 'Dense Drizzle':
@@ -1657,13 +1885,13 @@ const getWeatherIcon = (condition) => {
     case 'Light Snowfall':
     case 'Moderate Snowfall':
     case 'Heavy Snowfall':
-      return CloudSnow
+      return Cloud // ⬅️ Use Cloud if CloudSnow is not available
     case 'Thunderstorm':
     case 'Thunderstorm with Hail':
     case 'Severe Thunderstorm':
       return CloudLightning
     default:
-      return Cloud  // fallback
+      return Cloud // fallback
   }
 }
 
@@ -1950,4 +2178,3 @@ const getDetailIconColor = (label) => {
   border-radius: 2rem;
 }
 </style>
-

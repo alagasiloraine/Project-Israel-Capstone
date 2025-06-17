@@ -1,602 +1,473 @@
 <template>
-  <div class="flex h-screen bg-[#f8f9fa] font-poppins">
+  <div class="h-screen flex bg-gradient-to-br from-green-50 to-emerald-100 font-poppins overflow-hidden">
     <Sidebar />
-    <div class="flex-1 overflow-auto bg-gradient-to-br from-green-50 to-emerald-50 p-8">
-      <!-- Top Section -->
-      <div class="flex gap-6">
-        <!-- Left Column - Profile Image & Info -->
-        <div class="bg-white rounded-xl shadow-sm p-8 flex-1">
-          <div class="flex justify-between mb-6">
-            <h2 class="text-2xl font-semibold text-gray-800">Profile Information</h2>
-            <button 
-              @click="editMode = !editMode"
-              class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-            >
-              <Pencil class="w-4 h-4" />
-              {{ editMode ? 'Save Changes' : 'Edit Profile' }}
-            </button>
+    
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen pt-32">
+      <div class="flex-1 w-full px-4 sm:px-6 lg:px-10 overflow-hidden">
+        
+        <!-- Main Container - Everything Inside -->
+        <div class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-green-100 h-[calc(100vh-140px)] overflow-hidden">
+          
+          <!-- Header - Inside Main Container -->
+          <div class="bg-gradient-to-r from-emerald-50 to-white p-6 border-b border-gray-100 rounded-t-lg">
+            <h1 class="text-xl font-semibold text-gray-800 mb-1">User Profile</h1>
+            <p class="text-emerald-600 mt-1 text-sm">Manage your account information and security settings</p>
           </div>
 
-          <div class="flex gap-8">
-            <!-- Profile Image Section -->
-            <div class="flex flex-col items-center">
-              <div class="relative">
-                <div class="w-48 h-48 rounded-full overflow-hidden bg-gray-100">
-                  <img 
-                    :src="user?.profilePicture " 
-                    alt="Profile"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-                <button 
-                  @click="triggerImageUpload"
-                  class="absolute bottom-2 right-2 p-2 bg-white rounded-full shadow-lg hover:bg-gray-50"
-                >
-                  <Camera class="w-5 h-5 text-gray-600" />
-                </button>
-                <input 
-                  type="file" 
-                  ref="imageInput" 
-                  class="hidden" 
-                  accept="image/*"
-                  @change="handleImageUpload"
-                />
-              </div>
-              <!-- Status Badge -->
-              <div class="mt-4">
-                <span 
-                  :class="[
-                    'inline-flex items-center px-3 py-1 text-sm font-medium rounded-full',
-                    profile.status === 'active' ? 'bg-green-100 text-green-700' :
-                    profile.status === 'on-leave' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-gray-100 text-gray-700'
-                  ]"
-                >
-                  {{ profile.status.charAt(0).toUpperCase() + profile.status.slice(1) }}
-                </span>
-              </div>
-            </div>
+          <!-- Two Containers with Gap Inside Main Container -->
+          <div class="flex gap-6 h-[calc(100%-100px)] p-6">
+            
+            <!-- Left Container - Profile Avatar (30% width) - MODIFIED PADDING -->
+            <div class="w-[30%] bg-gradient-to-br from-gray-50 to-gray-100 rounded-[16px] border border-gray-200 overflow-y-auto">
+              <div class="px-3 py-6 flex flex-col items-center">
+                
+                <!-- Large Profile Circle -->
+                <div class="mb-6 flex flex-col items-center">
+                  <div class="relative">
+                    <!-- Profile Avatar Circle - Slightly Larger -->
+                    <div class="w-32 h-32 rounded-full bg-white shadow-xl border-4 border-emerald-200 flex items-center justify-center text-6xl transition-all duration-300 hover:scale-105 hover:shadow-2xl mb-4">
+                      {{ selectedAvatar.icon }}
+                    </div>
 
-            <!-- Profile Info Section -->
-            <div class="flex-1 space-y-4">
-              <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <label class="text-sm text-gray-600 flex items-center gap-2">
-                    <User class="w-4 h-4 text-gray-500" />
-                    Full Name
-                  </label>
-                  <input 
-                    v-model="profile.name"
-                    :disabled="!editMode"
-                    class="w-full p-2 border rounded-lg disabled:bg-gray-50"
-                    :value="user?.name || user?.firstName + ' ' + user?.lastName"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <label class="text-sm text-gray-600 flex items-center gap-2">
-                    <Briefcase class="w-4 h-4 text-gray-500" />
-                    Position
-                  </label>
-                  <input 
-                    v-model="profile.position"
-                    :disabled="!editMode"
-                    class="w-full p-2 border rounded-lg disabled:bg-gray-50"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <label class="text-sm text-gray-600 flex items-center gap-2">
-                    <MapPin class="w-4 h-4 text-gray-500" />
-                    Address
-                  </label>
-                  <input 
-                    v-model="profile.address"
-                    :disabled="!editMode"
-                    class="w-full p-2 border rounded-lg disabled:bg-gray-50"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <label class="text-sm text-gray-600 flex items-center gap-2">
-                    <Phone class="w-4 h-4 text-gray-500" />
-                    Phone Number
-                  </label>
-                  <input 
-                    v-model="profile.phone"
-                    :disabled="!editMode"
-                    class="w-full p-2 border rounded-lg disabled:bg-gray-50"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <label class="text-sm text-gray-600 flex items-center gap-2">
-                    <Mail class="w-4 h-4 text-gray-500" />
-                    Email Address
-                  </label>
-                  <input 
-                    v-model="profile.email"
-                    :disabled="!editMode"
-                    class="w-full p-2 border rounded-lg disabled:bg-gray-50"
-                    :value="user?.email"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <label class="text-sm text-gray-600 flex items-center gap-2">
-                    <Building2 class="w-4 h-4 text-gray-500" />
-                    Department
-                  </label>
-                  <select
-                    v-model="profile.department"
-                    :disabled="!editMode"
-                    class="w-full p-2 border rounded-lg disabled:bg-gray-50"
-                  >
-                    <option value="poultry">Poultry</option>
-                    <option value="livestock">Livestock</option>
-                    <option value="crops">Crops</option>
-                    <option value="maintenance">Maintenance</option>
-                  </select>
-                </div>
-                <div class="space-y-2">
-                  <label class="text-sm text-gray-600 flex items-center gap-2">
-                    <Calendar class="w-4 h-4 text-gray-500" />
-                    Date of Joining
-                  </label>
-                  <input 
-                    type="date"
-                    v-model="profile.joiningDate"
-                    :disabled="!editMode"
-                    class="w-full p-2 border rounded-lg disabled:bg-gray-50"
-                    :value="user?.createdAt"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <label class="text-sm text-gray-600 flex items-center gap-2">
-                    <Activity class="w-4 h-4 text-gray-500" />
-                    Employment Status
-                  </label>
-                  <select
-                    v-model="profile.status"
-                    :disabled="!editMode"
-                    class="w-full p-2 border rounded-lg disabled:bg-gray-50"
-                  >
-                    <option value="active">Active</option>
-                    <option value="on-leave">On Leave</option>
-                    <option value="retired">Retired</option>
-                  </select>
-                </div>
-                <div class="col-span-2 space-y-2">
-                  <label class="text-sm text-gray-600 flex items-center gap-2">
-                    <FileText class="w-4 h-4 text-gray-500" />
-                    About
-                  </label>
-                  <textarea
-                    v-model="profile.about"
-                    :disabled="!editMode"
-                    rows="3"
-                    class="w-full p-2 border rounded-lg disabled:bg-gray-50 resize-none"
-                    placeholder="Add your experience, certifications, and skills..."
-                  >{{user?.firstName}}</textarea>
-                </div>
-                <div class="col-span-2">
-                  <label class="text-sm text-gray-600 block mb-2">Certifications</label>
-                  <div class="flex flex-wrap gap-2">
-                    <span 
-                      v-for="cert in profile.certifications" 
-                      :key="cert"
-                      class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium"
-                    >
-                      <Award class="w-3 h-3" />
-                      {{ cert }}
-                    </span>
+                    <!-- Glow Effect - Match Size -->
+                    <div class="absolute inset-0 w-32 h-32 rounded-full bg-emerald-200 opacity-20 blur-xl -z-10"></div>
                   </div>
+
+                  <!-- Avatar Name -->
+                  <p class="text-center text-sm font-medium text-gray-800 mb-1">{{ selectedAvatar.name }}</p>
+                  <div class="w-8 h-0.5 bg-emerald-400 rounded-full"></div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Right Column - Security Settings & Today's Schedule -->
-        <div class="w-96 space-y-6">
-          <div class="bg-white rounded-xl shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Security Settings</h3>
-            <div class="space-y-4">
-              <button 
-                @click="showPasswordModal = true"
-                class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div class="flex items-center gap-3">
-                  <Lock class="w-5 h-5 text-gray-600" />
-                  <span>Change Password</span>
-                </div>
-                <ChevronRight class="w-5 h-5 text-gray-400" />
-              </button>
-              <button 
-                @click="logout"
-                class="w-full flex items-center justify-between p-3 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-              >
-                <div class="flex items-center gap-3">
-                  <LogOut class="w-5 h-5" />
-                  <span>Logout</span>
-                </div>
-                <ChevronRight class="w-5 h-5 opacity-50" />
-              </button>
-            </div>
-          </div>
-
-          <!-- Today's Schedule -->
-          <div class="bg-white rounded-xl shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Today's Sched</h3>
-            <div class="space-y-2 divide-y divide-gray-200">
-              <div v-for="task in todaysTasks" :key="task.id" class="pt-2 first:pt-0">
-                <div class="text-sm font-medium">{{ task.time }}</div>
-                <div class="text-sm text-gray-600 pb-2">{{ task.activity }}</div>
-              </div>
-            </div>
-
-            <!-- Farmer Reminder -->
-            <div class="mt-6 pt-4 border-t border-gray-200">
-              <p class="text-sm text-green-800 bg-green-50 rounded-xl p-4">
-                Remember to log your daily activities and update greenhouse conditions. This helps maintain optimal growing conditions and track plant progress.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Section - Calendar -->
-      <div class="flex gap-6 mt-6">
-        <!-- Activity History -->
-        <div class="bg-white rounded-xl shadow-sm p-6 w-[300px]">
-          <div class="flex justify-between items-center mb-4 border-b pb-2">
-            <h3 class="text-lg font-semibold text-gray-800">Activity History</h3>
-            <div class="flex items-center space-x-2">
-              <button class="text-gray-600 hover:text-green-600 transition-colors" @click="prevPage" :disabled="currentPage === 1">
-                <ChevronLeft class="w-5 h-5" />
-              </button>
-              <button class="text-gray-600 hover:text-green-600 transition-colors" @click="nextPage" :disabled="currentPage === totalPages">
-                <ChevronRight class="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-          <div class="overflow-hidden">
-            <div class="space-y-4">
-              <div v-for="activity in paginatedActivities" :key="activity.id" class="border-b last:border-0 pb-4">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <component :is="activity.icon" class="w-5 h-5 text-gray-600" />
-                    <span class="text-sm font-medium">{{ activity.name }}</span>
+                <!-- Avatar Selection Section -->
+                <div class="w-full max-w-full">
+                  <div class="text-center mb-4">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-2">Choose Avatar</h3>
+                    <div class="w-16 h-0.5 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full mx-auto mb-4"></div>
                   </div>
-                  <span class="text-xs text-gray-500">{{ activity.date }} {{ activity.time }}</span>
-                </div>
-                <p class="text-sm text-gray-600 mt-2">{{ activity.description }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Calendar -->
-        <div class="bg-white rounded-xl shadow-sm p-6 flex-1">
-          <div class="flex items-center justify-between mb-6">
-            <div class="flex gap-2">
-              <button 
-                v-for="view in ['Day', 'Week']" 
-                :key="view"
-                :class="[
-                  'px-3 py-1.5 text-sm rounded-md',
-                  currentView === view.toLowerCase()
-                    ? 'bg-green-50 text-green-600'
-                    : 'text-gray-600 hover:bg-gray-50'
-                ]"
-                @click="setView(view.toLowerCase())"
-              >
-                {{ view }}
-              </button>
-              
-              <!-- Month Dropdown -->
-              <div class="relative">
-                <button 
-                  @click="toggleDropdown('month')"
-                  :class="[
-                    'px-3 py-1.5 text-sm rounded-md',
-                    currentView === 'month'
-                      ? 'bg-green-50 text-green-600'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  ]"
-                >
-                  Month
-                </button>
-                <div v-if="dropdownOpen === 'month'" class="absolute z-10 mt-1 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 max-h-48 overflow-y-auto">
-                  <div class="py-1" role="menu" aria-orientation="vertical">
-                    <button
-                      v-for="month in months"
-                      :key="month"
-                      @click="selectMonth(month)"
-                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      role="menuitem"
-                    >
-                      {{ month }}
-                    </button>
+                  
+                  <!-- Avatar Grid - MODIFIED SPACING -->
+                  <div class="flex justify-center mb-4">
+                    <div class="grid grid-cols-5 gap-4">
+                      <div 
+                        v-for="avatar in avatarOptions" 
+                        :key="avatar.id"
+                        @click="selectAvatar(avatar)"
+                        :class="[ 
+                          'w-14 h-14 rounded-full flex items-center justify-center text-xl cursor-pointer transition-all duration-200 border-2 bg-white shadow-sm hover:shadow-lg relative',
+                          selectedAvatar.id === avatar.id 
+                            ? 'border-emerald-500 bg-emerald-50 scale-110 shadow-lg ring-2 ring-emerald-200' 
+                            : 'border-gray-200 hover:border-emerald-300 hover:scale-105'
+                        ]"
+                      >
+                        {{ avatar.icon }}
+                        
+                        <!-- Selection indicator -->
+                        <div 
+                          v-if="selectedAvatar.id === avatar.id"
+                          class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full flex items-center justify-center"
+                        >
+                          <CheckCircle class="w-2 h-2 text-white" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              <!-- Year Dropdown -->
-              <div class="relative">
-                <button 
-                  @click="toggleDropdown('year')"
-                  :class="[
-                    'px-3 py-1.5 text-sm rounded-md',
-                    currentView === 'year'
-                      ? 'bg-green-50 text-green-600'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  ]"
-                >
-                  Year
-                </button>
-                <div v-if="dropdownOpen === 'year'" class="absolute z-10 mt-1 w-24 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 max-h-48 overflow-y-auto">
-                  <div class="py-1" role="menu" aria-orientation="vertical">
-                    <button
-                      v-for="year in years"
-                      :key="year"
-                      @click="selectYear(year)"
-                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      role="menuitem"
-                    >
-                      {{ year }}
-                    </button>
+                  
+                  <!-- Instruction text - MODIFIED PADDING -->
+                  <div class="text-center bg-white/50 rounded-lg p-2 border border-gray-200 mx-1">
+                    <p class="text-xs font-medium text-gray-600">Select your profile character</p>
+                    <p class="text-xs text-gray-500 mt-1">Choose from {{ avatarOptions.length }} available options</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="flex items-center gap-2">
-              <button class="p-1 text-gray-400 hover:text-green-600 transition-colors" @click="changeMonth(-1)">
-                <ChevronLeft class="w-5 h-5" />
-              </button>
-              <div class="relative">
-                <button 
-                  @click="toggleDropdown('currentMonth')"
-                  class="text-base font-medium hover:text-green-600 transition-colors"
-                >
-                  {{ currentMonth }}
-                </button>
-                <div v-if="dropdownOpen === 'currentMonth'" class="absolute z-10 mt-1 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 max-h-48 overflow-y-auto">
-                  <div class="py-1" role="menu" aria-orientation="vertical">
-                    <button
-                      v-for="month in months"
-                      :key="month"
-                      @click="selectMonth(month)"
-                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      role="menuitem"
-                    >
-                      {{ month }}
-                    </button>
+            <!-- Right Container - Personal Info & Security (70% width) -->
+            <div class="flex-1 bg-gradient-to-br from-white to-gray-50/30 rounded-[16px] border border-gray-200 overflow-y-auto">
+              <div class="p-6">
+                
+                <!-- Personal Information Section -->
+                <div class="mb-8">
+                  <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div class="flex items-center mb-6">
+                      <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center mr-4">
+                        <User class="w-5 h-5 text-emerald-600" />
+                      </div>
+                      <div>
+                        <h3 class="text-base font-semibold text-gray-900">Personal Information</h3>
+                        <p class="text-sm text-gray-500">Update your personal details</p>
+                      </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <!-- Full Name -->
+                      <div class="space-y-2">
+                        <label class="text-sm font-medium text-gray-700">Full Name</label>
+                        <div class="relative group">
+                          <User class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-emerald-500 transition-colors duration-200" />
+                          <input 
+                            v-model="profileData.name"
+                            type="text"
+                            class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white transition-all duration-200 hover:border-gray-300"
+                            placeholder="Enter your full name"
+                          />
+                        </div>
+                      </div>
+
+                      <!-- Phone Number -->
+                      <div class="space-y-2">
+                        <label class="text-sm font-medium text-gray-700">Phone Number</label>
+                        <div class="relative group">
+                          <Phone class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-emerald-500 transition-colors duration-200" />
+                          <input 
+                            v-model="profileData.phone"
+                            type="tel"
+                            class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white transition-all duration-200 hover:border-gray-300"
+                            placeholder="Enter your phone number"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="mt-6">
+                      <button 
+                        @click="saveProfile"
+                        class="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2.5 rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center"
+                      >
+                        <CheckCircle class="w-4 h-4 mr-2" />
+                        Save Changes
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="relative">
-                <button 
-                  @click="toggleDropdown('currentYear')"
-                  class="text-base font-medium hover:text-green-600 transition-colors"
-                >
-                  {{ currentYear }}
-                </button>
-                <div v-if="dropdownOpen === 'currentYear'" class="absolute z-10 mt-1 w-24 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 max-h-48 overflow-y-auto">
-                  <div class="py-1" role="menu" aria-orientation="vertical">
-                    <button
-                      v-for="year in years"
-                      :key="year"
-                      @click="selectYear(year)"
-                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      role="menuitem"
-                    >
-                      {{ year }}
-                    </button>
+
+                <!-- Security Settings Section -->
+                <div class="mb-8">
+                  <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+                      <Shield class="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 class="text-base font-semibold text-gray-900">Security Settings</h3>
+                      <p class="text-sm text-gray-500">Manage your account security</p>
+                    </div>
+                  </div>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Reset Password Card -->
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
+                      <div class="p-5">
+                        <div class="flex items-center mb-4">
+                          <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mr-3 group-hover:bg-blue-200 transition-colors duration-200">
+                            <Lock class="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 class="text-sm font-semibold text-gray-900">Reset Password</h4>
+                            <p class="text-xs text-gray-500">Update your account password</p>
+                          </div>
+                        </div>
+                        <button 
+                          @click="togglePasswordSection"
+                          class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2.5 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        >
+                          {{ showPasswordSection ? 'Cancel' : 'Get Started' }}
+                        </button>
+                        
+                        <!-- Password Form with Show/Hide -->
+                        <div 
+                          v-if="showPasswordSection"
+                          class="mt-4 pt-4 border-t border-gray-100"
+                        >
+                          <div class="space-y-3">
+                            <div>
+                              <label class="block text-xs font-medium text-gray-700 mb-1">Current Password</label>
+                              <div class="relative flex items-center">
+                                <input 
+                                  :type="showCurrentPassword ? 'text' : 'password'"
+                                  v-model="passwordForm.current"
+                                  class="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                                  placeholder="Enter current password"
+                                />
+                                <button
+                                  type="button"
+                                  @click="showCurrentPassword = !showCurrentPassword"
+                                  class="absolute right-3 inset-y-0 my-auto flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors duration-200 z-10"
+                                >
+                                  <Eye v-if="!showCurrentPassword" class="w-4 h-4" />
+                                  <EyeOff v-else class="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-gray-700 mb-1">New Password</label>
+                              <div class="relative flex items-center">
+                                <input 
+                                  :type="showNewPassword ? 'text' : 'password'"
+                                  v-model="passwordForm.new"
+                                  class="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                                  placeholder="Enter new password"
+                                />
+                                <button
+                                  type="button"
+                                  @click="showNewPassword = !showNewPassword"
+                                  class="absolute right-3 inset-y-0 my-auto flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors duration-200 z-10"
+                                >
+                                  <Eye v-if="!showNewPassword" class="w-4 h-4" />
+                                  <EyeOff v-else class="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-gray-700 mb-1">Confirm Password</label>
+                              <div class="relative flex items-center">
+                                <input 
+                                  :type="showConfirmPassword ? 'text' : 'password'"
+                                  v-model="passwordForm.confirm"
+                                  class="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                                  placeholder="Confirm new password"
+                                />
+                                <button
+                                  type="button"
+                                  @click="showConfirmPassword = !showConfirmPassword"
+                                  class="absolute right-3 inset-y-0 my-auto flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors duration-200 z-10"
+                                >
+                                  <Eye v-if="!showConfirmPassword" class="w-4 h-4" />
+                                  <EyeOff v-else class="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                            <button 
+                              @click="changePassword"
+                              class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm font-medium"
+                            >
+                              Update Password
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Reset Pin Code Card -->
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
+                      <div class="p-5">
+                        <div class="flex items-center mb-4">
+                          <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mr-3 group-hover:bg-purple-200 transition-colors duration-200">
+                            <Shield class="w-5 h-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <h4 class="text-sm font-semibold text-gray-900">Reset Pin Code</h4>
+                            <p class="text-xs text-gray-500">Update your security pin</p>
+                          </div>
+                        </div>
+                        <button 
+                          @click="togglePinSection"
+                          class="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-2.5 px-4 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        >
+                          {{ showPinSection ? 'Cancel' : 'Get Started' }}
+                        </button>
+                        
+                        <!-- Pin Form -->
+                        <div 
+                          v-if="showPinSection"
+                          class="mt-4 pt-4 border-t border-gray-100"
+                        >
+                          <div class="space-y-3">
+                            <div>
+                              <label class="block text-xs font-medium text-gray-700 mb-1">Current Pin</label>
+                              <div class="relative flex items-center">
+                                <input 
+                                  :type="showCurrentPin ? 'text' : 'password'"
+                                  v-model="pinForm.current"
+                                  maxlength="4"
+                                  class="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-lg tracking-widest transition-all duration-200"
+                                  placeholder="••••"
+                                />
+                                <button
+                                  type="button"
+                                  @click="showCurrentPin = !showCurrentPin"
+                                  class="absolute right-3 inset-y-0 my-auto flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors duration-200 z-10"
+                                >
+                                  <Eye v-if="!showCurrentPin" class="w-4 h-4" />
+                                  <EyeOff v-else class="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-gray-700 mb-1">New Pin</label>
+                              <div class="relative flex items-center">
+                                <input 
+                                  :type="showNewPin ? 'text' : 'password'"
+                                  v-model="pinForm.new"
+                                  maxlength="4"
+                                  class="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-lg tracking-widest transition-all duration-200"
+                                  placeholder="••••"
+                                />
+                                <button
+                                  type="button"
+                                  @click="showNewPin = !showNewPin"
+                                  class="absolute right-3 inset-y-0 my-auto flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors duration-200 z-10"
+                                >
+                                  <Eye v-if="!showNewPin" class="w-4 h-4" />
+                                  <EyeOff v-else class="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-gray-700 mb-1">Confirm Pin</label>
+                              <div class="relative flex items-center">
+                                <input 
+                                  :type="showConfirmPin ? 'text' : 'password'"
+                                  v-model="pinForm.confirm"
+                                  maxlength="4"
+                                  class="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-lg tracking-widest transition-all duration-200"
+                                  placeholder="••••"
+                                />
+                                <button
+                                  type="button"
+                                  @click="showConfirmPin = !showConfirmPin"
+                                  class="absolute right-3 inset-y-0 my-auto flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors duration-200 z-10"
+                                >
+                                  <Eye v-if="!showConfirmPin" class="w-4 h-4" />
+                                  <EyeOff v-else class="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                            <button 
+                              @click="changePin"
+                              class="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-2 px-4 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium"
+                            >
+                              Update Pin
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
-              </div>
-              <button class="p-1 text-gray-400 hover:text-green-600 transition-colors" @click="changeMonth(1)">
-                <ChevronRight class="w-5 h-5" />
-              </button>
-            </div>
-          </div>
 
-          <div class="grid grid-cols-7 gap-px bg-gray-200">
-            <div 
-              v-for="day in ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']" 
-              :key="day"
-              class="bg-white p-3 text-xs font-medium text-gray-500 text-center"
-            >
-              {{ day }}
-            </div>
-
-            <div 
-              v-for="date in 35" 
-              :key="date"
-              class="bg-white min-h-[100px] p-2 relative group hover:bg-gray-50"
-            >
-              <div 
-                :class="[
-                  'text-sm mb-2',
-                  date === currentDate ? 'text-green-600 font-medium' : 'text-gray-700',
-                  date < 3 || date > 31 ? 'text-gray-400' : ''
-                ]"
-              >
-                {{ getDisplayDate(date) }}
-              </div>
-
-              <div class="space-y-1">
-                <div 
-                  v-if="hasPlanting(date)"
-                  class="flex items-center gap-1 text-xs bg-green-50 text-green-600 py-1 px-2 rounded-md w-fit"
-                >
-                  <Sprout class="w-3 h-3" />
-                  <span>Planting</span>
-                  <span class="bg-green-100 text-green-700 px-1 rounded text-[10px]">2</span>
+                <!-- Account Actions Section -->
+                <div>
+                  <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center mr-4">
+                      <LogOut class="w-5 h-5 text-red-600" />
+                    </div>
+                    <div>
+                      <h3 class="text-base font-semibold text-gray-900">Account Actions</h3>
+                      <p class="text-sm text-gray-500">Manage your account session</p>
+                    </div>
+                  </div>
+                  
+                  <div class="bg-white rounded-2xl border border-red-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+                    <div class="p-5">
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                          <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center mr-3">
+                            <LogOut class="w-5 h-5 text-red-600" />
+                          </div>
+                          <div>
+                            <h4 class="text-sm font-semibold text-gray-900">Logout</h4>
+                            <p class="text-xs text-gray-500">Sign out of your account</p>
+                          </div>
+                        </div>
+                        <button 
+                          @click="logout"
+                          class="bg-gradient-to-r from-red-500 to-red-600 text-white py-2.5 px-6 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 min-w-[100px]"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div 
-                  v-if="hasHarvesting(date)"
-                  class="flex items-center gap-1 text-xs bg-orange-50 text-orange-600 py-1 px-2 rounded-md w-fit"
-                >
-                  <Wheat class="w-3 h-3" />
-                  <span>Harvest</span>
-                  <span class="bg-orange-100 text-orange-700 px-1 rounded text-[10px]">3</span>
-                </div>
-
-                <div 
-                  v-if="hasInspection(date)"
-                  class="flex items-center gap-1 text-xs bg-blue-50 text-blue-600 py-1 px-2 rounded-md w-fit"
-                >
-                  <ClipboardCheck class="w-3 h-3" />
-                  <span>Inspection</span>
-                  <span class="bg-blue-100 text-blue-700 px-1 rounded text-[10px]">1</span>
-                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </main>
 
-      <!-- Password Change Modal -->
-      <div v-if="showPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white rounded-xl p-6 w-[400px]">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Change Password</h3>
-          <div class="space-y-4">
-            <div class="space-y-2">
-              <label class="text-sm text-gray-600">Current Password</label>
-              <input 
-                type="password" 
-                v-model="passwordForm.current"
-                class="w-full p-2 border rounded-lg"
-              />
-            </div>
-            <div class="space-y-2">
-              <label class="text-sm text-gray-600">New Password</label>
-              <input 
-                type="password" 
-                v-model="passwordForm.new"
-                class="w-full p-2 border rounded-lg"
-              />
-            </div>
-            <div class="space-y-2">
-              <label class="text-sm text-gray-600">Confirm New Password</label>
-              <input 
-                type="password" 
-                v-model="passwordForm.confirm"
-                class="w-full p-2 border rounded-lg"
-              />
-            </div>
-            <div class="flex justify-end gap-3 mt-6">
-              <button 
-                @click="showPasswordModal = false"
-                class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button 
-                @click="changePassword"
-                class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-              >
-                Update Password
-              </button>
-            </div>
-          </div>
-        </div>
+    <!-- Toast Notification - Bottom Right -->
+    <div 
+      v-if="showToast" 
+      class="fixed bottom-4 right-4 bg-white border border-gray-200 rounded-xl shadow-xl p-4 z-50 flex items-center transform transition-all duration-300 ease-in-out backdrop-blur-sm"
+    >
+      <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center mr-3">
+        <CheckCircle class="w-4 h-4 text-emerald-600" />
       </div>
+      <span class="text-gray-900 font-medium text-sm">{{ toastMessage }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import Notiflix from "notiflix";
-import { 
-  Camera, 
-  Pencil, 
-  Lock, 
-  LogOut, 
-  ChevronRight,
-  ChevronLeft,
-  Power,
-  Calendar,
-  Sprout,
-  Wheat,
-  ClipboardCheck,
-  Home,
-  Droplet,
-  Bug,
-  User,
-  Building2,
-  Phone,
-  Mail,
-  FileText,
-  Activity,
-  Award,
-  Briefcase,
-  MapPin
-} from 'lucide-vue-next'
+import { ref, reactive, onMounted } from 'vue'
 import Sidebar from '../layout/Sidebar.vue'
+import { useRouter } from 'vue-router'
+import { 
+  User, 
+  Phone, 
+  Lock, 
+  Shield, 
+  LogOut, 
+  CheckCircle,
+  Eye,
+  EyeOff
+} from 'lucide-vue-next'
 
 const router = useRouter()
-const editMode = ref(false)
-const showPasswordModal = ref(false)
-const imageInput = ref(null)
-const profileImage = ref(null)
-const dropdownOpen = ref(null)
+const user = ref(null)
+const showToast = ref(false)
+const toastMessage = ref('')
+const showPasswordSection = ref(false)
+const showPinSection = ref(false)
 
-const user = ref(null);
+// Password visibility toggles
+const showCurrentPassword = ref(false)
+const showNewPassword = ref(false)
+const showConfirmPassword = ref(false)
 
-const generateProfilePicture = (email) => {
-  if (!email) return null;
+// Pin visibility toggles (add after password visibility toggles)
+const showCurrentPin = ref(false)
+const showNewPin = ref(false)
+const showConfirmPin = ref(false)
 
-  // 🔹 Extract the first letter of the email
-  const initial = email.charAt(0).toUpperCase();
+// Avatar options with crop/plant themed characters
+const avatarOptions = ref([
+  { id: 1, icon: '🌱', name: 'Seedling' },
+  { id: 2, icon: '🌿', name: 'Herb' },
+  { id: 3, icon: '🌾', name: 'Wheat' },
+  { id: 4, icon: '🌽', name: 'Corn' },
+  { id: 5, icon: '🥕', name: 'Carrot' },
+  { id: 6, icon: '🍅', name: 'Tomato' },
+  { id: 7, icon: '🥬', name: 'Lettuce' },
+  { id: 8, icon: '🌻', name: 'Sunflower' },
+  { id: 9, icon: '🌳', name: 'Tree' },
+  { id: 10, icon: '🍃', name: 'Leaves' },
+  { id: 11, icon: '🌵', name: 'Cactus' },
+  { id: 12, icon: '🌸', name: 'Blossom' },
+  { id: 13, icon: '🍄', name: 'Mushroom' },
+  { id: 14, icon: '🌺', name: 'Hibiscus' },
+  { id: 15, icon: '🌹', name: 'Rose' },
+  { id: 16, icon: '🌷', name: 'Tulip' },
+  { id: 17, icon: '🥦', name: 'Broccoli' },
+  { id: 18, icon: '🌶️', name: 'Pepper' },
+  { id: 19, icon: '🥒', name: 'Cucumber' },
+  { id: 20, icon: '🍆', name: 'Eggplant' },
+  { id: 21, icon: '🥔', name: 'Potato' },
+  { id: 22, icon: '🧄', name: 'Garlic' },
+  { id: 23, icon: '🧅', name: 'Onion' },
+  { id: 24, icon: '🥜', name: 'Peanut' }
+])
 
-  // 🔹 Generate a random background color
-  const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A6", "#FFD700"];
-  const backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+const selectedAvatar = ref(avatarOptions.value[0])
 
-  // 🔹 Create an SVG string for the avatar
-  const svg = `
-    <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100" height="100" fill="${backgroundColor}" />
-      <text x="50%" y="55%" font-size="50" text-anchor="middle" fill="white" font-family="Arial" dy=".3em">
-        ${initial}
-      </text>
-    </svg>
-  `;
-
-  // 🔹 Convert SVG to Data URL
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
-};
-
-onMounted(() => {
-  const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
-  if (storedUser) {
-    user.value = JSON.parse(storedUser);
-
-    if (!user.value.profilePicture) {
-      user.value.profilePicture = generateProfilePicture(user.value.email);
-    }
-  }
-});
-
-
-const profile = reactive({
-  name: "",
-  position: 'System Administrator',
-  status: 'active',
-  department: 'crops',
-  joiningDate: '2023-01-15',
-  address: '123 Main St, City, Country',
-  phone: '+1 234 567 890',
-  email: 'jane@example.com',
-  about: 'Experienced farm administrator with certifications in animal care and equipment handling. Specialized in crop management and sustainable farming practices.',
-  certifications: [
-    'Animal Care Certified',
-    'Equipment Handler',
-    'Crop Management',
-    'Sustainable Farming'
-  ]
+const profileData = reactive({
+  name: '',
+  phone: ''
 })
 
 const passwordForm = reactive({
@@ -605,173 +476,261 @@ const passwordForm = reactive({
   confirm: ''
 })
 
-const activities = ref([
-  {
-    id: 1,
-    name: 'Greenhouse Visit',
-    date: '2024-01-19',
-    time: '14:30',
-    icon: Home,
-    description: 'Conducted a routine inspection of the greenhouse facilities and checked on plant health.'
-  },
-  {
-    id: 2,
-    name: 'Planting Session',
-    date: '2024-01-18',
-    time: '10:15',
-    icon: Sprout,
-    description: 'Planted a new batch of tomato seedlings in greenhouse section A.'
-  },
-  {
-    id: 3,
-    name: 'Harvesting',
-    date: '2024-01-17',
-    time: '09:45',
-    icon: Wheat,
-    description: 'Harvested mature lettuce crops from greenhouse section C for market delivery.'
-  },
-  {
-    id: 4,
-    name: 'Irrigation Check',
-    date: '2024-01-16',
-    time: '16:00',
-    icon: Droplet,
-    description: 'Performed maintenance on the automated irrigation system and adjusted water schedules.'
-  },
-  {
-    id: 5,
-    name: 'Pest Control',
-    date: '2024-01-15',
-    time: '11:30',
-    icon: Bug,
-    description: 'Applied organic pest control measures to combat aphid infestation in cucumber plants.'
-  }
-])
-
-const itemsPerPage = 3
-const currentPage = ref(1)
-
-const totalPages = computed(() => Math.ceil(activities.value.length / itemsPerPage))
-
-const paginatedActivities = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return activities.value.slice(start, end)
+const pinForm = reactive({
+  current: '',
+  new: '',
+  confirm: ''
 })
 
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
+const selectAvatar = (avatar) => {
+  selectedAvatar.value = avatar
+  showToastMessage(`Avatar changed to ${avatar.name}`)
+}
+
+const togglePasswordSection = () => {
+  showPasswordSection.value = !showPasswordSection.value
+  if (showPasswordSection.value) {
+    showPinSection.value = false
+  }
+  // Reset password visibility when closing
+  if (!showPasswordSection.value) {
+    showCurrentPassword.value = false
+    showNewPassword.value = false
+    showConfirmPassword.value = false
   }
 }
 
-const prevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
+const togglePinSection = () => {
+  showPinSection.value = !showPinSection.value
+  if (showPinSection.value) {
+    showPasswordSection.value = false
+  }
+  // Reset pin visibility when closing
+  if (!showPinSection.value) {
+    showCurrentPin.value = false
+    showNewPin.value = false
+    showConfirmPin.value = false
   }
 }
 
-const triggerImageUpload = () => {
-  imageInput.value.click()
+const showToastMessage = (message) => {
+  toastMessage.value = message
+  showToast.value = true
+  setTimeout(() => {
+    showToast.value = false
+  }, 3000)
 }
 
-const handleImageUpload = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      profileImage.value = e.target.result
-    }
-    reader.readAsDataURL(file)
+const saveProfile = () => {
+  if (!profileData.name.trim()) {
+    showToastMessage('Please enter your name')
+    return
   }
+  
+  if (!profileData.phone.trim()) {
+    showToastMessage('Please enter your phone number')
+    return
+  }
+  
+  const updatedUser = {
+    ...user.value,
+    name: profileData.name,
+    phone: profileData.phone,
+    avatar: selectedAvatar.value
+  }
+  
+  localStorage.setItem('user', JSON.stringify(updatedUser))
+  user.value = updatedUser
+  
+  showToastMessage('Profile updated successfully!')
 }
 
 const changePassword = () => {
-  // Implement password change logic
-  showPasswordModal.value = false
+  if (!passwordForm.current || !passwordForm.new || !passwordForm.confirm) {
+    showToastMessage('Please fill in all password fields')
+    return
+  }
+  
+  if (passwordForm.new !== passwordForm.confirm) {
+    showToastMessage('New passwords do not match')
+    return
+  }
+  
+  if (passwordForm.new.length < 6) {
+    showToastMessage('Password must be at least 6 characters')
+    return
+  }
+  
+  showPasswordSection.value = false
+  passwordForm.current = ''
+  passwordForm.new = ''
+  passwordForm.confirm = ''
+  showCurrentPassword.value = false
+  showNewPassword.value = false
+  showConfirmPassword.value = false
+  showToastMessage('Password updated successfully!')
 }
 
+const changePin = () => {
+  if (!pinForm.current || !pinForm.new || !pinForm.confirm) {
+    showToastMessage('Please fill in all pin fields')
+    return
+  }
+  
+  if (pinForm.new !== pinForm.confirm) {
+    showToastMessage('New pins do not match')
+    return
+  }
+  
+  if (pinForm.new.length !== 4) {
+    showToastMessage('Pin must be exactly 4 digits')
+    return
+  }
+  
+  showPinSection.value = false
+  pinForm.current = ''
+  pinForm.new = ''
+  pinForm.confirm = ''
+  showCurrentPin.value = false
+  showNewPin.value = false
+  showConfirmPin.value = false
+  showToastMessage('Pin code updated successfully!')
+}
 
 const logout = () => {
-  Notiflix.Confirm.show(
-    "Confirm Logout",
-    "Are you sure you want to log out?",
-    "Yes",
-    "Cancel",
-    () => {
-      localStorage.removeItem("user");
-      sessionStorage.removeItem("user");
-      router.push("/");
-      Notiflix.Notify.success("Logged out successfully!");
+  if (confirm('Are you sure you want to logout?')) {
+    localStorage.removeItem('user')
+    sessionStorage.removeItem('user')
+    router.push('/')
+    showToastMessage('Logged out successfully!')
+  }
+}
+
+onMounted(() => {
+  const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user')
+  if (storedUser) {
+    try {
+      user.value = JSON.parse(storedUser)
+      profileData.name = user.value.name || user.value.firstName + ' ' + user.value.lastName || ''
+      profileData.phone = user.value.phone || ''
+      if (user.value.avatar) {
+        selectedAvatar.value = user.value.avatar
+      }
+    } catch (e) {
+      console.error('Error parsing user data:', e)
     }
-  );
-};
-const currentView = ref('month')
-const currentMonth = ref('January')
-const currentYear = ref('2024')
-const currentDate = ref(new Date().getDate())
-
-const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-const years = Array.from({length: 11}, (_, i) => 2015 + i)
-
-const todaysTasks = ref([
-  {
-    id: 1,
-    time: '08:00 - 09:00',
-    activity: 'Check Greenhouse Temperature',
-  },
-  {
-    id: 2,
-    time: '10:00 - 11:30',
-    activity: 'Plant New Seedlings',
-  },
-  {
-    id: 3,
-    time: '14:00 - 15:00',
-    activity: 'Harvest Mature Crops',
   }
-])
-
-const getDisplayDate = (date) => {
-  if (date < 3) return 30 + date
-  if (date > 31) return date - 31
-  return date
-}
-
-const hasPlanting = (date) => date % 7 === 0
-const hasHarvesting = (date) => date % 5 === 0
-const hasInspection = (date) => date % 3 === 0
-
-const toggleDropdown = (view) => {
-  dropdownOpen.value = dropdownOpen.value === view ? null : view
-}
-
-const changeMonth = (direction) => {
-  let currentIndex = months.indexOf(currentMonth.value)
-  currentIndex += direction
-
-  if (currentIndex < 0) {
-    currentIndex = 11
-    currentYear.value--
-  } else if (currentIndex > 11) {
-    currentIndex = 0
-    currentYear.value++
-  }
-
-  currentMonth.value = months[currentIndex]
-}
-
-const setView = (view) => {
-  currentView.value = view
-}
-
-const selectMonth = (month) => {
-  currentMonth.value = month
-  dropdownOpen.value = null
-}
-
-const selectYear = (year) => {
-  currentYear.value = year
-  dropdownOpen.value = null
-}
+})
 </script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Custom scrollbar - MODIFIED FOR BETTER POSITIONING */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Smooth transitions */
+* {
+  transition: all 200ms ease-in-out;
+}
+
+/* Enhanced focus styles */
+input:focus {
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Enhanced button hover effects */
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Responsive adjustments - MODIFIED FOR BETTER SPACING */
+@media (max-width: 1024px) {
+  .w-\[30\%\] {
+    width: 35%;
+  }
+  
+  .grid-cols-1.md\\:grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .flex.gap-6 {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .w-\[30\%\] {
+    width: 100%;
+    min-height: 300px;
+  }
+  
+  .grid-cols-4 {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  
+  .w-28.h-28 {
+    width: 5rem;
+    height: 5rem;
+  }
+  
+  /* MOBILE SPECIFIC PADDING ADJUSTMENTS */
+  .px-3 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .p-6 {
+    padding: 1rem;
+  }
+  
+  .min-w-\[100px\] {
+    min-width: 80px;
+  }
+  
+  /* SMALL MOBILE ADJUSTMENTS */
+  .px-3 {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+  
+  .gap-2 {
+    gap: 0.375rem;
+  }
+}
+
+/* ADDITIONAL RESPONSIVE IMPROVEMENTS */
+@media (max-width: 480px) {
+  .grid-cols-4 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .w-11.h-11 {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+</style>

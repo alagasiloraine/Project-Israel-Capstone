@@ -5,15 +5,15 @@
       <div class="flex-1 w-full px-4 sm:px-6 md:px:8 lg:px-10 overflow-hidden">
         <!-- Enhanced main container with more appealing design -->
         <div class="bg-white rounded-lg shadow-lg border border-gray-100 h-[calc(100vh-140px)] flex flex-col overflow-hidden">
-          <!-- Gradient header for visual appeal -->
+          <!-- Gradient header for visual appeal - CHANGED TO EMERALD (GREEN) -->
           <div class="bg-gradient-to-r from-emerald-50 to-white p-6 border-b border-gray-100 rounded-t-lg">
             <!-- Header with controls aligned side by side -->
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <!-- Title and breadcrumb with enhanced styling -->
               <div>
-                <h1 class="text-xl font-semibold text-gray-800 mb-1">Water Level Data Table</h1>
+                <h1 class="text-xl font-semibold text-gray-800 mb-1">Soil pH Data Table</h1>
                 <div class="flex items-center text-sm text-gray-500">
-                  <span class="text-emerald-600 font-medium">Water Level</span>
+                  <span class="text-emerald-600 font-medium">Soil pH</span>
                   <ChevronRight class="h-3.5 w-3.5 mx-1 text-gray-400" />
                   <span class="text-gray-600">Data Table</span>
                 </div>
@@ -56,6 +56,7 @@
                           <input
                             v-model="filters[field.key].min"
                             type="number"
+                            step="0.1"
                             placeholder="Min"
                             class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
                           />
@@ -63,6 +64,7 @@
                           <input
                             v-model="filters[field.key].max"
                             type="number"
+                            step="0.1"
                             placeholder="Max"
                             class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
                           />
@@ -148,7 +150,7 @@
             <!-- Live Graph Container - Smaller width compared to table, now scrollable -->
             <div class="w-full md:w-1/3 lg:w-1/3 border-r border-gray-200 bg-white p-4 overflow-y-auto">
               <div class="mb-3">
-                <h3 class="text-sm font-semibold text-gray-700">Live Water Level</h3>
+                <h3 class="text-sm font-semibold text-gray-700">Live Soil pH</h3>
                 <p class="text-xs text-gray-500">Real-time monitoring</p>
               </div>
               
@@ -157,8 +159,8 @@
                 <!-- Graph Header with improved styling -->
                 <div class="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                   <div class="flex items-center">
-                    <div class="w-3 h-3 rounded-full bg-blue-500 mr-1.5"></div>
-                    <span class="text-xs font-medium text-gray-700">Level (%)</span>
+                    <div class="w-3 h-3 rounded-full bg-orange-500 mr-1.5"></div>
+                    <span class="text-xs font-medium text-gray-700">pH Level</span>
                   </div>
                   <div class="text-xs text-gray-500">
                     Last updated: {{ lastUpdated }}
@@ -173,9 +175,9 @@
                   <div class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-md px-2 py-1 shadow-sm border border-gray-100" style="max-width: 80px; z-index: 10;">
                     <div class="text-[10px] font-medium text-gray-500 mb-0.5">Current</div>
                     <div class="flex items-center">
-                      <div class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1"></div>
-                      <div class="text-xs font-bold text-blue-600">
-                        {{ currentWaterLevelValue }}%
+                      <div class="w-1.5 h-1.5 rounded-full bg-orange-500 mr-1"></div>
+                      <div class="text-xs font-bold text-orange-600">
+                        {{ currentPhValue }}
                       </div>
                     </div>
                   </div>
@@ -183,101 +185,81 @@
                 
                 <!-- Enhanced Graph Footer with Stats -->
                 <div class="border-t border-gray-100 p-3">
-                  <!-- Water Level Stats -->
+                  <!-- pH Stats -->
                   <div>
                     <div class="flex items-center mb-2">
-                      <div class="w-3 h-3 rounded-full bg-blue-500 mr-1.5"></div>
-                      <div class="text-sm font-medium text-gray-700">Water Level</div>
+                      <div class="w-3 h-3 rounded-full bg-orange-500 mr-1.5"></div>
+                      <div class="text-sm font-medium text-gray-700">Soil pH</div>
                     </div>
-                    <div class="grid grid-cols-3 gap-2 bg-blue-50/50 rounded-md p-2">
+                    <div class="grid grid-cols-3 gap-2 bg-orange-50/50 rounded-md p-2">
                       <div class="flex flex-col items-center p-1.5 bg-white rounded shadow-sm">
                         <div class="text-xs text-gray-500 mb-1">Min</div>
-                        <div class="text-sm font-semibold text-blue-600">{{ waterLevelStats.min }}%</div>
+                        <div class="text-sm font-semibold text-orange-600">{{ phStats.min }}</div>
                       </div>
                       <div class="flex flex-col items-center p-1.5 bg-white rounded shadow-sm">
                         <div class="text-xs text-gray-500 mb-1">Avg</div>
-                        <div class="text-sm font-semibold text-blue-600">{{ waterLevelStats.avg }}%</div>
+                        <div class="text-sm font-semibold text-orange-600">{{ phStats.avg }}</div>
                       </div>
                       <div class="flex flex-col items-center p-1.5 bg-white rounded shadow-sm">
                         <div class="text-xs text-gray-500 mb-1">Max</div>
-                        <div class="text-sm font-semibold text-blue-600">{{ waterLevelStats.max }}%</div>
+                        <div class="text-sm font-semibold text-orange-600">{{ phStats.max }}</div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
               
-              <!-- Water Status Guide -->
+              <!-- Soil pH Status Information -->
               <div class="bg-white rounded-lg border border-gray-100 shadow-sm p-4 mb-4">
-                <h4 class="text-sm font-semibold text-gray-700 mb-2">Water Drum Status Guide</h4>
+                <h4 class="text-sm font-semibold text-gray-700 mb-2">pH Status Guide</h4>
                 <div class="space-y-3">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                      <span class="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-2"></span>
-                      <span class="text-xs font-medium text-gray-700">Full</span>
+                      <span class="inline-block w-3 h-3 rounded-full bg-red-500 mr-2"></span>
+                      <span class="text-xs font-medium text-gray-700">Acidic</span>
                     </div>
-                    <span class="text-xs text-gray-500">80% - 100%</span>
+                    <span class="text-xs text-gray-500">< 3.5 - 6.5</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                      <span class="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span>
+                      <span class="text-xs font-medium text-gray-700">Neutral</span>
+                    </div>
+                    <span class="text-xs text-gray-500">6.6 - 7.3</span>
                   </div>
                   <div class="flex items-center justify-between">
                     <div class="flex items-center">
                       <span class="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
-                      <span class="text-xs font-medium text-gray-700">Sufficient</span>
+                      <span class="text-xs font-medium text-gray-700">Alkaline</span>
                     </div>
-                    <span class="text-xs text-gray-500">40% - 80%</span>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                      <span class="inline-block w-3 h-3 rounded-full bg-yellow-500 mr-2"></span>
-                      <span class="text-xs font-medium text-gray-700">Low</span>
-                    </div>
-                    <span class="text-xs text-gray-500">20% - 40%</span>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                      <span class="inline-block w-3 h-3 rounded-full bg-red-500 mr-2"></span>
-                      <span class="text-xs font-medium text-gray-700">Empty</span>
-                    </div>
-                    <span class="text-xs text-gray-500">< 20%</span>
+                    <span class="text-xs text-gray-500">7.4 - >9.0</span>
                   </div>
                 </div>
               </div>
               
-              <!-- Water Level Indicators -->
+              <!-- Optimal Ranges section -->
               <div class="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
-                <h4 class="text-sm font-semibold text-gray-700 mb-2">Water Drum Capacity</h4>
+                <h4 class="text-sm font-semibold text-gray-700 mb-2">Optimal Ranges</h4>
                 <div class="space-y-3">
                   <div>
                     <div class="flex items-center mb-1">
-                      <div class="w-2 h-2 rounded-full bg-blue-500 mr-1"></div>
-                      <span class="text-xs font-medium text-gray-700">Current Water Level</span>
+                      <div class="w-2 h-2 rounded-full bg-orange-500 mr-1"></div>
+                      <span class="text-xs font-medium text-gray-700">Soil pH</span>
                     </div>
-                    <div class="h-4 bg-gray-100 rounded-full overflow-hidden relative">
-                      <div class="absolute inset-0 flex">
-                        <div class="h-full bg-red-500 w-[20%] flex items-center justify-center">
-                          <span class="text-[8px] text-white font-bold">Empty</span>
-                        </div>
-                        <div class="h-full bg-yellow-500 w-[20%] flex items-center justify-center">
-                          <span class="text-[8px] text-white font-bold">Low</span>
-                        </div>
-                        <div class="h-full bg-blue-500 w-[40%] flex items-center justify-center">
-                          <span class="text-[8px] text-white font-bold">Sufficient</span>
-                        </div>
-                        <div class="h-full bg-emerald-500 w-[20%] flex items-center justify-center">
-                          <span class="text-[8px] text-white font-bold">Full</span>
-                        </div>
-                      </div>
+                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div class="h-full rounded-full" style="width: 100%; background: linear-gradient(to right, #dc2626 0%, #ea580c 16.67%, #eab308 33.33%, #16a34a 50%, #2563eb 66.67%, #9333ea 83.33%, #7c3aed 100%);"></div>
                     </div>
                     <div class="flex justify-between mt-1 text-[10px] text-gray-500">
-                      <span>0%</span>
-                      <span>20%</span>
-                      <span>40%</span>
-                      <span>80%</span>
-                      <span>100%</span>
+                      <span>3.5</span>
+                      <span>6.5</span>
+                      <span>7.3</span>
+                      <span>9.0</span>
                     </div>
-                  </div>
-                  <div class="mt-3 text-xs text-gray-600">
-                    <p class="mb-1"><span class="font-medium">Refill needed:</span> When water level drops below 20%</p>
-                    <p><span class="font-medium">Optimal usage:</span> Keep water level between 40% - 80%</p>
+                    <div class="flex justify-between mt-1 text-[9px] text-gray-400">
+                      <span>Acidic</span>
+                      <span>Neutral</span>
+                      <span>Alkaline</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -294,12 +276,12 @@
                         ID
                       </th>
                       <th class="w-[25%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
-                        <div class="text-emerald-600">Water Status</div>
-                        <div class="text-gray-400 text-[10px]">CONDITION</div>
+                        <div class="text-orange-600">Soil pH</div>
+                        <div class="text-gray-400 text-[10px]">pH LEVEL</div>
                       </th>
                       <th class="w-[25%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
-                        <div class="text-blue-600">Water Level</div>
-                        <div class="text-gray-400 text-[10px]">PERCENTAGE (%)</div>
+                        <div class="text-orange-600">pH Status</div>
+                        <div class="text-gray-400 text-[10px]">CONDITION</div>
                       </th>
                       <th class="w-[20%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
                         <div class="text-gray-600">Date</div>
@@ -327,22 +309,21 @@
                         <div class="text-sm font-medium text-gray-700">{{ row.id }}</div>
                       </td>
                       <td class="w-[25%] px-4 py-3.5 whitespace-nowrap">
+                        <div class="text-sm font-medium text-orange-600">
+                          {{ row.soilPh }}
+                        </div>
+                      </td>
+                      <td class="w-[25%] px-4 py-3.5 whitespace-nowrap">
                         <span 
                           :class="[
                             'px-3 py-1 rounded-full text-xs font-medium',
-                            row.status === 'FULL' ? 'bg-emerald-100 text-emerald-800' :
-                            row.status === 'SUFFICIENT' ? 'bg-blue-100 text-blue-800' :
-                            row.status === 'LOW' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
+                            row.phStatus === 'NEUTRAL' ? 'bg-green-100 text-green-800' :
+                            row.phStatus === 'ACIDIC' ? 'bg-red-100 text-red-800' :
+                            'bg-blue-100 text-blue-800'
                           ]"
                         >
-                          {{ row.status }}
+                          {{ row.phStatus }}
                         </span>
-                      </td>
-                      <td class="w-[25%] px-4 py-3.5 whitespace-nowrap">
-                        <div class="text-sm font-medium text-blue-600">
-                          {{ row.waterLevel }}%
-                        </div>
                       </td>
                       <td class="w-[20%] px-4 py-3.5 whitespace-nowrap">
                         <div class="text-sm font-medium text-gray-700">{{ row.date }}</div>
@@ -356,7 +337,7 @@
                       <td colspan="5" class="px-6 py-16 text-center">
                         <div class="flex flex-col items-center justify-center">
                           <FileSearch class="h-16 w-16 text-gray-300 mb-4" />
-                          <p class="text-gray-500 text-lg font-medium">No water level data found</p>
+                          <p class="text-gray-500 text-lg font-medium">No soil pH data found</p>
                           <p class="text-gray-400 text-sm mt-1">Try adjusting your search or filters</p>
                         </div>
                       </td>
@@ -367,7 +348,7 @@
             </div>
           </div>
   
-          <!-- Fixed Pagination Section with enhanced styling -->
+          <!-- Fixed Pagination Section with enhanced styling - CHANGED TO EMERALD (GREEN) -->
           <div class="border-t border-gray-100 py-4 px-6 bg-gradient-to-r from-white to-emerald-50 rounded-b-lg">
             <!-- Enhanced Pagination -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -415,7 +396,7 @@
                         ? 'text-white bg-emerald-500 font-semibold'
                         : page === '...'
                           ? 'cursor-default text-gray-400'
-                          : 'text-gray-700 hover:text-emerald-600 hover:bg-emerald-50'
+                          : 'text-gray-700 hover:text-emerald-600 hover:hover:bg-emerald-50'
                     ]"
                   >
                     {{ page }}
@@ -442,8 +423,8 @@
     <!-- Loading Page Component -->
     <LoadingPage 
       :isVisible="isLoading" 
-      title="Loading Water Level Data" 
-      message="Please wait while we fetch the latest water level measurements"
+      title="Loading Soil pH Data" 
+      message="Please wait while we fetch the latest soil pH measurements"
     />
     <Settings />
   </div>
@@ -462,14 +443,15 @@ import {
   orderBy,
   getDocs,
   onSnapshot,
-  limit
+  limit,
+  Timestamp
 } from 'firebase/firestore'
 
 // Chart.js import
 import Chart from 'chart.js/auto'
 
 const db = getFirestore()
-const waterLevelData = ref([])
+const soilPhData = ref([])
 const isLoading = ref(true)
 
 // Chart references
@@ -480,9 +462,9 @@ const chart = ref(null)
 const chartData = ref([])
 
 // Current values and stats
-const currentWaterLevelValue = ref('--')
+const currentPhValue = ref('--')
 const lastUpdated = ref('--')
-const waterLevelStats = ref({
+const phStats = ref({
   min: '--',
   max: '--',
   avg: '--'
@@ -491,46 +473,110 @@ const waterLevelStats = ref({
 // Prefetch data cache
 const dataCache = ref(null)
 
-// Optimized data fetching with caching
-const fetchWaterLevelData = async () => {
+// Fetch soil pH data from Firebase
+const fetchSoilPhData = async () => {
   try {
     // If we already have cached data, use it immediately to show something
     if (dataCache.value) {
-      waterLevelData.value = dataCache.value
+      soilPhData.value = dataCache.value
       isLoading.value = false
       initializeChartData(dataCache.value)
     } else {
       isLoading.value = true
     }
     
-    // Query the water_level_readings collection
-    const waterQuery = query(
-      collection(db, "water_level_readings"),
-      orderBy("timestamp", "desc")  // Latest first
-    )
+    // Fetch from all ESP32 devices that might have soil pH data
+    const allReadings = []
     
-    // Use Promise.race to handle timeout
-    const fetchPromise = getDocs(waterQuery)
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Fetch timeout')), 10000)
-    )
-    
-    const waterSnapshot = await Promise.race([fetchPromise, timeoutPromise])
-    
-    // Process water level readings
-    const processedData = waterSnapshot.docs
-      .filter(doc => doc.data().waterLevel !== undefined)
-      .map((doc, index) => {
+    // Fetch from esp32-1 (primary soil pH sensor)
+    try {
+      const esp32_1_query = query(
+        collection(db, "3sensor_readings", "esp32-1", "readings"),
+        orderBy("timestamp", "desc")
+      )
+      const esp32_1_snapshot = await getDocs(esp32_1_query)
+      
+      esp32_1_snapshot.docs.forEach(doc => {
         const data = doc.data()
-        
+        if (data.soilPh !== undefined && data.soilPh !== null) {
+          allReadings.push({
+            ...data,
+            deviceId: 'esp32-1',
+            docId: doc.id
+          })
+        }
+      })
+      console.log(`📥 ESP32-1 Soil pH readings: ${esp32_1_snapshot.docs.length}`)
+    } catch (error) {
+      console.error("❌ Error fetching from ESP32-1:", error)
+    }
+
+    // Fetch from esp32-2 (backup soil pH sensor if available)
+    try {
+      const esp32_2_query = query(
+        collection(db, "3sensor_readings", "esp32-2", "readings"),
+        orderBy("timestamp", "desc")
+      )
+      const esp32_2_snapshot = await getDocs(esp32_2_query)
+      
+      esp32_2_snapshot.docs.forEach(doc => {
+        const data = doc.data()
+        if (data.soilPh !== undefined && data.soilPh !== null) {
+          allReadings.push({
+            ...data,
+            deviceId: 'esp32-2',
+            docId: doc.id
+          })
+        }
+      })
+      console.log(`📥 ESP32-2 Soil pH readings: ${esp32_2_snapshot.docs.length}`)
+    } catch (error) {
+      console.error("❌ Error fetching from ESP32-2:", error)
+    }
+
+    // Fetch from esp32-3 (additional soil pH sensor if available)
+    try {
+      const esp32_3_query = query(
+        collection(db, "3sensor_readings", "esp32-3", "readings"),
+        orderBy("timestamp", "desc")
+      )
+      const esp32_3_snapshot = await getDocs(esp32_3_query)
+      
+      esp32_3_snapshot.docs.forEach(doc => {
+        const data = doc.data()
+        if (data.soilPh !== undefined && data.soilPh !== null) {
+          allReadings.push({
+            ...data,
+            deviceId: 'esp32-3',
+            docId: doc.id
+          })
+        }
+      })
+      console.log(`📥 ESP32-3 Soil pH readings: ${esp32_3_snapshot.docs.length}`)
+    } catch (error) {
+      console.error("❌ Error fetching from ESP32-3:", error)
+    }
+
+    // Sort all readings by timestamp (newest first)
+    allReadings.sort((a, b) => {
+      const aTime = a.timestamp instanceof Timestamp ? a.timestamp.toDate() : new Date(a.timestamp.seconds * 1000)
+      const bTime = b.timestamp instanceof Timestamp ? b.timestamp.toDate() : new Date(b.timestamp.seconds * 1000)
+      return bTime - aTime
+    })
+
+    // Process soil pH readings
+    const processedData = allReadings
+      .filter(reading => reading.soilPh !== undefined)
+      .map((reading, index) => {
         // Handle timestamp
         let formattedDate = '--'
         let formattedTime = '--'
         let timestampSeconds = 0
         
         try {
-          const timestamp = data.timestamp?.toDate?.() || 
-              (data.timestamp?.seconds ? new Date(data.timestamp.seconds * 1000) : new Date())
+          const timestamp = reading.timestamp instanceof Timestamp 
+            ? reading.timestamp.toDate() 
+            : new Date(reading.timestamp.seconds * 1000)
           
           // Format date as "MMM DD, YYYY" (e.g., "May 09, 2024")
           formattedDate = timestamp.toLocaleDateString('en-US', {
@@ -547,27 +593,30 @@ const fetchWaterLevelData = async () => {
             hour12: false
           });
           
-          timestampSeconds = data.timestamp?.seconds || timestamp.getTime() / 1000
+          timestampSeconds = reading.timestamp instanceof Timestamp 
+            ? reading.timestamp.seconds 
+            : timestamp.getTime() / 1000
         } catch (e) {
           console.error("Error formatting date:", e)
         }
 
-        // Calculate water status based on level
-        const waterLevel = data.waterLevel !== undefined && data.waterLevel !== null 
-          ? Number(data.waterLevel).toFixed(2) 
+        // Calculate pH status based on pH level
+        const soilPh = reading.soilPh !== undefined && reading.soilPh !== null 
+          ? Number(reading.soilPh).toFixed(1) 
           : '--'
         
-        const status = calculateWaterStatus(Number(data.waterLevel))
+        const phStatus = calculatePhStatus(Number(reading.soilPh))
 
         // Return processed data
         return {
           id: index + 1,
           timestamp: timestampSeconds,
-          waterLevel: waterLevel,
-          status: status,
+          soilPh: soilPh,
+          phStatus: phStatus,
           date: formattedDate,
           time: formattedTime,
-          rawTimestamp: data.timestamp
+          rawTimestamp: reading.timestamp,
+          deviceId: reading.deviceId
         }
       })
 
@@ -575,101 +624,142 @@ const fetchWaterLevelData = async () => {
     dataCache.value = processedData
     
     // Update the UI with minimal delay
-    waterLevelData.value = processedData
+    soilPhData.value = processedData
     isLoading.value = false
     
     // Initialize chart data after loading
     initializeChartData(processedData)
+    
+    console.log(`✅ Total processed soil pH readings: ${processedData.length}`)
   } catch (error) {
-    console.error("❌ Error fetching water level data:", error)
+    console.error("❌ Error fetching soil pH data:", error)
     isLoading.value = false
     
     // If we have cached data, use it as fallback
     if (dataCache.value) {
-      waterLevelData.value = dataCache.value
+      soilPhData.value = dataCache.value
       initializeChartData(dataCache.value)
     }
   }
 }
 
-// Setup real-time listener for chart data with optimized performance
+// Setup real-time listener for new collection structure
 const setupRealtimeListener = () => {
-  // Query for the most recent readings (limit to 20 for the chart)
-  const realtimeQuery = query(
-    collection(db, "water_level_readings"),
+  // Set up listeners for all ESP32 devices
+  const unsubscribeFunctions = []
+  
+  // ESP32-1 listener (primary soil pH sensor)
+  const esp32_1_query = query(
+    collection(db, "3sensor_readings", "esp32-1", "readings"),
     orderBy("timestamp", "desc"),
-    limit(20)
+    limit(10)
   )
   
-  // Set up the listener with error handling and debouncing
-  let debounceTimer = null
-  let lastUpdateTime = Date.now()
-  
-  return onSnapshot(realtimeQuery, (snapshot) => {
-    // Debounce updates to prevent too frequent rendering
-    if (debounceTimer) clearTimeout(debounceTimer)
-    
-    // If it's been less than 500ms since the last update, debounce
-    const now = Date.now()
-    const timeSinceLastUpdate = now - lastUpdateTime
-    
-    if (timeSinceLastUpdate < 500) {
-      debounceTimer = setTimeout(() => processSnapshot(snapshot), 500 - timeSinceLastUpdate)
-    } else {
-      processSnapshot(snapshot)
-      lastUpdateTime = now
-    }
+  const unsubscribe1 = onSnapshot(esp32_1_query, (snapshot) => {
+    processRealtimeSnapshot(snapshot, 'esp32-1')
   }, (error) => {
-    console.error("Error in realtime listener:", error)
+    console.error("Error in ESP32-1 realtime listener:", error)
   })
   
-  function processSnapshot(snapshot) {
-    // Process the data for the chart
-    const newData = snapshot.docs
-      .filter(doc => doc.data().waterLevel !== undefined)
-      .map(doc => {
-        const data = doc.data()
-        const timestamp = data.timestamp?.toDate?.() || 
-          (data.timestamp?.seconds ? new Date(data.timestamp.seconds * 1000) : new Date())
-        
-        return {
-          timestamp,
-          value: Number(data.waterLevel)
-        }
-      })
-      .sort((a, b) => a.timestamp - b.timestamp) // Sort by timestamp ascending for the chart
-    
-    // Update chart data
-    chartData.value = newData
-    
-    // Update current value and stats
-    if (newData.length > 0) {
-      // Get the most recent value
-      const latestReading = newData[newData.length - 1]
-      currentWaterLevelValue.value = latestReading.value.toFixed(2)
-      
-      // Update last updated time
-      lastUpdated.value = latestReading.timestamp.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      })
-      
-      // Calculate stats
-      const values = newData.map(item => item.value)
-      waterLevelStats.value = {
-        min: Math.min(...values).toFixed(2),
-        max: Math.max(...values).toFixed(2),
-        avg: (values.reduce((sum, val) => sum + val, 0) / values.length).toFixed(2)
-      }
-    }
-    
-    // Use requestAnimationFrame for smoother chart updates
-    requestAnimationFrame(() => {
-      updateChart()
-    })
+  unsubscribeFunctions.push(unsubscribe1)
+
+  // ESP32-2 listener (backup soil pH sensor)
+  const esp32_2_query = query(
+    collection(db, "3sensor_readings", "esp32-2", "readings"),
+    orderBy("timestamp", "desc"),
+    limit(10)
+  )
+  
+  const unsubscribe2 = onSnapshot(esp32_2_query, (snapshot) => {
+    processRealtimeSnapshot(snapshot, 'esp32-2')
+  }, (error) => {
+    console.error("Error in ESP32-2 realtime listener:", error)
+  })
+  
+  unsubscribeFunctions.push(unsubscribe2)
+
+  // Return a function that unsubscribes from all listeners
+  return () => {
+    unsubscribeFunctions.forEach(unsubscribe => unsubscribe())
   }
+}
+
+// Process realtime snapshot data
+let debounceTimer = null
+let lastUpdateTime = Date.now()
+let combinedRealtimeData = []
+
+const processRealtimeSnapshot = (snapshot, deviceId) => {
+  // Debounce updates to prevent too frequent rendering
+  if (debounceTimer) clearTimeout(debounceTimer)
+  
+  // If it's been less than 500ms since the last update, debounce
+  const now = Date.now()
+  const timeSinceLastUpdate = now - lastUpdateTime
+  
+  if (timeSinceLastUpdate < 500) {
+    debounceTimer = setTimeout(() => updateRealtimeData(snapshot, deviceId), 500 - timeSinceLastUpdate)
+  } else {
+    updateRealtimeData(snapshot, deviceId)
+    lastUpdateTime = now
+  }
+}
+
+const updateRealtimeData = (snapshot, deviceId) => {
+  // Process the data for the chart
+  const newData = snapshot.docs
+    .filter(doc => doc.data().soilPh !== undefined)
+    .map(doc => {
+      const data = doc.data()
+      const timestamp = data.timestamp instanceof Timestamp 
+        ? data.timestamp.toDate() 
+        : new Date(data.timestamp.seconds * 1000)
+      
+      return {
+        timestamp,
+        value: Number(data.soilPh),
+        deviceId
+      }
+    })
+  
+  // Update combined realtime data
+  combinedRealtimeData = combinedRealtimeData.filter(item => item.deviceId !== deviceId)
+  combinedRealtimeData.push(...newData)
+  
+  // Sort by timestamp and keep only the most recent 20 readings
+  combinedRealtimeData.sort((a, b) => a.timestamp - b.timestamp)
+  combinedRealtimeData = combinedRealtimeData.slice(-20)
+  
+  // Update chart data
+  chartData.value = combinedRealtimeData
+  
+  // Update current value and stats
+  if (combinedRealtimeData.length > 0) {
+    // Get the most recent value
+    const latestReading = combinedRealtimeData[combinedRealtimeData.length - 1]
+    currentPhValue.value = latestReading.value.toFixed(1)
+    
+    // Update last updated time
+    lastUpdated.value = latestReading.timestamp.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    })
+    
+    // Calculate stats
+    const values = combinedRealtimeData.map(item => item.value)
+    phStats.value = {
+      min: Math.min(...values).toFixed(1),
+      max: Math.max(...values).toFixed(1),
+      avg: (values.reduce((sum, val) => sum + val, 0) / values.length).toFixed(1)
+    }
+  }
+  
+  // Use requestAnimationFrame for smoother chart updates
+  requestAnimationFrame(() => {
+    updateChart()
+  })
 }
 
 // Initialize chart data from fetched data
@@ -677,18 +767,21 @@ const initializeChartData = (data) => {
   // Take the most recent 20 entries for initial chart data
   const initialChartData = data.slice(0, 20)
     .map(item => ({
-      timestamp: item.rawTimestamp?.toDate?.() || 
-        (item.rawTimestamp?.seconds ? new Date(item.rawTimestamp.seconds * 1000) : new Date()),
-      value: Number(item.waterLevel)
+      timestamp: item.rawTimestamp instanceof Timestamp 
+        ? item.rawTimestamp.toDate() 
+        : new Date(item.rawTimestamp.seconds * 1000),
+      value: Number(item.soilPh),
+      deviceId: item.deviceId || 'unknown'
     }))
     .sort((a, b) => a.timestamp - b.timestamp) // Sort by timestamp ascending for the chart
   
   chartData.value = initialChartData
+  combinedRealtimeData = initialChartData
   
   // Set initial current value and stats
   if (initialChartData.length > 0) {
     const latestReading = initialChartData[initialChartData.length - 1]
-    currentWaterLevelValue.value = latestReading.value.toFixed(2)
+    currentPhValue.value = latestReading.value.toFixed(1)
     
     lastUpdated.value = latestReading.timestamp.toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -698,10 +791,10 @@ const initializeChartData = (data) => {
     })
     
     const values = initialChartData.map(item => item.value)
-    waterLevelStats.value = {
-      min: Math.min(...values).toFixed(2),
-      max: Math.max(...values).toFixed(2),
-      avg: (values.reduce((sum, val) => sum + val, 0) / values.length).toFixed(2)
+    phStats.value = {
+      min: Math.min(...values).toFixed(1),
+      max: Math.max(...values).toFixed(1),
+      avg: (values.reduce((sum, val) => sum + val, 0) / values.length).toFixed(1)
     }
   }
   
@@ -732,17 +825,17 @@ const initializeChart = () => {
             })
           }),
           datasets: [{
-            label: 'Water Level (%)',
+            label: 'Soil pH',
             data: chartData.value.map(item => item.value),
-            borderColor: '#3b82f6', // blue-500
-            backgroundColor: 'rgba(59, 130, 246, 0.15)', // blue-500 with opacity
+            borderColor: '#f97316', // orange-500
+            backgroundColor: 'rgba(249, 115, 22, 0.15)', // orange-500 with opacity
             borderWidth: 2.5,
             tension: 0.4,
             fill: true,
             pointRadius: 3,
             pointHoverRadius: 5,
             pointBackgroundColor: '#ffffff',
-            pointBorderColor: '#3b82f6',
+            pointBorderColor: '#f97316',
             pointBorderWidth: 1.5
           }]
         },
@@ -768,12 +861,12 @@ const initializeChart = () => {
           scales: {
             y: {
               beginAtZero: false,
-              min: Math.max(0, Math.floor(waterLevelStats.value.min * 0.95)),
-              max: Math.min(100, Math.ceil(waterLevelStats.value.max * 1.05)),
+              min: Math.max(0, Math.floor(phStats.value.min * 0.95)),
+              max: Math.min(14, Math.ceil(phStats.value.max * 1.05)),
               title: {
                 display: true,
-                text: 'Level (%)',
-                color: '#3b82f6',
+                text: 'pH Level',
+                color: '#f97316',
                 font: {
                   size: 11,
                   weight: '600'
@@ -834,7 +927,7 @@ const initializeChart = () => {
               },
               callbacks: {
                 label: function(context) {
-                  return `Level: ${context.raw.toFixed(2)}%`;
+                  return `pH: ${context.raw.toFixed(1)}`;
                 }
               }
             }
@@ -861,25 +954,24 @@ const updateChart = () => {
     chart.value.data.datasets[0].data = chartData.value.map(item => item.value)
     
     // Update y-axis scale based on new data
-    chart.value.options.scales.y.min = Math.max(0, Math.floor(waterLevelStats.value.min * 0.95))
-    chart.value.options.scales.y.max = Math.min(100, Math.ceil(waterLevelStats.value.max * 1.05))
+    chart.value.options.scales.y.min = Math.max(0, Math.floor(phStats.value.min * 0.95))
+    chart.value.options.scales.y.max = Math.min(14, Math.ceil(phStats.value.max * 1.05))
     
     // Use a more performant update
     chart.value.update('none') // 'none' mode skips animations for better performance
   }
 }
 
-// Function to determine water status based on level
-const calculateWaterStatus = (level) => {
-  if (level >= 80) return 'FULL'
-  if (level >= 40) return 'SUFFICIENT'
-  if (level >= 20) return 'LOW'
-  return 'EMPTY'
+// Function to determine pH status based on pH level
+const calculatePhStatus = (ph) => {
+  if (ph < 6.6) return 'ACIDIC'
+  if (ph >= 6.6 && ph <= 7.3) return 'NEUTRAL'
+  return 'ALKALINE'
 }
 
 // Initialize filters object
 const filters = ref({
-  waterLevel: { min: '', max: '' }
+  soilPh: { min: '', max: '' }
 })
 
 // Reactive state
@@ -892,13 +984,13 @@ const sortDirection = ref('asc')
 const activeFilters = ref({})
 
 const filterFields = [
-  { key: 'waterLevel', label: 'Water Level (%)' }
+  { key: 'soilPh', label: 'Soil pH Level' }
 ]
 
 const headers = [
   { key: 'id', label: 'ID' },
-  { key: 'status', label: 'Water Status' },
-  { key: 'waterLevel', label: 'Water Level (%)' },
+  { key: 'soilPh', label: 'Soil pH' },
+  { key: 'phStatus', label: 'pH Status' },
   { key: 'date', label: 'Date' },
   { key: 'time', label: 'Time' }
 ]
@@ -907,7 +999,7 @@ const exportFormats = ['csv', 'pdf', 'docs']
 
 // Computed properties with memoization for better performance
 const filteredData = computed(() => {
-  let result = [...waterLevelData.value]
+  let result = [...soilPhData.value]
 
   // Apply search filter
   if (searchQuery.value) {
@@ -1108,7 +1200,7 @@ const exportAsCSV = (data) => {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.setAttribute('href', url)
-  link.setAttribute('download', 'water_level_data.csv')
+  link.setAttribute('download', 'soil_ph_data.csv')
   link.style.visibility = 'hidden'
   document.body.appendChild(link)
   link.click()
@@ -1142,7 +1234,7 @@ onMounted(() => {
   // Implement progressive loading strategy
   // 1. First try to get data from cache (if any)
   // 2. Then fetch fresh data
-  fetchWaterLevelData()
+  fetchSoilPhData()
   
   // Set up realtime listener
   unsubscribe = setupRealtimeListener()
@@ -1348,7 +1440,7 @@ thead th, tbody td {
 
   th, td {
     padding-left: 0.25rem !important;
-    padding-right: 0.25rem !important;
+    padding-right: 0.25rem !important;  
     font-size: 0.75rem;
   }
 }

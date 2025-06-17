@@ -388,7 +388,7 @@
                         ? 'text-white bg-emerald-500 font-semibold'
                         : page === '...'
                           ? 'cursor-default text-gray-400'
-                          : 'text-gray-700 hover:text-emerald-600 hover:bg-emerald-50'
+                          : 'text-gray-700 hover:text-emerald-600 hover:hover:bg-emerald-50'
                     ]"
                   >
                     {{ page }}
@@ -419,6 +419,7 @@
       message="Please wait while we fetch the latest soil moisture measurements"
     />
   </div>
+  <Settings />
 </template>
   
 <script setup>
@@ -426,6 +427,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { Search, Filter, Download, ChevronDown, ChevronRight, ChevronLeft, ArrowUpDown, FileText, FileSearch } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
 import LoadingPage from '../layout/LoadingPage.vue'
+import Settings from '../layout/Settings.vue'
 import {
   getFirestore,
   collection,
@@ -433,7 +435,8 @@ import {
   orderBy,
   getDocs,
   onSnapshot,
-  limit
+  limit,
+  Timestamp
 } from 'firebase/firestore'
 
 // Chart.js import
@@ -462,7 +465,7 @@ const moistureStats = ref({
 // Prefetch data cache
 const dataCache = ref(null)
 
-// Optimized data fetching with caching
+// ✅ MODIFIED: Updated to fetch from new 3sensor_readings collection structure
 const fetchSoilMoistureData = async () => {
   try {
     // If we already have cached data, use it immediately to show something
@@ -474,34 +477,98 @@ const fetchSoilMoistureData = async () => {
       isLoading.value = true
     }
     
-    // Query the sensor_readings collection
-    const soilQuery = query(
-      collection(db, "sensor_readings"),
-      orderBy("timestamp", "desc")  // Latest first
-    )
+    // Fetch from all ESP32 devices that might have soil moisture data
+    const allReadings = []
     
-    // Use Promise.race to handle timeout
-    const fetchPromise = getDocs(soilQuery)
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Fetch timeout')), 10000)
-    )
-    
-    const soilSnapshot = await Promise.race([fetchPromise, timeoutPromise])
-    
-    // Process soil readings
-    const processedData = soilSnapshot.docs
-      .filter(doc => doc.data().soilMoisture !== undefined)
-      .map((doc, index) => {
+    // Fetch from esp32-2 (primary soil moisture sensor)
+    try {
+      const esp32_2_query = query(
+        collection(db, "3sensor_readings", "esp32-2", "readings"),
+        orderBy("timestamp", "desc")
+      )
+      const esp32_2_snapshot = await getDocs(esp32_2_query)
+      
+      esp32_2_snapshot.docs.forEach(doc => {
         const data = doc.data()
-        
+        if (data.soilMoisture !== undefined && data.soilMoisture !== null) {
+          allReadings.push({
+            ...data,
+            deviceId: 'esp32-2',
+            docId: doc.id
+          })
+        }
+      })
+      console.log(`📥 ESP32-2 Soil Moisture readings: ${esp32_2_snapshot.docs.length}`)
+    } catch (error) {
+      console.error("❌ Error fetching from ESP32-2:", error)
+    }
+
+    // Fetch from esp32-1 (backup soil moisture sensor if available)
+    try {
+      const esp32_1_query = query(
+        collection(db, "3sensor_readings", "esp32-1", "readings"),
+        orderBy("timestamp", "desc")
+      )
+      const esp32_1_snapshot = await getDocs(esp32_1_query)
+      
+      esp32_1_snapshot.docs.forEach(doc => {
+        const data = doc.data()
+        if (data.soilMoisture !== undefined && data.soilMoisture !== null) {
+          allReadings.push({
+            ...data,
+            deviceId: 'esp32-1',
+            docId: doc.id
+          })
+        }
+      })
+      console.log(`📥 ESP32-1 Soil Moisture readings: ${esp32_1_snapshot.docs.length}`)
+    } catch (error) {
+      console.error("❌ Error fetching from ESP32-1:", error)
+    }
+
+    // Fetch from esp32-3 (additional soil moisture sensor if available)
+    try {
+      const esp32_3_query = query(
+        collection(db, "3sensor_readings", "esp32-3", "readings"),
+        orderBy("timestamp", "desc")
+      )
+      const esp32_3_snapshot = await getDocs(esp32_3_query)
+      
+      esp32_3_snapshot.docs.forEach(doc => {
+        const data = doc.data()
+        if (data.soilMoisture !== undefined && data.soilMoisture !== null) {
+          allReadings.push({
+            ...data,
+            deviceId: 'esp32-3',
+            docId: doc.id
+          })
+        }
+      })
+      console.log(`📥 ESP32-3 Soil Moisture readings: ${esp32_3_snapshot.docs.length}`)
+    } catch (error) {
+      console.error("❌ Error fetching from ESP32-3:", error)
+    }
+
+    // Sort all readings by timestamp (newest first)
+    allReadings.sort((a, b) => {
+      const aTime = a.timestamp instanceof Timestamp ? a.timestamp.toDate() : new Date(a.timestamp.seconds * 1000)
+      const bTime = b.timestamp instanceof Timestamp ? b.timestamp.toDate() : new Date(b.timestamp.seconds * 1000)
+      return bTime - aTime
+    })
+
+    // Process soil moisture readings
+    const processedData = allReadings
+      .filter(reading => reading.soilMoisture !== undefined)
+      .map((reading, index) => {
         // Handle timestamp
         let formattedDate = '--'
         let formattedTime = '--'
         let timestampSeconds = 0
         
         try {
-          const timestamp = data.timestamp?.toDate?.() || 
-              (data.timestamp?.seconds ? new Date(data.timestamp.seconds * 1000) : new Date())
+          const timestamp = reading.timestamp instanceof Timestamp 
+            ? reading.timestamp.toDate() 
+            : new Date(reading.timestamp.seconds * 1000)
           
           // Format date as "MMM DD, YYYY" (e.g., "May 09, 2024")
           formattedDate = timestamp.toLocaleDateString('en-US', {
@@ -518,17 +585,19 @@ const fetchSoilMoistureData = async () => {
             hour12: false
           });
           
-          timestampSeconds = data.timestamp?.seconds || timestamp.getTime() / 1000
+          timestampSeconds = reading.timestamp instanceof Timestamp 
+            ? reading.timestamp.seconds 
+            : timestamp.getTime() / 1000
         } catch (e) {
           console.error("Error formatting date:", e)
         }
 
         // Calculate soil status based on moisture level
-        const soilMoisture = data.soilMoisture !== undefined && data.soilMoisture !== null 
-          ? Number(data.soilMoisture).toFixed(2) 
+        const soilMoisture = reading.soilMoisture !== undefined && reading.soilMoisture !== null 
+          ? Number(reading.soilMoisture).toFixed(2) 
           : '--'
         
-        const soilStatus = calculateSoilStatus(Number(data.soilMoisture))
+        const soilStatus = calculateSoilStatus(Number(reading.soilMoisture))
 
         // Return processed data
         return {
@@ -538,7 +607,8 @@ const fetchSoilMoistureData = async () => {
           soilStatus: soilStatus,
           date: formattedDate,
           time: formattedTime,
-          rawTimestamp: data.timestamp
+          rawTimestamp: reading.timestamp,
+          deviceId: reading.deviceId
         }
       })
 
@@ -551,6 +621,8 @@ const fetchSoilMoistureData = async () => {
     
     // Initialize chart data after loading
     initializeChartData(processedData)
+    
+    console.log(`✅ Total processed soil moisture readings: ${processedData.length}`)
   } catch (error) {
     console.error("❌ Error fetching soil moisture data:", error)
     isLoading.value = false
@@ -563,84 +635,123 @@ const fetchSoilMoistureData = async () => {
   }
 }
 
-// Setup real-time listener for chart data with optimized performance
+// ✅ MODIFIED: Updated real-time listener for new collection structure
 const setupRealtimeListener = () => {
-  // Query for the most recent readings (limit to 20 for the chart)
-  const realtimeQuery = query(
-    collection(db, "sensor_readings"),
+  // Set up listeners for all ESP32 devices
+  const unsubscribeFunctions = []
+  
+  // ESP32-2 listener (primary soil moisture sensor)
+  const esp32_2_query = query(
+    collection(db, "3sensor_readings", "esp32-2", "readings"),
     orderBy("timestamp", "desc"),
-    limit(20)
+    limit(10)
   )
   
-  // Set up the listener with error handling and debouncing
-  let debounceTimer = null
-  let lastUpdateTime = Date.now()
-  
-  return onSnapshot(realtimeQuery, (snapshot) => {
-    // Debounce updates to prevent too frequent rendering
-    if (debounceTimer) clearTimeout(debounceTimer)
-    
-    // If it's been less than 500ms since the last update, debounce
-    const now = Date.now()
-    const timeSinceLastUpdate = now - lastUpdateTime
-    
-    if (timeSinceLastUpdate < 500) {
-      debounceTimer = setTimeout(() => processSnapshot(snapshot), 500 - timeSinceLastUpdate)
-    } else {
-      processSnapshot(snapshot)
-      lastUpdateTime = now
-    }
+  const unsubscribe2 = onSnapshot(esp32_2_query, (snapshot) => {
+    processRealtimeSnapshot(snapshot, 'esp32-2')
   }, (error) => {
-    console.error("Error in realtime listener:", error)
+    console.error("Error in ESP32-2 realtime listener:", error)
   })
   
-  function processSnapshot(snapshot) {
-    // Process the data for the chart
-    const newData = snapshot.docs
-      .filter(doc => doc.data().soilMoisture !== undefined)
-      .map(doc => {
-        const data = doc.data()
-        const timestamp = data.timestamp?.toDate?.() || 
-          (data.timestamp?.seconds ? new Date(data.timestamp.seconds * 1000) : new Date())
-        
-        return {
-          timestamp,
-          value: Number(data.soilMoisture)
-        }
-      })
-      .sort((a, b) => a.timestamp - b.timestamp) // Sort by timestamp ascending for the chart
-    
-    // Update chart data
-    chartData.value = newData
-    
-    // Update current value and stats
-    if (newData.length > 0) {
-      // Get the most recent value
-      const latestReading = newData[newData.length - 1]
-      currentMoistureValue.value = latestReading.value.toFixed(2)
-      
-      // Update last updated time
-      lastUpdated.value = latestReading.timestamp.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      })
-      
-      // Calculate stats
-      const values = newData.map(item => item.value)
-      moistureStats.value = {
-        min: Math.min(...values).toFixed(2),
-        max: Math.max(...values).toFixed(2),
-        avg: (values.reduce((sum, val) => sum + val, 0) / values.length).toFixed(2)
-      }
-    }
-    
-    // Use requestAnimationFrame for smoother chart updates
-    requestAnimationFrame(() => {
-      updateChart()
-    })
+  unsubscribeFunctions.push(unsubscribe2)
+
+  // ESP32-1 listener (backup soil moisture sensor)
+  const esp32_1_query = query(
+    collection(db, "3sensor_readings", "esp32-1", "readings"),
+    orderBy("timestamp", "desc"),
+    limit(10)
+  )
+  
+  const unsubscribe1 = onSnapshot(esp32_1_query, (snapshot) => {
+    processRealtimeSnapshot(snapshot, 'esp32-1')
+  }, (error) => {
+    console.error("Error in ESP32-1 realtime listener:", error)
+  })
+  
+  unsubscribeFunctions.push(unsubscribe1)
+
+  // Return a function that unsubscribes from all listeners
+  return () => {
+    unsubscribeFunctions.forEach(unsubscribe => unsubscribe())
   }
+}
+
+// Process realtime snapshot data
+let debounceTimer = null
+let lastUpdateTime = Date.now()
+let combinedRealtimeData = []
+
+const processRealtimeSnapshot = (snapshot, deviceId) => {
+  // Debounce updates to prevent too frequent rendering
+  if (debounceTimer) clearTimeout(debounceTimer)
+  
+  // If it's been less than 500ms since the last update, debounce
+  const now = Date.now()
+  const timeSinceLastUpdate = now - lastUpdateTime
+  
+  if (timeSinceLastUpdate < 500) {
+    debounceTimer = setTimeout(() => updateRealtimeData(snapshot, deviceId), 500 - timeSinceLastUpdate)
+  } else {
+    updateRealtimeData(snapshot, deviceId)
+    lastUpdateTime = now
+  }
+}
+
+const updateRealtimeData = (snapshot, deviceId) => {
+  // Process the data for the chart
+  const newData = snapshot.docs
+    .filter(doc => doc.data().soilMoisture !== undefined)
+    .map(doc => {
+      const data = doc.data()
+      const timestamp = data.timestamp instanceof Timestamp 
+        ? data.timestamp.toDate() 
+        : new Date(data.timestamp.seconds * 1000)
+      
+      return {
+        timestamp,
+        value: Number(data.soilMoisture),
+        deviceId
+      }
+    })
+  
+  // Update combined realtime data
+  combinedRealtimeData = combinedRealtimeData.filter(item => item.deviceId !== deviceId)
+  combinedRealtimeData.push(...newData)
+  
+  // Sort by timestamp and keep only the most recent 20 readings
+  combinedRealtimeData.sort((a, b) => a.timestamp - b.timestamp)
+  combinedRealtimeData = combinedRealtimeData.slice(-20)
+  
+  // Update chart data
+  chartData.value = combinedRealtimeData
+  
+  // Update current value and stats
+  if (combinedRealtimeData.length > 0) {
+    // Get the most recent value
+    const latestReading = combinedRealtimeData[combinedRealtimeData.length - 1]
+    currentMoistureValue.value = latestReading.value.toFixed(2)
+    
+    // Update last updated time
+    lastUpdated.value = latestReading.timestamp.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    })
+    
+    // Calculate stats
+    const values = combinedRealtimeData.map(item => item.value)
+    moistureStats.value = {
+      min: Math.min(...values).toFixed(2),
+      max: Math.max(...values).toFixed(2),
+      avg: (values.reduce((sum, val) => sum + val, 0) / values.length).toFixed(2)
+    }
+  }
+  
+  // Use requestAnimationFrame for smoother chart updates
+  requestAnimationFrame(() => {
+    updateChart()
+  })
 }
 
 // Initialize chart data from fetched data
@@ -648,13 +759,16 @@ const initializeChartData = (data) => {
   // Take the most recent 20 entries for initial chart data
   const initialChartData = data.slice(0, 20)
     .map(item => ({
-      timestamp: item.rawTimestamp?.toDate?.() || 
-        (item.rawTimestamp?.seconds ? new Date(item.rawTimestamp.seconds * 1000) : new Date()),
-      value: Number(item.soilMoisture)
+      timestamp: item.rawTimestamp instanceof Timestamp 
+        ? item.rawTimestamp.toDate() 
+        : new Date(item.rawTimestamp.seconds * 1000),
+      value: Number(item.soilMoisture),
+      deviceId: item.deviceId || 'unknown'
     }))
     .sort((a, b) => a.timestamp - b.timestamp) // Sort by timestamp ascending for the chart
   
   chartData.value = initialChartData
+  combinedRealtimeData = initialChartData
   
   // Set initial current value and stats
   if (initialChartData.length > 0) {
