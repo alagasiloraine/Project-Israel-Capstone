@@ -82,39 +82,102 @@
 
               <form class="space-y-4" @submit.prevent="handleLogin">
                 <div>
-                  <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                  <input 
-                    id="email" 
-                    type="email" 
-                    v-model="email"
-                    required 
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
+                  <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <input
+                    id="phoneNumber"
+                    type="tel"
+                    maxlength="13"
+                    inputmode="numeric"
+                    v-model="form.phoneNumber"
+                    required
+                    class="block w-full px-3 py-1 border rounded-md"
                   />
                 </div>
 
                 <div>
-                  <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                  <div class="relative">
-                    <input 
-                      :type="showPassword ? 'text' : 'password'"
-                      id="password" 
-                      v-model="password"
-                      required 
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
-                    />
-                    <button 
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Choose Login Type</label>
+                  <div class="flex gap-2">
+                    <button
                       type="button"
-                      @click="showPassword = !showPassword"
-                      class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                      @click="form.authType = 'password'"
+                      :class="[
+                        'px-4 py-1.5 rounded-md text-sm font-medium transition',
+                        form.authType === 'password'
+                          ? 'bg-[#2B5329] text-white shadow'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ]"
                     >
-                      <Eye v-if="!showPassword" class="h-4 w-4" />
-                      <EyeOff v-else class="h-4 w-4" />
+                      Password
+                    </button>
+                    <button
+                      type="button"
+                      @click="form.authType = 'pin'"
+                      :class="[
+                        'px-4 py-1.5 rounded-md text-sm font-medium transition',
+                        form.authType === 'pin'
+                          ? 'bg-[#2B5329] text-white shadow'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ]"
+                    >
+                      4-digit PIN
                     </button>
                   </div>
                 </div>
 
+                <!-- Password Input -->
+                <div v-if="form.authType === 'password'">
+                  <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <div class="space-y-1.5">
+                    <div class="relative">
+                      <input
+                        id="password"
+                        :type="showPassword ? 'text' : 'password'"
+                        v-model="form.password"
+                        required
+                        @input="checkPasswordStrength"
+                        class="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
+                      />
+                      <button
+                        type="button"
+                        @click="showPassword = !showPassword"
+                        class="absolute right-3 top-1/3 transform -translate-y-1/2 text-gray-500"
+                      >
+                        <Eye v-if="!showPassword" class="h-4 w-4" />
+                        <EyeOff v-else class="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <!-- Password strength indicator -->
+                    <!-- <div class="flex gap-1.5 h-1">
+                      <div 
+                        v-for="(segment, index) in 4" 
+                        :key="index"
+                        :class="[
+                          'flex-1 rounded-full transition-all duration-300',
+                          index < passwordStrength ? strengthColors[passwordStrength - 1] : 'bg-gray-200'
+                        ]"
+                      ></div>
+                    </div> -->
+                  </div>
+                </div>
+
+                <!-- PIN Input -->
+                <div v-else>
+                  <label for="pin" class="block text-sm font-medium text-gray-700 mb-1">Enter 4-digit PIN</label>
+                  <input
+                    id="pin"
+                    type="password"
+                    v-model="form.pin"
+                    required
+                    maxlength="4"
+                    pattern="\d*"
+                    inputmode="numeric"
+                    class="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
+                  />
+                </div>
+
                 <div class="flex items-center justify-between mt-2">
-                  <div class="flex items-center">
+                  <!-- <div class="flex items-center">
                     <input
                       id="remember-me"
                       type="checkbox"
@@ -124,7 +187,7 @@
                     <label for="remember-me" class="ml-2 block text-sm text-gray-700 cursor-pointer">
                       Remember me
                     </label>
-                  </div>
+                  </div> -->
                   <router-link to="/forgotpassword" class="text-xs text-[#2B5329] hover:text-[#FFA500] transition-colors">
                     Forgot password?
                   </router-link>
@@ -137,23 +200,23 @@
                   {{ isLoading ? "Signing In..." : "Sign In" }}
                 </button>
 
-                <div class="relative my-4">
+                <!-- <div class="relative my-4">
                   <div class="absolute inset-0 flex items-center">
                     <div class="w-full border-t border-gray-300"></div>
                   </div>
                   <div class="relative flex justify-center text-sm">
                     <span class="px-2 bg-white text-gray-500 text-xs">Or sign in with</span>
                   </div>
-                </div>
+                </div> -->
 
                 <div class="grid grid-cols-1 gap-3">
-                  <button 
+                  <!-- <button 
                     type="button" @click="handleGoogleLogin"
                     class="flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-[#3a8a3a] hover:text-white hover:border-[#3a8a3a] hover:transform hover:-translate-y-1 transition-all duration-300"
                   >
                     <Chrome class="h-5 w-5 mr-2" />
                     Google
-                  </button>
+                  </button> -->
                   <!-- <button 
                     type="button"
                     class="flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-[#3a8a3a] hover:text-white hover:border-[#3a8a3a] hover:transform hover:-translate-y-1 transition-all duration-300"
@@ -197,17 +260,35 @@ import LoadingPage from '../layout/LoadingPage.vue'
 import api from '../../api/index.js'
 import { auth, googleProvider, signInWithPopup } from "../../api/firebase.js";
 import toastr from 'toastr'
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs
+} from "firebase/firestore"
+
+const db = getFirestore();
 
 
 const router = useRouter()
-const email = ref('')
-const password = ref('')
+// const email = ref('')
+// const password = ref('')
 const showPassword = ref(false)
 const isMobile = ref(window.innerWidth < 640)
 const transitionKey = ref(0)
 const contentStyle = ref({})
 const rememberMe = ref(false)
 const isLoading = ref(false)
+
+const form = ref({
+  authType: 'password',  // or 'pin'
+  phoneNumber: '',
+  password: '',
+  pin: '',
+});
+
 
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640
@@ -283,54 +364,134 @@ const handleRequestNow = () => {
   }, 500)
 }
 
+function isValidPhilippinePhoneNumber(number) {
+  const cleaned = number.trim(); // only trim whitespace
+  return /^(\+639|09)\d{9}$/.test(cleaned);
+}
+
+function toE164(phone) {
+  const trimmed = phone.trim();
+  if (trimmed.startsWith('+63')) return trimmed;
+  const cleaned = trimmed.replace(/\D/g, '');
+  if (cleaned.startsWith('0')) return '+63' + cleaned.slice(1);
+  if (cleaned.startsWith('63')) return '+' + cleaned;
+  return null;
+}
+
 const handleLogin = async () => {
   isLoading.value = true;
 
-  if (!email.value || !password.value) {
-    toastr.warning("Please enter both email and password.");
+  const { phoneNumber, password, pin, authType } = form.value;
+  const trimmedPhone = phoneNumber.trim();
+
+  // ✅ Validate phone number format
+  if (!isValidPhilippinePhoneNumber(trimmedPhone)) {
+    toastr.error('Invalid Philippine phone number.');
     isLoading.value = false;
     return;
   }
 
-
-  if (email.value == 'admin@gmail.com' || password.value == 'admin123') {
-    router.push('/overview')
+  const formattedPhone = toE164(trimmedPhone);
+  if (!formattedPhone) {
+    toastr.error('Could not format phone number.');
+    isLoading.value = false;
+    return;
   }
-  if (email.value == 'admin123' || password.value == 'admin123') {
-    // Admin user
-    localStorage.setItem("isAdmin", true);
-    router.push("/dashboard");
+
+  const credential = authType === 'pin' ? pin : password;
+  if (!credential.trim()) {
+    toastr.warning(`Please enter your ${authType}.`);
     isLoading.value = false;
     return;
   }
 
   try {
-    const response = await api.post("/auth/login", {
-      email: email.value,
-      password: password.value,
-    });
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('phoneNumber', '==', formattedPhone));
+    const snapshot = await getDocs(q);
 
-    toastr.success("Login successful!");
-    console.log("Login response:", response.data);
+    if (snapshot.empty) {
+      toastr.error('No account found with this phone number.');
+      return;
+    }
 
-    const { token, user } = response.data;
+    const userDoc = snapshot.docs[0];
+    const user = userDoc.data();
 
-    // if (rememberMe.value) {
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-    // } else {
-      sessionStorage.setItem("token", token);
-      sessionStorage.setItem("user", JSON.stringify(user));
-    // }
+    // ✅ Check credential based on selected login type
+    if (authType === 'password' && user.password !== password) {
+      toastr.error('Incorrect password.');
+      return;
+    }
 
-    router.push("/dashboard");
+    if (authType === 'pin' && user.pin !== pin) {
+      toastr.error('Incorrect PIN.');
+      return;
+    }
+
+    // ✅ Save session data
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('uid', userDoc.id);
+
+    toastr.success('Login successful!');
+    router.push('/dashboard');
   } catch (error) {
-    console.error("Login error:", error);
-    // toastr.error(error.response?.data?.detail || "An error occurred during login.");
+    console.error('Login error:', error);
+    toastr.error('Login failed. Please try again.');
   } finally {
     isLoading.value = false;
   }
 };
+
+
+// const handleLogin = async () => {
+//   isLoading.value = true;
+
+//   if (!email.value || !password.value) {
+//     toastr.warning("Please enter both email and password.");
+//     isLoading.value = false;
+//     return;
+//   }
+
+
+//   if (email.value == 'admin@gmail.com' || password.value == 'admin123') {
+//     router.push('/overview')
+//   }
+//   if (email.value == 'admin123' || password.value == 'admin123') {
+//     // Admin user
+//     localStorage.setItem("isAdmin", true);
+//     router.push("/dashboard");
+//     isLoading.value = false;
+//     return;
+//   }
+
+//   try {
+//     const response = await api.post("/auth/login", {
+//       email: email.value,
+//       password: password.value,
+//     });
+
+//     toastr.success("Login successful!");
+//     console.log("Login response:", response.data);
+
+//     const { token, user } = response.data;
+
+//     // if (rememberMe.value) {
+//       localStorage.setItem("token", token);
+//       localStorage.setItem("user", JSON.stringify(user));
+//     // } else {
+//       sessionStorage.setItem("token", token);
+//       sessionStorage.setItem("user", JSON.stringify(user));
+//     // }
+
+//     router.push("/dashboard");
+//   } catch (error) {
+//     console.error("Login error:", error);
+//     // toastr.error(error.response?.data?.detail || "An error occurred during login.");
+//   } finally {
+//     isLoading.value = false;
+//   }
+// };
 
 const handleGoogleLogin = async () => {
   try {

@@ -251,6 +251,7 @@
             
             <!-- Table Container - Larger width -->
             <div class="w-full md:w-2/3 lg:w-2/3 flex flex-col">
+            
               <!-- Fixed Header with enhanced styling -->
               <div class="w-full border-b border-gray-200 sticky top-0 z-10 bg-gray-50">
                 <table class="min-w-full">
@@ -282,6 +283,11 @@
                     </tr>
                   </thead>
                 </table>
+              </div>
+
+              <div v-if="isLoading" class="py-8 flex flex-col items-center justify-center">
+                <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                <p class="text-sm text-gray-500">Loading notifications...</p>
               </div>
               
               <!-- Scrollable Body with enhanced styling -->
@@ -408,11 +414,11 @@
     </main>
 
     <!-- Loading Page Component -->
-    <LoadingPage 
+    <!-- <LoadingPage 
       :isVisible="isLoading" 
       title="Loading Motor Control Data" 
       message="Please wait while we fetch the latest motor control logs"
-    />
+    /> -->
   </div>
 </template>
   
@@ -459,114 +465,109 @@ const statusStats = ref({
 })
 
 // Fetch motor control data
-const fetchMotorControlData = async (showLoading = false) => {
+let unsubscribeMotorData = null;
+
+const fetchMotorControlData = (showLoading = false) => {
+  if (unsubscribeMotorData) {
+    unsubscribeMotorData(); // Unsubscribe previous listener (if any)
+  }
+
+  // Show loading if needed
+  if (showLoading) {
+    isLoading.value = true;
+  }
+
   try {
-    // Only show loading screen if explicitly requested
-    if (showLoading) {
-      isLoading.value = true
-    }
-    
-    // Query the motor_status collection
     const motorQuery = query(
       collection(db, "motor_status", "history", "logs"),
-      orderBy("timestamp", "desc"),  // Latest first
-      limit(50) // Limit to 50 records for better performance
-    )
-    const motorSnapshot = await getDocs(motorQuery)
-    
-    // Process motor control readings
-    const processedData = motorSnapshot.docs.map((doc, index) => {
-      const data = doc.data()
-      
-      // Handle timestamp
-      let formattedDate = '--'
-      let formattedTime = '--'
-      let timestampSeconds = 0
-      
-      try {
-        const timestamp = data.timestamp instanceof Timestamp 
-          ? new Date(data.timestamp.toMillis())
-          : data.timestamp?.toDate?.() || 
-            (data.timestamp?.seconds ? new Date(data.timestamp.seconds * 1000) : new Date())
-        
-        // Format date as "MMM DD, YYYY" (e.g., "May 09, 2024")
-        formattedDate = timestamp.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: '2-digit'
-        });
+      orderBy("timestamp", "desc"),
+      limit(50)
+    );
 
-        // Format time as "HH:mm:ss" (e.g., "14:30:45")
-        formattedTime = timestamp.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false
-        });
-        
-        timestampSeconds = data.timestamp?.seconds || timestamp.getTime() / 1000
-      } catch (e) {
-        console.error("Error formatting date:", e)
-      }
+    unsubscribeMotorData = onSnapshot(motorQuery, (motorSnapshot) => {
+      const processedData = motorSnapshot.docs.map((doc, index) => {
+        const data = doc.data();
 
-      // Process status - handle different data types
-      let status = 'OFF'; // Default status
-      if (data.status !== undefined && data.status !== null) {
-        // Convert to string and handle boolean values
-        if (typeof data.status === 'boolean') {
-          status = data.status ? 'ON' : 'OFF';
-        } else if (typeof data.status === 'number') {
-          status = data.status === 1 ? 'ON' : 'OFF';
-        } else {
-          // Handle string or other types
-          const statusStr = String(data.status).trim().toUpperCase();
-          if (['ON', 'OFF', '1', '0', 'TRUE', 'FALSE'].includes(statusStr)) {
+        // Handle timestamp
+        let formattedDate = '--';
+        let formattedTime = '--';
+        let timestampSeconds = 0;
+
+        try {
+          const timestamp = data.timestamp instanceof Timestamp
+            ? new Date(data.timestamp.toMillis())
+            : data.timestamp?.toDate?.() ||
+              (data.timestamp?.seconds ? new Date(data.timestamp.seconds * 1000) : new Date());
+
+          formattedDate = timestamp.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit'
+          });
+
+          formattedTime = timestamp.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          });
+
+          timestampSeconds = data.timestamp?.seconds || timestamp.getTime() / 1000;
+        } catch (e) {
+          console.error("Error formatting date:", e);
+        }
+
+        // Process status
+        let status = 'OFF';
+        if (data.status !== undefined && data.status !== null) {
+          if (typeof data.status === 'boolean') {
+            status = data.status ? 'ON' : 'OFF';
+          } else if (typeof data.status === 'number') {
+            status = data.status === 1 ? 'ON' : 'OFF';
+          } else {
+            const statusStr = String(data.status).trim().toUpperCase();
             status = ['ON', '1', 'TRUE'].includes(statusStr) ? 'ON' : 'OFF';
           }
         }
+
+        const deviceId = data.device_id || data.deviceId || 'main_motor';
+        const user = data.user || data.controller || 'system';
+
+        return {
+          id: index + 1,
+          timestamp: timestampSeconds,
+          rawTimestamp: data.timestamp,
+          deviceId: deviceId,
+          status: status,
+          user: user,
+          date: formattedDate,
+          time: formattedTime
+        };
+      });
+
+      motorData.value = processedData;
+      initializeChartData(processedData);
+
+      if (showLoading) {
+        isLoading.value = false;
       }
-
-      // Get device ID and user from the data
-      const deviceId = data.device_id || data.deviceId || 'main_motor'
-      const user = data.user || data.controller || 'system'
-
-      // Return processed data
-      return {
-        id: index + 1,
-        timestamp: timestampSeconds,
-        rawTimestamp: data.timestamp,
-        deviceId: deviceId,
-        status: status,
-        user: user,
-        date: formattedDate,
-        time: formattedTime
-      }
-    })
-
-    // Update data immediately without artificial delay
-    motorData.value = processedData
-    
-    // Initialize chart data after loading
-    initializeChartData(processedData)
-    
-    // Hide loading indicator if it was shown
-    if (showLoading) {
-      isLoading.value = false
-    }
-    
+    }, (error) => {
+      console.error("❌ Real-time listener error:", error);
+      isLoading.value = false;
+    });
   } catch (error) {
-    console.error("❌ Error fetching motor control data:", error)
-    isLoading.value = false
+    console.error("❌ Error setting up real-time motor control data:", error);
+    isLoading.value = false;
   }
-}
+};
 
 // Setup real-time listener for chart data
 const setupRealtimeListener = () => {
   // Query for the most recent readings (limit to 20 for the chart)
   const realtimeQuery = query(
     collection(db, "motor_status", "history", "logs"),
-    orderBy("timestamp", "desc"),
-    limit(20)
+    orderBy("timestamp", "desc")
+    // limit(20)
   )
   
   // Set up the listener

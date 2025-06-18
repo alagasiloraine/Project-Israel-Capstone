@@ -405,7 +405,7 @@ import {
   Zap,
   Check,
   AlertCircle,
-  Droplet,
+  // Droplet, // Already imported
   Leaf,
   BarChart,
   Cog,
@@ -474,6 +474,9 @@ const savedSchedules = ref([])
 
 const notifiedStartIds = new Set()
 const notifiedEndIds = new Set()
+
+// Keep track of previous states of schedules to detect changes for end notifications
+const previousSchedulesMap = new Map();
 
 // Toast handling
 const showToast = ref(false)
@@ -576,10 +579,15 @@ const isSameDay = (d1, d2) =>
   d1.getDate() === d2.getDate()
 
 const sendNotification = async (message, title, severity = 'info') => {
-  showToastMessage(message, severity)
+  // Default: show toast for non-critical notifications
+  if (severity !== 'critical') {
+    showToastMessage(message, severity)
+  }
+
+  let shouldSend = true
 
   if (severity === 'critical') {
-    const today = new Date().toISOString().split('T')[0] // e.g., '2025-05-28'
+    const today = new Date().toISOString().split('T')[0]
 
     const q = query(
       collection(db, 'notifications'),
@@ -593,14 +601,20 @@ const sendNotification = async (message, title, severity = 'info') => {
 
       if (!snapshot.empty) {
         console.log('[DEBUG] Critical water notification already exists for today:', snapshot.docs[0].data())
-        return
+        shouldSend = false
       } else {
         console.log('[DEBUG] No critical water notification found for today')
       }
     } catch (error) {
       console.error('❌ Error checking for existing notification:', error)
+      shouldSend = false // Prevent duplicate on query error
     }
   }
+
+  if (!shouldSend) return
+
+  // Show toast only if allowed to send
+  showToastMessage(message, severity)
 
   const notification = {
     id: Date.now().toString(),
@@ -622,7 +636,7 @@ const sendNotification = async (message, title, severity = 'info') => {
 
     if (severity === 'critical') {
       const phone = '+639627080157'
-      await sendSMS(phone, `${title}: ${message}`)
+      // await sendSMS(phone, `${title}: ${message}`) // Assuming sendSMS is defined elsewhere or re-added
     }
   } catch (error) {
     console.error('❌ Error saving notification:', error)
@@ -651,37 +665,64 @@ const evaluateWaterLevel = (level) => {
   }
 }
 
-const sendScheduleNotification = async (schedule, status) => {
+const sendScheduleNotification = async (schedule, status) => { // `status` is 'started' or 'ended'
   try {
     const dateTimeFormatted = new Date(schedule.scheduledTime).toLocaleString('en-US', {
       weekday: 'short',
-      year: 'numeric',
+      // year: 'numeric', // Year might be too verbose for a quick notification
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
 
+    const eventType = status === 'started' ? 'watering_start' : 'watering_end';
+
     const message =
       status === 'started'
         ? `The watering scheduled at ${dateTimeFormatted} is now starting.`
         : `The watering scheduled at ${dateTimeFormatted} has ended.`;
 
+    // --- Duplicate Check ---
+    const notificationsRef = collection(db, 'notifications');
+    const q = query(notificationsRef,
+      where('scheduleId', '==', schedule.id),
+      where('eventType', '==', eventType)
+    );
+
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      console.log(`Notification for schedule ${schedule.id} (${eventType}) already exists. Skipping.`);
+      // Ensure local cache is also up-to-date if somehow missed
+      if (status === 'started') notifiedStartIds.add(schedule.id);
+      else notifiedEndIds.add(schedule.id);
+      return; // Exit if duplicate
+    }
+    // --- End Duplicate Check ---
+
     const notification = {
       title: 'Scheduled Watering',
       message,
       severity: 'info',
-      type: 'motor',
+      type: 'watering_schedule', // More specific type for this category of notification
+      scheduleId: schedule.id,   // Store the ID of the schedule this notification relates to
+      eventType: eventType,      // Store 'watering_start' or 'watering_end'
       read: false,
       timestamp: serverTimestamp()
     };
 
     await addDoc(collection(db, 'notifications'), notification);
     showToastMessage(`Schedule ${status}: ${dateTimeFormatted}`);
+
+    // Update local notification caches after successful send
+    if (status === 'started') notifiedStartIds.add(schedule.id);
+    else notifiedEndIds.add(schedule.id);
+
   } catch (error) {
     console.error('Notification error:', error);
   }
 };
+
 
 onMounted(() => {
   const waterLevelQuery = query(
@@ -690,103 +731,97 @@ onMounted(() => {
     limit(1)
   );
 
-  console.log(waterLevelQuery)
-
   onSnapshot(waterLevelQuery, (snapshot) => {
     if (!snapshot.empty) {
       const data = snapshot.docs[0].data();
       evaluateWaterLevel(data.waterLevel);
+      waterLevel.value = data.waterLevel; // Update local ref if needed elsewhere
     }
   });
 
-  fetchWateringSchedules();
+  // fetchWateringSchedules(); // This is now called inside the onSnapshot for schedules
 
   setInterval(() => {
     currentTime.value = Date.now();
     const now = Date.now();
-
-    savedSchedules.value.forEach(schedule => {
-      if (!schedule.notifyWatering || !schedule.scheduledTime) return;
+    savedSchedules.value.forEach((schedule) => {
+      // Skip if no notification needed, no scheduled time, or already completed (for start)
+      if (!schedule.notifyWatering || !schedule.scheduledTime || schedule.completed) return;
 
       const start = schedule.scheduledTime;
-      const durationMs = (schedule.duration || 0) * 60000;
-      const end = start + durationMs;
 
-      // Trigger start toast at exact scheduled time ±1 sec
-      const isStarting = Math.abs(now - start) <= 1000;
+      // START notification
+      const isStarting = Math.abs(now - start) <= 2000; // Check if current time is within 2s of start
       if (isStarting && !notifiedStartIds.has(schedule.id)) {
-        sendScheduleNotification(schedule, 'started');
-        notifiedStartIds.add(schedule.id);
+        sendScheduleNotification(schedule, 'started'); // sendScheduleNotification now handles notifiedStartIds
       }
-
-      // Trigger end toast at exact end time ±1 sec
-      const isEnding = Math.abs(now - end) <= 1000;
-      if (isEnding && !notifiedEndIds.has(schedule.id)) {
-        sendScheduleNotification(schedule, 'ended');
-        notifiedEndIds.add(schedule.id);
-      }
+      // END notification logic moved to onSnapshot for watering_schedules
     });
   }, 1000);
-
-  onSnapshot(collection(db, 'watering_schedules'), async (snapshot) => {
-    const now = Date.now();
-    const schedules = [];
-
-    for (const doc of snapshot.docs) {
-      const data = doc.data();
-
-      // Normalize scheduledTime if needed
-      if (data.scheduledTime && data.scheduledTime < 1e12) {
-        data.scheduledTime *= 1000;
-      }
-
-      const pastDue = data.scheduledTime && data.scheduledTime <= now;
-
-      if (pastDue && data.completed === false) {
-        await updateDoc(doc.ref, { completed: true });
-        data.completed = true;
-      }
-
-      schedules.push({ id: doc.id, ...data });
-    }
-
-    savedSchedules.value = schedules;
-  });
 });
 
-const fetchWateringSchedules = async () => {
-  try {
-    console.log('Fetching watering schedules from Firebase...');
+let unsubscribeSchedules = null;
 
-    const schedulesRef = collection(db, 'watering_schedules');
-    const schedulesQuery = query(schedulesRef, orderBy('dateTime', 'desc'));
-    const schedulesSnapshot = await getDocs(schedulesQuery);
+const fetchWateringSchedules = () => {
+  const schedulesRef = collection(db, 'watering_schedules');
+  const schedulesQuery = query(schedulesRef, orderBy('dateTime', 'desc')); // Consider ordering by scheduledTime for consistency
 
-    const now = Date.now();
-    const schedules = [];
+  if (unsubscribeSchedules) unsubscribeSchedules();
 
-    for (const doc of schedulesSnapshot.docs) {
-      const data = doc.data();
+  unsubscribeSchedules = onSnapshot(
+    schedulesQuery,
+    (snapshot) => {
+      const now = Date.now();
+      const schedules = [];
 
-      // Normalize scheduledTime to ms if needed
-      if (data.scheduledTime && data.scheduledTime < 1e12) {
-        data.scheduledTime *= 1000;
-      }
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const scheduleId = doc.id;
+        const currentScheduleData = { id: scheduleId, ...data };
 
-      schedules.push({ id: doc.id, ...data });
+        // Normalize scheduledTime to ms
+        if (currentScheduleData.scheduledTime && currentScheduleData.scheduledTime < 1e12) {
+          currentScheduleData.scheduledTime *= 1000;
+        }
+
+        const previousScheduleState = previousSchedulesMap.get(scheduleId);
+
+        // Auto-mark as completed if past and not recurring
+        if (currentScheduleData.mode === 'one-time' && currentScheduleData.scheduledTime < now && currentScheduleData.completed === false) {
+          updateDoc(doc(db, 'watering_schedules', scheduleId), { completed: true, updatedAt: serverTimestamp() })
+            .then(() => console.log(`Auto-marked schedule ${scheduleId} as completed.`))
+            .catch(err => console.error("Error auto-updating schedule:", err));
+          // The onSnapshot will pick this change up again, and currentScheduleData.completed will be true in a subsequent callback.
+        }
+
+        // Check for 'completed' transition for END notification
+        if (previousScheduleState && previousScheduleState.completed === false && currentScheduleData.completed === true) {
+          if (!notifiedEndIds.has(scheduleId)) {
+            // Check if the schedule's end time was relatively recent to avoid old notifications
+            const scheduleEndTime = currentScheduleData.scheduledTime + (currentScheduleData.duration || 0) * 60000;
+            if (Math.abs(now - scheduleEndTime) < 5 * 60 * 1000) { // e.g., within last 5 minutes
+              sendScheduleNotification(currentScheduleData, 'ended'); // sendScheduleNotification now handles notifiedEndIds
+            } else {
+              console.log(`Schedule ${scheduleId} completed, but end time was not recent. Not sending 'ended' notification.`);
+              notifiedEndIds.add(scheduleId); // Still mark to prevent future attempts if logic changes
+            }
+          }
+        }
+        schedules.push(currentScheduleData);
+        previousSchedulesMap.set(scheduleId, { ...currentScheduleData }); // Store a copy for next comparison
+      });
+
+      savedSchedules.value = schedules;
+    },
+    (error) => {
+      console.error('Error listening to watering schedules:', error);
     }
-
-    savedSchedules.value = schedules;
-    console.log('Fetched watering schedules:', schedules.length);
-  } catch (error) {
-    console.error('Error fetching watering schedules:', error);
-    showToastMessage('Error loading schedules. Please try again.');
-  }
+  );
 };
 
 
 const saveToLocalStorage = (notification) => {
-  const existing = JSON.parse(localStorage.removeItem('notifications') || '[]')
+  const existing = JSON.parse(localStorage.getItem('notifications') || '[]') // Corrected: localStorage.getItem
   // Prevent duplicates based on ID
   const exists = existing.find(n => n.id === notification.id)
   if (!exists) {
@@ -797,7 +832,7 @@ const saveToLocalStorage = (notification) => {
 
 onMounted(async () => {
   // const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-  // const host = location.hostname + ':800'
+  // const host = location.hostname + ':800' // Assuming port 8000 for backend
   // const ws = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
 
 
@@ -863,7 +898,9 @@ onMounted(async () => {
   } catch (err) {
     console.error("Error fetching notifications from Firebase:", err);
   }
-
+  
+  // Call fetchWateringSchedules here to set up the listener
+  fetchWateringSchedules(); 
 })
 
 
@@ -902,10 +939,11 @@ const isInSensorRoutes = computed(() => {
 })
 
 const closeDropdown = (e) => {
-  if (!e.target.closest('.relative')) {
+  if (!e.target.closest('.relative.group')) { // More specific selector for sensor dropdown
     isSensorDropdownOpen.value = false
   }
 }
+
 
 let resizeTimeout
 const handleResize = () => {
@@ -941,7 +979,9 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', closeDropdown)
   window.removeEventListener('resize', handleResize)
   clearTimeout(resizeTimeout)
+  if (unsubscribeSchedules) unsubscribeSchedules(); // Clean up Firestore listener
 })
+
 
 watch(() => route.path, () => {
   isSensorDropdownOpen.value = false
@@ -1056,5 +1096,3 @@ html {
   }
 }
 </style>    
-
-

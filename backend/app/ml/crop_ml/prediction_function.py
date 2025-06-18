@@ -1,174 +1,158 @@
+
 import pandas as pd
 import numpy as np
 import joblib
 import os
 import tensorflow as tf
-from tensorflow import keras
+from tensorflow import keras # Required for custom layers like LeakyReLU if used directly
 
-# Load preprocessing objects
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PREPROCESS_DIR = os.path.join(BASE_DIR, 'preprocessing')
-MODEL_DIR = os.path.join(BASE_DIR)
+# --- Define Paths ---
+SCRIPT_DIR = os.path.dirname(__file__) # Assumes script is run from its location
+PREPROCESSING_DIR_PRED = os.path.join(SCRIPT_DIR, 'preprocessing')
+MODELS_DIR_PRED = os.path.join(SCRIPT_DIR, 'models')
 
-power_transformer = joblib.load(os.path.join(PREPROCESS_DIR, 'power_transformer.joblib'))
-robust_scaler = joblib.load(os.path.join(PREPROCESS_DIR, 'robust_scaler.joblib'))
-selected_feature_names = np.load(os.path.join(PREPROCESS_DIR, 'selected_feature_names.npy'), allow_pickle=True)
-label_classes = np.load(os.path.join(PREPROCESS_DIR, 'label_classes.npy'), allow_pickle=True)
+power_transformer = joblib.load(os.path.join(PREPROCESSING_DIR_PRED, 'power_transformer.joblib'))
+robust_scaler = joblib.load(os.path.join(PREPROCESSING_DIR_PRED, 'robust_scaler.joblib'))
+selected_feature_names = np.load(os.path.join(PREPROCESSING_DIR_PRED, 'selected_feature_names.npy'), allow_pickle=True).tolist()
+label_encoder_classes = np.load(os.path.join(PREPROCESSING_DIR_PRED, 'label_classes.npy'), allow_pickle=True)
 
-nn_model = keras.models.load_model(os.path.join(MODEL_DIR, 'crop_nn_model.keras'))
+nn_model_path = os.path.join(MODELS_DIR_PRED, 'crop_nn_model.keras')
+xgb_model_path = os.path.join(MODELS_DIR_PRED, 'crop_xgb_model.joblib')
+best_model_type_path = os.path.join(MODELS_DIR_PRED, 'best_model.txt')
 
-try:
-    xgb_model = joblib.load(os.path.join(MODEL_DIR, 'crop_xgb_model.joblib'))
-    have_xgb = True
-except:
-    have_xgb = False
+nn_model = keras.models.load_model(nn_model_path)
+xgb_model = None
+have_xgb = False
+if os.path.exists(xgb_model_path):
+    try:
+        xgb_model = joblib.load(xgb_model_path)
+        have_xgb = True
+    except Exception as e:
+        print(f"Warning: Could not load XGBoost model: {e}")
 
-try:
-    with open(os.path.join(MODEL_DIR, 'best_model.txt'), 'r') as f:
+best_model_type = "nn" # Default
+if os.path.exists(best_model_type_path):
+    with open(best_model_type_path, 'r') as f:
         best_model_type = f.read().strip()
-except:
-    best_model_type = "nn"
+else:
+    print(f"Warning: best_model.txt not found. Defaulting to NN model for predictions.")
 
 
-def calculate_soil_compatibility(features):
-    # Basic example logic (scale closeness to ideal pH = 6.5, NPK within typical ranges)
-    ideal_pH = 6.5
-    ideal_npk = {'N (ppm)': 100, 'P (ppm)': 40, 'K (ppm)': 120}
+# --- Feature Engineering Function (must match training) ---
+def create_interaction_features(df_X):
+    numeric_cols = df_X.select_dtypes(include=np.number).columns.tolist()
+    X_eng = df_X.copy()
+    for i in range(len(numeric_cols)):
+        for j in range(i + 1, len(numeric_cols)):
+            col1, col2 = numeric_cols[i], numeric_cols[j]
+            X_eng[f'{col1}_div_{col2}'] = X_eng[col1] / (X_eng[col2] + 1e-6)
+            X_eng[f'{col1}_x_{col2}'] = X_eng[col1] * X_eng[col2]
+            X_eng[f'{col1}_plus_{col2}'] = X_eng[col1] + X_eng[col2]
+            X_eng[f'{col1}_minus_{col2}'] = X_eng[col1] - X_eng[col2]
+    return X_eng
 
-    pH_score = max(0, 1 - abs(features['pH'] - ideal_pH) / 2)  # within 0.0–1.0
-    npk_score = np.mean([
-        min(1, features['N (ppm)'] / ideal_npk['N (ppm)']),
-        min(1, features['P (ppm)'] / ideal_npk['P (ppm)']),
-        min(1, features['K (ppm)'] / ideal_npk['K (ppm)']),
-    ])
-    return round((0.6 * npk_score + 0.4 * pH_score) * 100, 2)
-
-
-def estimate_growth_rate(temp, humidity):
-    # Optimal ranges (as an example)
-    optimal_temp = 25
-    optimal_humidity = 60
-
-    temp_score = max(0, 1 - abs(temp - optimal_temp) / 15)
-    humidity_score = max(0, 1 - abs(humidity - optimal_humidity) / 40)
-
-    return round(((temp_score + humidity_score) / 2) * 100, 2)
-
-
-def estimate_yield_potential(data):
+# --- Prediction Function ---
+def predict_crop(features_dict):
     """
-    Estimate yield potential based on multiple soil and environmental parameters.
+    Make a prediction for crop recommendation.
+    
+    Args:
+        features_dict: Dictionary with keys for ['N (ppm)', 'P (ppm)', 'K (ppm)', 'Temp (°C)', 'Humidity (%)', 'pH', 'Soil Moisture (%)']
+        
+    Returns:
+        Dictionary with 'crop', 'confidence', and 'all_crop_probabilities'
     """
-    n = data['N (ppm)']
-    p = data['P (ppm)']
-    k = data['K (ppm)']
-    temp = data['Temp (°C)']
-    humidity = data['Humidity (%)']
-    ph = data['pH']
-    moisture = data['Soil Moisture (%)']
-
-    # Normalize scores (range from 0 to 100)
-    n_score = min(n / 150, 1.0) * 100
-    p_score = min(p / 100, 1.0) * 100
-    k_score = min(k / 150, 1.0) * 100
-
-    temp_score = 100 - abs(temp - 25) * 5
-    temp_score = max(min(temp_score, 100), 0)
-
-    humidity_score = 100 - abs(humidity - 60) * 2
-    humidity_score = max(min(humidity_score, 100), 0)
-
-    ph_score = 100 - abs(ph - 6.5) * 20
-    ph_score = max(min(ph_score, 100), 0)
-
-    if moisture < 60:
-        moisture_score = (moisture / 60) * 100
-    elif moisture > 120:
-        moisture_score = max(100 - (moisture - 120) * 0.5, 60)
-    else:
-        moisture_score = 100
-
-    yield_score = (
-        0.2 * n_score +
-        0.15 * p_score +
-        0.15 * k_score +
-        0.15 * temp_score +
-        0.1 * humidity_score +
-        0.1 * ph_score +
-        0.15 * moisture_score
-    )
-
-    return round(yield_score, 2)
-
-
-
-def predict_crop(features_dict, top_k=3):
     input_df = pd.DataFrame([features_dict])
-
-    base_cols = ['N (ppm)', 'P (ppm)', 'K (ppm)', 'Temp (°C)', 'Humidity (%)', 'pH', 'Soil Moisture (%)']
-    for i, col1 in enumerate(base_cols):
-        for col2 in base_cols[i+1:]:
-            if col1 in input_df.columns and col2 in input_df.columns:
-                input_df[f'{col1}_{col2}_ratio'] = input_df[col1] / (input_df[col2] + 1e-6)
-                input_df[f'{col1}_{col2}_product'] = input_df[col1] * input_df[col2]
-
+    
+    # 1. Feature Engineering (must be identical to training)
+    input_df_eng = create_interaction_features(input_df)
+    
+    # 2. Handle Categoricals (if any new ones were created, though unlikely with numeric inputs)
+    input_df_eng = pd.get_dummies(input_df_eng, dummy_na=False)
+    
+    # 3. Align features with training (add missing, reorder, and select)
+    # Add missing columns with 0 (features model was trained on but not in input)
     for feature in selected_feature_names:
-        if feature not in input_df.columns:
-            input_df[feature] = 0
+        if feature not in input_df_eng.columns:
+            input_df_eng[feature] = 0
+    # Ensure correct order and selection of features
+    input_df_selected = input_df_eng[selected_feature_names]
+            
+    # 4. Preprocessing (transform, scale)
+    input_df_selected = input_df_selected.replace([np.inf, -np.inf], np.nan)
+    # Fill NaNs based on training strategy (e.g., with 0 or median if that was used)
+    # For safety, let's fill with 0 if any NaNs remain after engineering/selection.
+    # A more robust way would be to save medians from training if used for filling.
+    if input_df_selected.isna().any().any():
+        input_df_selected = input_df_selected.fillna(0) 
 
-    input_df = input_df[selected_feature_names]
-    input_np = input_df.to_numpy()
-    input_transformed = power_transformer.transform(input_np)
-    input_scaled = robust_scaler.transform(input_transformed)
+    input_power = power_transformer.transform(input_df_selected)
+    input_robust = robust_scaler.transform(input_power)
+    
+    # 5. Prediction
+    if best_model_type == "ensemble" and have_xgb:
+        nn_probs_single = nn_model.predict(input_robust)[0]
+        xgb_probs_single = xgb_model.predict_proba(input_robust)[0]
+        # Ensure consistent shape if num_classes differs slightly (should not happen with proper setup)
+        # This is a safeguard; ideally, both models output probs for all original classes.
+        if len(nn_probs_single) != len(xgb_probs_single):
+             # Fallback or error handling needed if class counts are inconsistent - added print warning
+             # For now, let's assume nn_model has the definitive class count
+             if len(nn_probs_single) > len(xgb_probs_single):
+                 padded_xgb_probs = np.zeros(len(nn_probs_single))
+                 padded_xgb_probs[:len(xgb_probs_single)] = xgb_probs_single
+                 xgb_probs_single = padded_xgb_probs
+             else: # xgb_probs_single is longer, truncate or pad nn_probs
+                 padded_nn_probs = np.zeros(len(xgb_probs_single))
+                 padded_nn_probs[:len(nn_probs_single)] = nn_probs_single
+                 nn_probs_single = padded_nn_probs
+             print(f"Warning: NN and XGBoost models have inconsistent output shapes (NN: {len(nn_probs_single)}, XGB: {len(xgb_probs_single)}). Attempting to align for ensemble.")
+             # A more robust solution might involve re-training one of the models or aligning classes explicitly.
+        probabilities = (0.5 * nn_probs_single + 0.5 * xgb_probs_single) # Consistent 0.5/0.5 weights
+    elif best_model_type == "xgb" and have_xgb:
+        probabilities = xgb_model.predict_proba(input_robust)[0]
+    else: # Default to NN or if XGB failed/not chosen
+        probabilities = nn_model.predict(input_robust)[0]
+        
+    predicted_class_idx = np.argmax(probabilities)
+    confidence = float(probabilities[predicted_class_idx])
+    predicted_crop = label_encoder_classes[predicted_class_idx]
 
-    if best_model_type == "nn" or not have_xgb:
-        probabilities = nn_model.predict(input_scaled)[0]
-    elif best_model_type == "xgb":
-        probabilities = xgb_model.predict_proba(input_scaled)[0]
-    else:
-        nn_probs = nn_model.predict(input_scaled)[0]
-        xgb_probs = xgb_model.predict_proba(input_scaled)[0]
-        probabilities = (nn_probs + xgb_probs) / 2
-
-    top_indices = np.argsort(probabilities)[-top_k:][::-1]
-
-    top_predictions = []
-    for i, idx in enumerate(top_indices):
-        prediction = {
-            'crop': label_classes[idx],
-            'confidence': float(probabilities[idx]),
-            'class_idx': int(idx)
-        }
-
-        # Only for top-1 crop, calculate extra metrics
-        if i == 0:
-            prediction['soilCompatibility'] = calculate_soil_compatibility(features_dict)
-            prediction['growthRate'] = estimate_growth_rate(
-                features_dict['Temp (°C)'], features_dict['Humidity (%)'])
-            prediction['yieldPotential'] = estimate_yield_potential(features_dict)
-
-        top_predictions.append(prediction)
-
-    return top_predictions
-
-
-# ✅ Example test
-if __name__ == "__main__":
-    test_features = {
-        'N (ppm)': 120,
-        'P (ppm)': 50,
-        'K (ppm)': 130,
-        'Temp (°C)': 28,
-        'Humidity (%)': 55,
-        'pH': 6.2,
-        'Soil Moisture (%)': 145
+    all_crop_probabilities = {
+        label_encoder_classes[i]: float(probabilities[i]) 
+        for i in range(len(probabilities))
+    }
+    
+    return {
+        'crop': predicted_crop,
+        'confidence': confidence,
+        'class_idx': int(predicted_class_idx),
+        'all_crop_probabilities': all_crop_probabilities
     }
 
-    result = predict_crop(test_features, top_k=3)
-    print("\n🌿 Top 3 Crops with Additional Metrics for #1:")
-    for i, r in enumerate(result, 1):
-        print(f"{i}. {r['crop']} - Confidence: {r['confidence']:.2%}")
-        if i == 1:
-            print(f"   🔸 Soil Compatibility: {r['soilCompatibility']}%")
-            print(f"   🔸 Growth Rate: {r['growthRate']}%")
-            print(f"   🔸 Yield Potential: {r['yieldPotential']}%")
+if __name__ == '__main__':
+    # Example usage:
+    # Ensure your feature names match exactly those in 'original_feature_names_list'
+    # These are the features BEFORE any engineering.
+    example_features = {
+        'N (ppm)': 100, 
+        'P (ppm)': 50, 
+        'K (ppm)': 50, 
+        # Add more features as per your original dataset
+        # 'Temp (°C)': 25, 
+        # 'Humidity (%)': 70, 
+        # 'pH': 6.5, 
+        # 'Soil Moisture (%)': 60
+    }
+    # Fill remaining original features with a default value (e.g., 0 or mean) if not provided in the example
+    all_original_features = ['N (ppm)', 'P (ppm)', 'K (ppm)', 'Temp (°C)', 'Humidity (%)', 'pH', 'Soil Moisture (%)']
+    for feat_name in all_original_features:
+        if feat_name not in example_features:
+            example_features[feat_name] = 0 # Or a typical/mean value
+
+    prediction = predict_crop(example_features)
+    print(f"Example Prediction:")
+    print(f"  Predicted Crop: {prediction.get('crop', 'N/A')}")
+    print(f"  Confidence: {prediction.get('confidence', 0.0):.4f}")
+    # print(f"  All Probabilities: {prediction.get('all_crop_probabilities', {})}")
+

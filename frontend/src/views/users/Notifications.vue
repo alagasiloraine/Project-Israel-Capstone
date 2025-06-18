@@ -69,8 +69,15 @@
   
               <!-- Scrollable Notifications Content -->
               <div class="flex-1 overflow-y-auto px-6 pb-6 notification-scroll">
+                <div v-if="isLoading" class="py-8 flex flex-col items-center justify-center">
+                  <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                  <p class="text-sm text-gray-500">Loading notifications...</p>
+                </div>
                 <!-- Empty State -->
-                <div v-if="filteredNotifications.length === 0" class="py-16 flex flex-col items-center justify-center">
+                <div 
+                  v-if="!isLoading && filteredNotifications.length === 0" 
+                  class="py-16 flex flex-col items-center justify-center"
+                >
                   <div class="bg-gray-100 p-4 rounded-full mb-4">
                     <BellOff class="h-8 w-8 text-gray-400" />
                   </div>
@@ -275,6 +282,7 @@
                   </div>
                   
                   <div class="flex items-center gap-2">
+                    <!-- Prev button -->
                     <button 
                       class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       :disabled="currentPage === 1"
@@ -282,31 +290,42 @@
                     >
                       <ChevronLeft class="h-4 w-4" />
                     </button>
-                    
+
+                    <!-- Page buttons with ellipsis -->
                     <div class="flex items-center gap-1">
-                      <button 
-                        v-for="page in totalPages"
-                        :key="page"
-                        :class="[
-                          'px-3 py-1 text-sm font-medium rounded-lg',
-                          currentPage === page
-                            ? 'bg-[#00A572] text-white'
-                            : 'text-gray-500 hover:bg-gray-100'
-                        ]"
-                        @click="currentPage = page"
-                      >
-                        {{ page }}
-                      </button>
+                      <template v-for="(page, index) in displayedPages" :key="index">
+                        <button
+                          v-if="page === '...'"
+                          class="px-3 py-1 text-sm text-gray-500 cursor-default"
+                          disabled
+                        >
+                          ...
+                        </button>
+                        <button
+                          v-else
+                          :class="[
+                            'px-3 py-1 text-sm font-medium rounded-lg',
+                            currentPage === page
+                              ? 'bg-[#00A572] text-white'
+                              : 'text-gray-500 hover:bg-gray-100'
+                          ]"
+                          @click="currentPage = page"
+                        >
+                          {{ page }}
+                        </button>
+                      </template>
                     </div>
-                    
+
+                    <!-- Next button -->
                     <button 
                       class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                      :disabled="currentPage === totalPages || totalPages === 0"
+                      :disabled="currentPage === totalPages"
                       @click="currentPage++"
                     >
                       <ChevronRight class="h-4 w-4" />
                     </button>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -347,15 +366,12 @@ const filters = [
   { label: 'Data', value: 'data' }
 ]
 
-const activeFilter = ref('all')
-const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = ref(4)
-const notifications = ref([])
 const NOTIF_COLLECTION = "notifications"
+const isLoading = ref(false)
 
 // Fetch notifications from Firebase
 const fetchNotifications = async () => {
+  isLoading.value = true
   try {
     const q = query(collection(db, 'notifications'), orderBy('timestamp', 'desc'))
     const snapshot = await getDocs(q)
@@ -371,7 +387,7 @@ const fetchNotifications = async () => {
         time: parsedTime
       }
     })
-
+    isLoading.value = false
     console.log('Fetched notifications:', notifications.value)
   } catch (error) {
     console.error('Failed to fetch notifications:', error)
@@ -383,23 +399,32 @@ onMounted(() => {
   eventBus.on('notification-saved-success', fetchNotifications)
 })
 
-// Computed: Filtered notifications
+const notifications = ref([]) // Your notifications array
+const activeFilter = ref('')  // Example: 'unread', 'system', etc.
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+
 const filteredNotifications = computed(() => {
   let result = [...notifications.value]
 
-  if (activeFilter.value === 'unread') {
-    result = result.filter(n => !n.read)
-  } else if (activeFilter.value === 'system') {
-    result = result.filter(n => n.type === 'system')
-  } else if (activeFilter.value === 'alert') {
-    result = result.filter(n => ['warning', 'critical'].includes(n.severity))
-  } else if (activeFilter.value === 'data') {
-    result = result.filter(n => n.type === 'data')
+  switch (activeFilter.value) {
+    case 'unread':
+      result = result.filter(n => !n.read)
+      break
+    case 'system':
+      result = result.filter(n => n.type === 'system')
+      break
+    case 'alert':
+      result = result.filter(n => ['warning', 'critical'].includes(n.severity))
+      break
+    case 'data':
+      result = result.filter(n => n.type === 'data')
+      break
   }
 
-
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase()
+  const query = searchQuery.value.trim().toLowerCase()
+  if (query) {
     result = result.filter(n =>
       n.title?.toLowerCase().includes(query) ||
       n.message?.toLowerCase().includes(query)
@@ -409,16 +434,54 @@ const filteredNotifications = computed(() => {
   return result
 })
 
-// Pagination logic
-const totalPages = computed(() =>
-  Math.ceil(filteredNotifications.value.length / itemsPerPage.value) || 1
-)
+const totalPages = computed(() => {
+  const pages = Math.ceil(filteredNotifications.value.length / itemsPerPage.value)
+  return pages > 0 ? pages : 1
+})
 
 const paginatedNotifications = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   return filteredNotifications.value.slice(start, start + itemsPerPage.value)
 })
 
+const displayedPages = computed(() => {
+  const total = totalPages.value
+  const current = currentPage.value
+  const pages = []
+
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    pages.push(1)
+
+    if (current <= 4) {
+      for (let i = 2; i <= 5; i++) {
+        pages.push(i)
+      }
+      pages.push('...')
+      pages.push(total)
+    } else if (current >= total - 3) {
+      pages.push('...')
+      for (let i = total - 4; i < total; i++) {
+        pages.push(i)
+      }
+      pages.push(total)
+    } else {
+      pages.push('...')
+      pages.push(current - 1)
+      pages.push(current)
+      pages.push(current + 1)
+      pages.push('...')
+      pages.push(total)
+    }
+  }
+
+  return pages
+})
+
+// Reset to first page when filters/search change
 watch([activeFilter, searchQuery], () => {
   currentPage.value = 1
 })

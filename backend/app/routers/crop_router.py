@@ -78,47 +78,53 @@ async def recommend_crop(data: CropInput):
             "Soil Moisture (%)": data.soilMoisture
         }
 
+        print("✅ Received crop prediction request with input:")
+        print(features_dict)
+
         result = get_integrated_recommendation(features_dict)
-        
+
+        print("📊 ML Result:", result)
+
         if "error" in result:
+            print("❌ ML Integration Error:", result["error"], result["details"])
             raise HTTPException(
-                status_code=500, 
+                status_code=500,
                 detail=f"{result['error']}: {result['details']}"
             )
-        
-        recommendations = result["recommendations"]
-        if not recommendations:
+
+        recommendations = result.get("recommendations")
+        if not recommendations or len(recommendations) == 0:
             raise HTTPException(
                 status_code=500,
                 detail="No recommendations generated"
             )
 
         recommendations = sorted(recommendations, key=lambda x: x['confidence'], reverse=True)
-        
         top_rec = recommendations[0]
+
         return {
-            "recommendedCrop": top_rec['crop'],
-            "successRate": round(top_rec['confidence'] * 100, 2),
+            "recommendedCrop": top_rec.get('crop', 'Unknown'),
+            "successRate": round(top_rec.get('confidence', 0.0) * 100, 2),
             "soilCompatibility": top_rec.get('soil_compatibility', 0.0),
             "growthRate": top_rec.get('growth_rate', 0.0),
             "yieldPotential": top_rec.get('yield_potential', 0.0),
             "fertilizer": {
-                "type": top_rec['fertilizer']['type'],
-                "name": top_rec['fertilizer']['name'],
-                "base_amount": top_rec['fertilizer']['base_amount'],
-                "adjusted_amount": top_rec['fertilizer']['adjusted_amount'],
-                "unit": top_rec['fertilizer']['unit']
+                "type": top_rec['fertilizer'].get('type', ''),
+                "name": top_rec['fertilizer'].get('name', ''),
+                "base_amount": top_rec['fertilizer'].get('base_amount', 0.0),
+                "adjusted_amount": top_rec['fertilizer'].get('adjusted_amount', 0.0),
+                "unit": top_rec['fertilizer'].get('unit', '')
             },
             "alternativeOptions": [
                 {
-                    "crop": rec['crop'],
-                    "confidence": round(rec['confidence'] * 100, 2),
+                    "crop": rec.get('crop', ''),
+                    "confidence": round(rec.get('confidence', 0.0) * 100, 2),
                     "fertilizer": {
-                        "type": rec['fertilizer']['type'],
-                        "name": rec['fertilizer']['name'],
-                        "base_amount": rec['fertilizer']['base_amount'],
-                        "adjusted_amount": rec['fertilizer']['adjusted_amount'],
-                        "unit": rec['fertilizer']['unit']
+                        "type": rec['fertilizer'].get('type', ''),
+                        "name": rec['fertilizer'].get('name', ''),
+                        "base_amount": rec['fertilizer'].get('base_amount', 0.0),
+                        "adjusted_amount": rec['fertilizer'].get('adjusted_amount', 0.0),
+                        "unit": rec['fertilizer'].get('unit', '')
                     }
                 }
                 for rec in recommendations[1:3]
@@ -126,8 +132,9 @@ async def recommend_crop(data: CropInput):
         }
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/save")
 async def save_crop_recommendation(data: CropRecommendationSave):

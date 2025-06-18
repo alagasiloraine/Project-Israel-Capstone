@@ -763,7 +763,7 @@
                 <CalendarClock class="w-6 h-6 text-white" />
               </div>
               <h2 class="text-xl font-semibold text-white">
-                {{ editingScheduleId !== null ? 'Edit Schedule' : 'New Watering Schedule' }}
+                {{ editingScheduleIndex !== null ? 'Edit Schedule' : 'New Watering Schedule' }}
               </h2>
             </div>
             <button 
@@ -862,14 +862,10 @@
                           'h-9 flex items-center justify-center rounded-full text-sm transition-all cursor-pointer',
                           day.isCurrentMonth ? 'hover:bg-green-50' : 'text-gray-400',
                           isSelectedDate(day) ? 'bg-green-500 text-white font-medium hover:bg-green-600' : '',
-                          isToday(day) && !isSelectedDate(day) ? 'border border-green-500 text-green-600' : '',
-                          day.hasOneTimeSchedule && day.isCurrentMonth && !isSelectedDate(day) ? 'border-2 border-orange-400 text-orange-600 font-medium' : ''
+                          isToday(day) && !isSelectedDate(day) ? 'border border-green-500 text-green-600' : ''
                         ]"
                       >
-                        <span class="relative">
-                          {{ day.day }}
-                          <span v-if="day.hasOneTimeSchedule && day.isCurrentMonth" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-white shadow-sm"></span>
-                        </span>
+                        {{ day.day }}
                       </div>
                     </div>
                   </div>
@@ -1155,25 +1151,21 @@
           <div class="p-6 border-t border-gray-100 flex justify-end gap-3 bg-white sticky bottom-0 z-10 rounded-b-2xl">
             <button
               @click="closeScheduleModal"
-              :disabled="isLoading"
-              class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-medium rounded-lg px-5 py-2.5 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+              class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-medium rounded-lg px-5 py-2.5 transition-colors shadow-sm"
             >
               Cancel
             </button>
             <button
               @click="saveWateringSchedule"
-              :disabled="isLoading"
-              class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-medium rounded-lg px-5 py-2.5 transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-              style="min-width: 150px; min-height: 42px;" 
+              class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-medium rounded-lg px-5 py-2.5 transition-colors shadow-sm flex items-center gap-2"
             >
-              <template v-if="isLoading">
-                <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span class="ml-2">Saving...</span>
-              </template>
-              <template v-else>
+              <div v-if="isLoading" class="py-8 flex flex-col items-center justify-center">
+                <div class="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+              </div>
+              <div v-else class="flex items-center">
                 <Save class="w-4 h-4" />
-                <span>{{ editingScheduleId !== null ? 'Update Schedule' : 'Save Schedule' }}</span>
-              </template>
+                <span>{{ editingScheduleIndex !== null ? 'Update Schedule' : 'Save Schedule' }}</span>
+              </div>
             </button>
           </div>
         </div>
@@ -1278,8 +1270,7 @@ import {
   ArrowUpDown,
   FileText,
   FileSearch,
-  Info,
-  XCircle // Added for toastStyles
+  Info
 } from 'lucide-vue-next'
 import Sidebar from '../layout/Sidebar.vue'
 import {
@@ -1355,7 +1346,7 @@ const editingScheduleId = ref(null) // NEW: Store the Firestore document ID when
 const wateringMode = ref('weekly')
 const wateringDays = ref([true, false, true, false, true, false, false]) // Mon, Wed, Fri
 const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-const wateringHour = ref(6) // 6 AM (0-23 format)
+const wateringHour = ref(6) // 6 AM
 const wateringMinute = ref(30) // 30 minutes
 const wateringDuration = ref(20)
 const wateringDurationUnit = ref('minutes')
@@ -1415,16 +1406,6 @@ const displayedPages = computed(() => {
   return pages
 })
 
-// Computed property to get dates of one-time schedules
-const oneTimeScheduledDates = computed(() => {
-  return savedSchedules.value
-    .filter(schedule => schedule.mode === 'one-time' && !schedule.completed)
-    .map(schedule => {
-      const d = new Date(schedule.scheduledTime);
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); // Store as epoch time for easy comparison
-    });
-});
-
 // History filters
 const historyFilters = ref({
   startDate: '',
@@ -1435,9 +1416,9 @@ const historyFilters = ref({
 
 // Check if any filters are active
 const hasActiveFilters = computed(() => {
-  return historyFilters.value.startDate ||
-         historyFilters.value.endDate ||
-         historyFilters.value.scheduleType !== 'all' ||
+  return historyFilters.value.startDate || 
+         historyFilters.value.endDate || 
+         historyFilters.value.scheduleType !== 'all' || 
          historyFilters.value.duration !== 'all'
 })
 
@@ -1508,7 +1489,7 @@ const toggleFilterPanel = () => {
 const filteredMotorActivities = computed(() => {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
+  
   return motorActivities.value.filter(activity => {
     // Parse the timestamp to a Date object
     const activityDate = parseActivityTimestamp(activity.timestamp);
@@ -1517,165 +1498,286 @@ const filteredMotorActivities = computed(() => {
   });
 });
 
-const isDuplicateSchedule = (newScheduleDetails) => {
-  const {
-    mode: newMode,
-    hour: newHour, // 24-hour format
-    minute: newMinute,
-    duration: newDuration, // in minutes
-    date: newDateObj, // Date object for one-time
-    days: newWeeklyDays // Boolean array for weekly [Mon, Tue, ..., Sun]
-  } = newScheduleDetails;
+// const upcomingSchedules = computed(() => {
+//   return savedSchedules.value.filter(schedule => {
+//     if (!schedule.scheduledTime || schedule.completed !== false) return false;
 
-  const newStartTimeInMinutes = newHour * 60 + newMinute;
-  const newEndTimeInMinutes = newStartTimeInMinutes + newDuration;
+//     // Normalize to milliseconds
+//     const startTime = schedule.scheduledTime > 1e12
+//       ? schedule.scheduledTime
+//       : schedule.scheduledTime * 1000;
 
-  // console.log("[isDuplicateSchedule] --- New Check ---");
-  // console.log("[isDuplicateSchedule] Checking new schedule:", JSON.parse(JSON.stringify(newScheduleDetails)));
-  // console.log("[isDuplicateSchedule] Current editingScheduleId:", editingScheduleId.value);
+//     // Only show if it's still in the future
+//     return startTime > currentTime.value;
+//   });
+// });
 
-  return savedSchedules.value.some(existingSchedule => {
-    // Don't compare with itself if editing
-    if (editingScheduleId.value && existingSchedule.id === editingScheduleId.value) {
-      // console.log(`[isDuplicateSchedule] Skipping self-comparison for ID: ${existingSchedule.id}. Current editing ID: ${editingScheduleId.value}`);
-      return false; // This item is not a duplicate, continue .some()
+
+// const pastSchedules = computed(() => {
+//   return savedSchedules.value.filter(schedule => {
+//     const now = currentTime.value
+
+//     const startTime = schedule.scheduledTime > 1e12
+//       ? schedule.scheduledTime
+//       : schedule.scheduledTime * 1000
+
+//     return schedule.completed === true || startTime <= now
+//   })
+// })
+
+const isDuplicateSchedule = (date, hour, minute, mode, days = []) => {
+  return savedSchedules.value.some(schedule => {
+    const existingDate = new Date(schedule.scheduledTime);
+    const sameTime =
+      existingDate.getHours() === hour &&
+      existingDate.getMinutes() === minute;
+
+    if (mode === 'one-time') {
+      return (
+        schedule.mode === 'one-time' &&
+        existingDate.toDateString() === date.toDateString() &&
+        sameTime
+      );
     }
 
-    let dayConflict = false; // Declare dayConflict here, in the scope of the .some() callback
-
-    // console.log(`[isDuplicateSchedule] Comparing with existing schedule ID: ${existingSchedule.id}`, JSON.parse(JSON.stringify(existingSchedule)));
-
-    const existingScheduledTimeDateObj = new Date(existingSchedule.scheduledTime);
-    const existingHour = existingScheduledTimeDateObj.getHours();
-    const existingMinute = existingScheduledTimeDateObj.getMinutes();
-    const existingDuration = existingSchedule.duration; // in minutes
-
-    const existingStartTimeInMinutes = existingHour * 60 + existingMinute;
-    const existingEndTimeInMinutes = existingStartTimeInMinutes + existingDuration;
-
-
-    // 1. Check for day/date overlap based on modes
-    // Helper to get day of week: 0 for Monday, ..., 6 for Sunday
-    const getDayOfWeek = (date) => (date.getDay() === 0 ? 6 : date.getDay() - 1);
-
-    // Case 1: New schedule is 'one-time'
-    if (newMode === 'one-time') {
-      // Ensure newDateObj is valid, which it should be if mode is 'one-time'
-      const newScheduleDateOnly = new Date(newDateObj.getFullYear(), newDateObj.getMonth(), newDateObj.getDate());
-
-      // dayConflict is already declared
-      if (existingSchedule.mode === 'one-time') {
-        const existingDateOnly = new Date(existingScheduledTimeDateObj.getFullYear(), existingScheduledTimeDateObj.getMonth(), existingScheduledTimeDateObj.getDate());
-        if (newScheduleDateOnly.getTime() === existingDateOnly.getTime()) dayConflict = true;
-      } else if (existingSchedule.mode === 'daily') {
-        dayConflict = true; // A one-time schedule can conflict with a daily one on its specific date.
-      } else if (existingSchedule.mode === 'weekly') {
-        const dayOfWeekOfNew = getDayOfWeek(newScheduleDateOnly);
-        if (Array.isArray(existingSchedule.days) && existingSchedule.days[dayOfWeekOfNew]) dayConflict = true;
-      }
-      if (!dayConflict) return false;
+    if (mode === 'daily') {
+      return (
+        schedule.mode === 'daily' &&
+        sameTime
+      );
     }
 
-    // Case 2: New schedule is 'daily'
-    else if (newMode === 'daily') {
-      dayConflict = true; // A new daily schedule has a potential day conflict with any existing schedule type.
-      // No specific day check needed here as daily runs every day.
-      // The time overlap check below will be the deciding factor.
+    if (mode === 'weekly') {
+      const selectedDay = date.toLocaleDateString('en-US', { weekday: 'long' });
+      return (
+        schedule.mode === 'weekly' &&
+        schedule.days.includes(selectedDay) &&
+        sameTime
+      );
     }
 
-    // Case 3: New schedule is 'weekly'
-    else if (newMode === 'weekly') {
-      // dayConflict is already declared
-      if (existingSchedule.mode === 'one-time') {
-        const dayOfWeekOfExistingOneTime = getDayOfWeek(existingScheduledTimeDateObj);
-        if (newWeeklyDays[dayOfWeekOfExistingOneTime]) dayConflict = true;
-      } else if (existingSchedule.mode === 'daily') {
-        // A weekly schedule conflicts with a daily one if the weekly schedule has any active day.
-        if (newWeeklyDays.some(dayIsActive => dayIsActive)) dayConflict = true;
-      } else if (existingSchedule.mode === 'weekly') {
-        // Check for any overlapping day
-        if (!Array.isArray(existingSchedule.days)) return false;
-        for (let i = 0; i < 7; i++) {
-          if (newWeeklyDays[i] && existingSchedule.days[i]) {
-            dayConflict = true;
-            break;
-          }
-        }
-      }
-      if (!dayConflict) return false;
-    } else {
-      return false; // Unknown newMode
-    }
-
-    if (!dayConflict) {
-      // console.log(`[isDuplicateSchedule] No day/date conflict with existing ID: ${existingSchedule.id}. NewMode: ${newMode}, ExistingMode: ${existingSchedule.mode}`);
-      return false; // This item is not a duplicate, continue .some()
-    }
-    // console.log(`[isDuplicateSchedule] Day/date conflict IS present with existing ID: ${existingSchedule.id}. NewMode: ${newMode}, ExistingMode: ${existingSchedule.mode}`);
-
-    // 2. If day/date potentially conflicts, check for time interval overlap
-    const timesOverlap =
-      newStartTimeInMinutes < existingEndTimeInMinutes &&
-      newEndTimeInMinutes > existingStartTimeInMinutes;
-
-    if (timesOverlap) {
-        // console.log(`[isDuplicateSchedule] Time OVERLAP FOUND with existing ID: ${existingSchedule.id}. New: {start:${newStartTimeInMinutes}, end:${newEndTimeInMinutes}}, Existing: {start:${existingStartTimeInMinutes}, end:${existingEndTimeInMinutes}}`);
-        return true; // Conflict found, .some() will stop and return true
-    }
-    // console.log(`[isDuplicateSchedule] No time overlap with existing ID: ${existingSchedule.id}. New: {start:${newStartTimeInMinutes}, end:${newEndTimeInMinutes}}, Existing: {start:${existingStartTimeInMinutes}, end:${existingEndTimeInMinutes}}`);
-    return false; // No time overlap, this item is not a duplicate, continue .some()
+    return false;
   });
 };
 
+const saveWateringSchedule = async () => {
+  isLoading.value = true;
+  try {
+    console.log("Starting saveWateringSchedule...");
+
+    const scheduledTime = new Date();
+
+    if (wateringMode.value === 'one-time') {
+      scheduledTime.setFullYear(
+        selectedDate.value.getFullYear(),
+        selectedDate.value.getMonth(),
+        selectedDate.value.getDate()
+      );
+    }
+
+    let hour24 = wateringHour.value;
+    if (isAm.value && hour24 === 12) hour24 = 0;
+    else if (!isAm.value && hour24 < 12) hour24 += 12;
+
+    scheduledTime.setHours(hour24, wateringMinute.value, 0, 0);
+
+    // ✅ Duplicate check before saving
+    const isDuplicate = isDuplicateSchedule(
+      wateringMode.value === 'one-time' ? selectedDate.value : new Date(),
+      wateringHour.value,
+      wateringMinute.value,
+      wateringMode.value,
+      wateringDays.value
+    );
+
+    if (isDuplicate && !editingScheduleId.value) {
+      showToastMessage("A schedule for this date and time already exists.", 'warning');
+      isLoading.value = false;
+      return;
+    }
+
+    const formattedDateTime = (() => {
+      const timeDate = new Date();
+      if (wateringMode.value === 'one-time') {
+        timeDate.setFullYear(
+          selectedDate.value.getFullYear(),
+          selectedDate.value.getMonth(),
+          selectedDate.value.getDate()
+        );
+      }
+      timeDate.setHours(hour24, wateringMinute.value, 0, 0);
+      return timeDate.toLocaleString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+    })();
+
+    const schedulePayload = {
+      dateTime: formattedDateTime,
+      duration: wateringDuration.value,
+      mode: wateringMode.value,
+      days: wateringMode.value === 'weekly' ? [...wateringDays.value] : [],
+      skipIfRain: skipIfRain.value,
+      notifyWatering: notifyWatering.value,
+      waterFlowRate: waterFlowRate.value,
+      scheduledTime: scheduledTime.getTime(),
+      completed: false,
+    };
+
+    // 👉 Send to FastAPI backend
+    const backendResponse = await fetch("http://127.0.0.1:8000/api/watering-schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(schedulePayload),
+    });
+
+    const backendData = await backendResponse.json();
+
+    if (!backendResponse.ok) throw new Error(backendData.error || "Failed to save schedule in backend");
+
+    if (editingScheduleId.value) {
+      const docRef = doc(db, 'watering_schedules', editingScheduleId.value);
+      await updateDoc(docRef, {
+        ...schedulePayload,
+        updatedAt: serverTimestamp(),
+      });
+
+      const index = savedSchedules.value.findIndex(s => s.id === editingScheduleId.value);
+      if (index !== -1) {
+        savedSchedules.value[index] = {
+          ...savedSchedules.value[index],
+          ...schedulePayload,
+        };
+      }
+
+      showToastMessage('Schedule updated successfully', 'success');
+    } else {
+      const newScheduleData = {
+        ...schedulePayload,
+        updatedAt: serverTimestamp(),
+        createdAt: serverTimestamp(),
+      };
+
+      const docRef = await addDoc(collection(db, 'watering_schedules'), newScheduleData);
+
+      savedSchedules.value.push({
+        ...newScheduleData,
+        id: docRef.id,
+      });
+
+      showToastMessage('New schedule saved successfully', 'success');
+    }
+
+    await calculateNextWateringTime();
+    closeScheduleModal();
+
+    if (currentView.value === 'history') {
+      await fetchWateringSchedules();
+    }
+
+    editingScheduleId.value = null;
+    isLoading.value = false;
+
+  } catch (error) {
+    console.error("Error saving schedule:", error);
+    showToastMessage("Failed to save schedule. Please try again.");
+    isLoading.value = false;
+  }
+};
+
+// const upcomingSchedules = computed(() => {
+//   const now = Date.now()
+//   return savedSchedules.value.filter(schedule =>
+//     schedule.completed === false &&
+//     typeof schedule.scheduledTime === 'number' &&
+//     schedule.scheduledTime > now
+//   )
+// })
+
+
+// FIXED: Modified to properly identify past schedules
+// const pastSchedules = computed(() => {
+//   // Get all schedules that are not in upcomingSchedules
+//   // This ensures we include all schedules that have passed their scheduled time
+//   return savedSchedules.value.filter(schedule => {
+//     // A schedule is considered "past" if:
+//     // 1. It has a scheduledTime and it's in the past, OR
+//     // 2. It has a completed status flag
+//     const now = new Date().getTime();
+//     return (schedule.scheduledTime && schedule.scheduledTime <= now) || 
+//            (schedule.completed === true) ||
+//            // For one-time schedules, check if the date has passed
+//            (schedule.mode === 'one-time' && schedule.scheduledTime && schedule.scheduledTime <= now);
+//   });
+// });
+
+// const pastSchedules = computed(() => {
+//   const now = Date.now()
+//   return savedSchedules.value.filter(schedule =>
+//     (schedule.completed === true) ||
+//     (typeof schedule.scheduledTime === 'number' && schedule.scheduledTime <= now)
+//   )
+// })
+  
+
+// FIXED: Modified to properly filter past schedules based on history filters
 const filteredPastSchedules = computed(() => {
   let filtered = [...pastSchedules.value];
-
+  
   // Apply search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(schedule => {
-      return Object.values(schedule).some(value =>
+      return Object.values(schedule).some(value => 
         String(value).toLowerCase().includes(query)
       )
     })
   }
-
+  
   // Apply date range filter
   if (historyFilters.value.startDate) {
     const startDate = new Date(historyFilters.value.startDate).getTime();
     filtered = filtered.filter(schedule => {
+      // If scheduledTime exists, use it for filtering
       if (schedule.scheduledTime) {
         return schedule.scheduledTime >= startDate;
       }
+      // Fallback to parsing dateTime if available
       if (schedule.dateTime) {
         const scheduleDate = parseScheduleDateTime(schedule.dateTime);
         return scheduleDate.getTime() >= startDate;
       }
-      return true;
+      return true; // Include if we can't determine the date
     });
   }
-
+  
   if (historyFilters.value.endDate) {
     const endDate = new Date(historyFilters.value.endDate);
     endDate.setHours(23, 59, 59, 999); // End of the day
     const endTime = endDate.getTime();
     filtered = filtered.filter(schedule => {
+      // If scheduledTime exists, use it for filtering
       if (schedule.scheduledTime) {
         return schedule.scheduledTime <= endTime;
       }
+      // Fallback to parsing dateTime if available
       if (schedule.dateTime) {
         const scheduleDate = parseScheduleDateTime(schedule.dateTime);
         return scheduleDate.getTime() <= endTime;
       }
-      return true;
+      return true; // Include if we can't determine the date
     });
   }
-
+  
   // Apply schedule type filter
   if (historyFilters.value.scheduleType !== 'all') {
     filtered = filtered.filter(schedule => schedule.mode === historyFilters.value.scheduleType);
   }
-
+  
   // Apply duration filter
   if (historyFilters.value.duration !== 'all') {
     if (historyFilters.value.duration === 'short') {
@@ -1686,7 +1788,7 @@ const filteredPastSchedules = computed(() => {
       filtered = filtered.filter(schedule => schedule.duration > 30);
     }
   }
-
+  
   return filtered;
 });
 
@@ -1700,18 +1802,18 @@ const paginatedPastSchedules = computed(() => {
 // ADDED: Helper function to parse schedule dateTime strings
 const parseScheduleDateTime = (dateTimeStr) => {
   if (!dateTimeStr) return new Date();
-
+  
   try {
     // Handle formats like "Mon, May 12, 01:35 AM"
     const parts = dateTimeStr.split(', ');
     if (parts.length >= 3) {
       const datePart = parts[0] + ', ' + parts[1];
       const timePart = parts[2];
-
+      
       // Create a date from the combined string
       return new Date(datePart + ', ' + new Date().getFullYear() + ' ' + timePart);
     }
-
+    
     // Fallback to direct parsing
     return new Date(dateTimeStr);
   } catch (error) {
@@ -1726,52 +1828,52 @@ const parseActivityTimestamp = (timestamp) => {
   if (timestamp instanceof Date) {
     return timestamp;
   }
-
+  
   if (typeof timestamp !== 'string') {
     console.error('Invalid timestamp format:', timestamp);
     return new Date(); // Return current date as fallback
   }
-
+  
   // Handle Firebase formatted timestamps (e.g., "Sun, May 4, 06:32 PM")
   if (timestamp.includes(',')) {
     try {
       // Parse the full date string
       const dateParts = timestamp.split(', ');
-
+      
       // If it's a full date with day of week, month, day, and time
       if (dateParts.length >= 2) {
         // For format like "Sun, May 4, 06:32 PM"
         const fullDateStr = timestamp;
         const date = new Date(fullDateStr);
-
+        
         // Check if date is valid
         if (!isNaN(date.getTime())) {
           return date;
         }
-
+        
         // If direct parsing failed, try manual parsing
         const monthDayPart = dateParts[1];
         let timePart = '';
-
+        
         if (dateParts.length > 2) {
           timePart = dateParts[2];
         }
-
+        
         // Extract month and day
         const monthDayMatch = monthDayPart.match(/([A-Za-z]+)\s+(\d+)/);
         if (monthDayMatch) {
           const monthName = monthDayMatch[1];
           const day = parseInt(monthDayMatch[2]);
-
+          
           // Convert month name to month index
           const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
           const monthIndex = months.findIndex(m => m === monthName);
-
+          
           if (monthIndex !== -1) {
             // Create date with current year (or adjust if needed)
             const currentYear = new Date().getFullYear();
             const newDate = new Date(currentYear, monthIndex, day);
-
+            
             // Add time if available
             if (timePart) {
               const timeMatch = timePart.match(/(\d+):(\d+)\s+(AM|PM)/i);
@@ -1779,18 +1881,18 @@ const parseActivityTimestamp = (timestamp) => {
                 let hours = parseInt(timeMatch[1]);
                 const minutes = parseInt(timeMatch[2]);
                 const ampm = timeMatch[3].toUpperCase();
-
+                
                 // Convert to 24-hour format
                 if (ampm === 'PM' && hours < 12) {
                   hours += 12;
                 } else if (ampm === 'AM' && hours === 12) {
                   hours = 0;
                 }
-
+                
                 newDate.setHours(hours, minutes, 0, 0);
               }
             }
-
+            
             return newDate;
           }
         }
@@ -1799,14 +1901,14 @@ const parseActivityTimestamp = (timestamp) => {
       console.error('Error parsing timestamp:', error, timestamp);
     }
   }
-
+  
   // Handle "Today" and "Yesterday" formats
   if (timestamp.startsWith('Today')) {
     const today = new Date();
     const timeStr = timestamp.split(', ')[1];
     const [hours, minutes] = timeStr.split(':');
     const isPM = timeStr.includes('PM');
-
+    
     today.setHours(
       isPM && hours !== '12' ? parseInt(hours) + 12 : (hours === '12' && !isPM ? 0 : parseInt(hours)),
       parseInt(minutes),
@@ -1820,7 +1922,7 @@ const parseActivityTimestamp = (timestamp) => {
     const timeStr = timestamp.split(', ')[1];
     const [hours, minutes] = timeStr.split(':');
     const isPM = timeStr.includes('PM');
-
+    
     yesterday.setHours(
       isPM && hours !== '12' ? parseInt(hours) + 12 : (hours === '12' && !isPM ? 0 : parseInt(hours)),
       parseInt(minutes),
@@ -1829,7 +1931,7 @@ const parseActivityTimestamp = (timestamp) => {
     );
     return yesterday;
   }
-
+  
   // If all parsing attempts fail, return current date as fallback
   console.warn('Could not parse timestamp, using current date as fallback:', timestamp);
   return new Date();
@@ -1856,13 +1958,13 @@ const viewScheduleHistory = () => {
   const today = new Date();
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(today.getDate() - 30);
-
+  
   historyFilters.value.startDate = thirtyDaysAgo.toISOString().split('T')[0];
   historyFilters.value.endDate = today.toISOString().split('T')[0];
-
+  
   // Reset pagination
   currentPage.value = 1;
-
+  
   // Fetch all schedules to ensure we have the latest data
   fetchWateringSchedules();
 };
@@ -1980,7 +2082,7 @@ try {
       device_id: 'main_motor',
       user: 'system',
       timestamp: now.toISOString(),
-      formatted_time: formattedTime
+      formatted_time: formattedTime  // ✅ FIXED: was `formattedTime`
     })
 
     console.log('Motor status sent to FastAPI backend:', response.data)
@@ -2007,7 +2109,7 @@ const fetchMotorStatus = async () => {
   try {
     console.log('Fetching motor status from Firebase...')
     isLoadingActivities.value = true
-
+    
     // First try to get the current status document
     try {
       const currentStatusDoc = await getDoc(doc(db, 'motor_status', 'current'))
@@ -2021,26 +2123,26 @@ const fetchMotorStatus = async () => {
     } catch (err) {
       console.warn('Error fetching current status, will try collection query instead:', err)
     }
-
+    
     // Calculate date 7 days ago for filtering
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
+    
     // Fetch recent activities from the history subcollection
     try {
       const historyRef = collection(db, 'motor_status', 'history', 'logs')
       // Add where clause to filter by timestamp
       const activitiesQuery = query(
-        historyRef,
+        historyRef, 
         orderBy('timestamp', 'desc'),
         // No need to limit here as we'll filter in the computed property
       )
       const activitiesSnapshot = await getDocs(activitiesQuery)
-
+      
       const activities = []
       activitiesSnapshot.forEach(doc => {
         const data = doc.data()
-
+        
         // FIXED: Format the timestamp correctly based on the actual date
         let formattedTimestamp;
         if (data.timestamp) {
@@ -2049,13 +2151,13 @@ const fetchMotorStatus = async () => {
         } else {
           formattedTimestamp = data.formattedTime || 'Unknown time';
         }
-
+        
         activities.push({
           status: data.status,
           timestamp: formattedTimestamp
         })
       })
-
+      
       if (activities.length > 0) {
         motorActivities.value = activities
         console.log('Fetched motor activities:', activities.length)
@@ -2065,7 +2167,7 @@ const fetchMotorStatus = async () => {
     } finally {
       isLoadingActivities.value = false
     }
-
+    
   } catch (error) {
     console.error('Error in fetchMotorStatus:', error)
     isLoadingActivities.value = false
@@ -2077,20 +2179,20 @@ const formatFirebaseTimestamp = (date) => {
   if (!date || !(date instanceof Date)) {
     return 'Invalid date';
   }
-
+  
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
   const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
+  
   // Format the time part
-  const timeStr = date.toLocaleTimeString([], {
-    hour: '2-digit',
+  const timeStr = date.toLocaleTimeString([], { 
+    hour: '2-digit', 
     minute: '2-digit',
-    hour12: true
+    hour12: true 
   });
-
+  
   // Check if the date is in the future (which would be incorrect)
   if (dateOnly > today) {
     // Return the full date for future dates (likely a timestamp issue)
@@ -2103,17 +2205,17 @@ const formatFirebaseTimestamp = (date) => {
       hour12: true
     });
   }
-
+  
   // Check if it's today
   if (dateOnly.getTime() === today.getTime()) {
     return `Today, ${timeStr}`;
   }
-
+  
   // Check if it's yesterday
   if (dateOnly.getTime() === yesterday.getTime()) {
     return `Yesterday, ${timeStr}`;
   }
-
+  
   // Otherwise return the full date
   return date.toLocaleString('en-US', {
     weekday: 'short',
@@ -2154,11 +2256,9 @@ const calendarDays = computed(() => {
   for (let i = firstDayOfWeek - 1; i >= 0; i--) {
     days.push({
       day: prevMonthLastDay - i,
-      month: month - 1, // JavaScript Date constructor handles month -1 correctly
+      month: month - 1,
       year: month === 0 ? year - 1 : year,
       isCurrentMonth: false
-      // Note: hasOneTimeSchedule will be implicitly false/undefined here
-      // The v-if="day.hasOneTimeSchedule && day.isCurrentMonth" handles this
     })
   }
 
@@ -2168,8 +2268,7 @@ const calendarDays = computed(() => {
       day: i,
       month,
       year,
-      isCurrentMonth: true,
-      hasOneTimeSchedule: oneTimeScheduledDates.value.includes(new Date(year, month, i).getTime())
+      isCurrentMonth: true
     })
   }
 
@@ -2178,10 +2277,9 @@ const calendarDays = computed(() => {
   for (let i = 1; i <= remainingDays; i++) {
     days.push({
       day: i,
-      month: month + 1, // JavaScript Date constructor handles month 12 correctly
+      month: month + 1,
       year: month === 11 ? year + 1 : year,
-      isCurrentMonth: false,
-      hasOneTimeSchedule: oneTimeScheduledDates.value.includes(new Date(month === 11 ? year + 1 : year, month + 1, i).getTime())
+      isCurrentMonth: false
     })
   }
 
@@ -2251,46 +2349,41 @@ const decrementMinute = () => {
 
 const updateAmPm = () => {
   // Update isAm based on the 24-hour format hour
-  isAm.value = wateringHour.value < 12 || wateringHour.value === 0; // 0 is 12 AM
-  if (wateringHour.value === 12) isAm.value = false; // 12 is 12 PM
+  isAm.value = wateringHour.value < 12
 
   // Log the current time state for debugging
-  // console.log(`Time updated: ${wateringHour.value}:${wateringMinute.value} (${isAm.value ? "AM" : "PM"})`)
+  console.log(`Time updated: ${wateringHour.value}:${wateringMinute.value} (${isAm.value ? "AM" : "PM"})`)
 }
 
 // COMPLETELY REWRITTEN: Function to set AM/PM
 const setAmPm = (value) => {
-  // console.log(`setAmPm called with value: ${value}, current hour: ${wateringHour.value}, current isAm: ${isAm.value}`);
-  const currentHour24 = wateringHour.value;
-
-  if (value === 'AM') {
-    if (currentHour24 >= 12) { // If it was PM (12-23)
-      wateringHour.value = currentHour24 - 12; // Convert 12 PM to 0 (12 AM), 1 PM to 1 AM etc.
+  console.log(`setAmPm called with value: ${value}, current hour: ${wateringHour.value}, current isAm: ${isAm.value}`);
+  
+  // Only update if we're actually changing the AM/PM state
+  if (value === 'AM' && !isAm.value) {
+    // Switching from PM to AM
+    if (wateringHour.value >= 12) {
+      wateringHour.value = wateringHour.value - 12;
     }
     isAm.value = true;
-  } else if (value === 'PM') {
-    if (currentHour24 < 12) { // If it was AM (0-11)
-      wateringHour.value = currentHour24 + 12; // Convert 0 (12 AM) to 12 PM, 1 AM to 1 PM etc.
+  } else if (value === 'PM' && isAm.value) {
+    // Switching from AM to PM
+    if (wateringHour.value < 12) {
+      wateringHour.value = wateringHour.value + 12;
     }
     isAm.value = false;
   }
-  // console.log(`After setAmPm: hour=${wateringHour.value}, isAm=${isAm.value}`);
+  
+  console.log(`After setAmPm: hour=${wateringHour.value}, isAm=${isAm.value}`);
 }
 
 // Validation functions
 const validateHour = () => {
-  let inputHour12 = parseInt(formattedHour.value); // This is 1-12 from input
-  if (isNaN(inputHour12) || inputHour12 < 1) inputHour12 = 1;
-  if (inputHour12 > 12) inputHour12 = 12;
-
-  let hour24 = inputHour12;
-  if (isAm.value) {
-    if (hour24 === 12) hour24 = 0; // 12 AM is 0
-  } else { // PM
-    if (hour24 < 12) hour24 += 12; // 1 PM to 11 PM
-  }
-  wateringHour.value = hour24;
-  // formattedHour will recompute based on wateringHour and isAm
+  let hour = parseInt(formattedHour.value)
+  if (isNaN(hour) || hour < 0) hour = 0
+  if (hour > 23) hour = 23
+  wateringHour.value = hour
+  updateAmPm()
 }
 
 const validateMinute = () => {
@@ -2303,26 +2396,15 @@ const validateMinute = () => {
 // Formatted time inputs
 const formattedHour = computed({
   get: () => {
-    let displayHour = wateringHour.value;
-    if (isAm.value) {
-      if (displayHour === 0) displayHour = 12; // 00:xx AM is 12:xx AM
-    } else { // PM
-      if (displayHour > 12) displayHour -= 12; // 13:xx PM is 01:xx PM
-      else if (displayHour === 0) displayHour = 12; // Should not happen if isAm is correct (0 is AM)
-    }
-    return displayHour.toString().padStart(2, '0');
+    const hour = wateringHour.value % 12
+    return (hour === 0 ? 12 : hour).toString().padStart(2, '0')
   },
   set: (value) => {
-    let inputHour12 = parseInt(value);
-    if (!isNaN(inputHour12) && inputHour12 >= 1 && inputHour12 <= 12) {
-      let hour24 = inputHour12;
-      if (isAm.value) {
-        if (hour24 === 12) hour24 = 0; // 12 AM is 00 hours
-      } else { // PM
-        if (hour24 < 12) hour24 += 12; // 1 PM (13) to 11 PM (23)
-                                     // 12 PM remains 12
-      }
-      wateringHour.value = hour24;
+    let hour = parseInt(value)
+    if (!isNaN(hour)) {
+      if (hour === 12) hour = 0
+      if (!isAm.value) hour += 12
+      wateringHour.value = hour
     }
   }
 })
@@ -2346,12 +2428,12 @@ const toggleWateringDay = (index) => {
 const openScheduleModal = (index = null) => {
   if (index === null) {
     // Creating a new schedule - reset form
-    // editingScheduleIndex.value = null // Deprecated
+    editingScheduleIndex.value = null
     editingScheduleId.value = null
     resetScheduleForm()
   } else {
     // Editing existing schedule - load data
-    // editingScheduleIndex.value = index // Deprecated
+    editingScheduleIndex.value = index
     editingScheduleId.value = savedSchedules.value[index].id // Store the document ID
     loadScheduleData(index)
   }
@@ -2361,49 +2443,74 @@ const openScheduleModal = (index = null) => {
 // COMPLETELY REWRITTEN: Function to load schedule data for editing
 const loadScheduleData = (index) => {
   const schedule = savedSchedules.value[index];
-  // console.log("Loading schedule data:", schedule);
+  console.log("Loading schedule data:", schedule);
 
   // Set mode
   wateringMode.value = schedule.mode;
 
   // Set days for weekly mode
-  if (schedule.days && Array.isArray(schedule.days)) {
+  if (schedule.days) {
     wateringDays.value = [...schedule.days];
-  } else {
-    wateringDays.value = [false,false,false,false,false,false,false]; // Default if not set
   }
 
-  // Set time
-  // scheduledTime is a timestamp (milliseconds)
-  const scheduleDate = new Date(schedule.scheduledTime);
-  wateringHour.value = scheduleDate.getHours();   // 0-23
-  wateringMinute.value = scheduleDate.getMinutes(); // 0-59
-  updateAmPm(); // This will set isAm correctly based on wateringHour.value
+  // Set time - CRITICAL FIX
+const timeMatch = schedule.dateTime.match(/(\d+):(\d+)\s+(AM|PM)/);
+  if (timeMatch) {
+    const hour12 = parseInt(timeMatch[1]);
+    const minute = parseInt(timeMatch[2]);
+    const ampm = timeMatch[3];
 
-  // console.log(`Loaded time from timestamp: ${wateringHour.value}:${wateringMinute.value}, isAm set to ${isAm.value}`);
+    console.log(`Parsed time from schedule: ${hour12}:${minute} ${ampm}`);
+
+    // Set AM/PM state first
+    isAm.value = ampm === 'AM';
+
+    // Convert to 24-hour format for internal storage
+    let hour24;
+    if (ampm === 'PM' && hour12 < 12) {
+      hour24 = hour12 + 12;
+    } else if (ampm === 'AM' && hour12 === 12) {
+      hour24 = 0;
+    } else {
+      hour24 = hour12;
+    }
+
+    wateringHour.value = hour24;
+    wateringMinute.value = minute;
+
+    console.log(`Loaded time: ${hour24}:${minute} (${ampm}), isAm set to ${isAm.value}`);
+  }
 
   // Set duration
   wateringDuration.value = schedule.duration;
 
   // Set additional settings
   skipIfRain.value = schedule.skipIfRain || false;
-  notifyWatering.value = schedule.notifyWatering === undefined ? true : schedule.notifyWatering;
+  notifyWatering.value = schedule.notifyWatering || false;
   waterFlowRate.value = schedule.waterFlowRate || 'medium';
 
   // Set interval for custom mode
-  if (schedule.mode === 'custom' && schedule.interval) {
+  if (schedule.interval) {
     wateringInterval.value = schedule.interval.value;
     wateringIntervalUnit.value = schedule.interval.unit;
   }
 
   // Set date for one-time mode
-  if (schedule.mode === 'one-time') {
-    selectedDate.value = new Date(schedule.scheduledTime); // Use the full timestamp for selectedDate
-    currentDate.value = new Date(selectedDate.value); // Sync calendar view
-  } else {
-    // For other modes, reset selectedDate to today to avoid confusion if user switches to one-time
-    selectedDate.value = new Date();
-    currentDate.value = new Date();
+  if (schedule.mode === 'one-time' && schedule.dateTime) {
+    const dateMatch = schedule.dateTime.match(/([A-Za-z]+),\s+([A-Za-z]+)\s+(\d+)/);
+    if (dateMatch) {
+      const monthName = dateMatch[2];
+      const day = parseInt(dateMatch[3]);
+
+      // Create a date object
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthIndex = months.findIndex(m => m === monthName);
+
+      if (monthIndex !== -1) {
+        selectedDate.value = new Date(new Date().getFullYear(), monthIndex, day);
+        currentDate.value = new Date(selectedDate.value);
+      }
+    }
   }
 };
 
@@ -2411,7 +2518,7 @@ const loadScheduleData = (index) => {
 const resetScheduleForm = () => {
   wateringMode.value = 'weekly'
   wateringDays.value = [true, false, true, false, true, false, false]
-  wateringHour.value = 6 // 6 AM (24-hour format)
+  wateringHour.value = 6
   wateringMinute.value = 30
   wateringDuration.value = 20
   wateringInterval.value = 2
@@ -2421,13 +2528,13 @@ const resetScheduleForm = () => {
   waterFlowRate.value = 'medium'
   selectedDate.value = new Date()
   currentDate.value = new Date()
-  updateAmPm(); // Set isAm based on default hour
+  isAm.value = true
 }
 
 // Function to close the schedule modal
 const closeScheduleModal = () => {
   showScheduleModal.value = false
-  // editingScheduleIndex.value = null // Deprecated
+  editingScheduleIndex.value = null
   editingScheduleId.value = null
 }
 
@@ -2470,21 +2577,67 @@ const removeSchedule = (index) => {
   showDeleteConfirmation.value = true
 }
 
+// const removeSchedule = async (index) => {
+//   // Save index and show confirmation first
+//   scheduleToDeleteIndex.value = index;
+//   showDeleteConfirmation.value = true;
+
+//   // Wait for user confirmation (pseudo-code: adapt based on how your modal works)
+//   const confirmed = await new Promise((resolve) => {
+//     const checkInterval = setInterval(() => {
+//       if (showDeleteConfirmation.value === false) {
+//         clearInterval(checkInterval);
+//         resolve(true); // confirmed
+//       }
+//     }, 100);
+//   });
+
+//   if (!confirmed) return;
+
+//   try {
+//     if (
+//       index === null ||
+//       typeof index !== 'number' ||
+//       index < 0 ||
+//       index >= savedSchedules.value.length
+//     ) {
+//       throw new Error("Invalid index for deletion");
+//     }
+
+//     const schedule = savedSchedules.value[index];
+
+//     if (!schedule?.id) {
+//       throw new Error("Schedule ID not found");
+//     }
+
+//     await deleteDoc(doc(db, 'watering_schedules', schedule.id));
+//     savedSchedules.value.splice(index, 1);
+
+//     showToastMessage("Schedule deleted successfully");
+//   } catch (error) {
+//     console.error("Error deleting schedule:", error);
+//     showToastMessage("Failed to delete schedule.");
+//   } finally {
+//     showDeleteConfirmation.value = false;
+//     scheduleToDeleteIndex.value = null;
+//   }
+// };
+
 // UPDATED: Function to confirm and execute schedule deletion
 const confirmDeleteSchedule = async () => {
-  if (scheduleToDeleteIndex.value !== null && scheduleToDeleteIndex.value < savedSchedules.value.length) {
+  if (scheduleToDeleteIndex.value !== null) {
     try {
       const scheduleId = savedSchedules.value[scheduleToDeleteIndex.value].id
-
+      
       // Delete from Firebase
       await deleteDoc(doc(db, 'watering_schedules', scheduleId))
-
-      // Remove from local array (Firebase listener will also update, but this is faster UI feedback)
-      // savedSchedules.value.splice(scheduleToDeleteIndex.value, 1) // Let onSnapshot handle UI update
-
+      
+      // Remove from local array
+      savedSchedules.value.splice(scheduleToDeleteIndex.value, 1)
+      
       // Recalculate next watering time
       await calculateNextWateringTime()
-
+      
       showToastMessage('Schedule deleted successfully')
     } catch (error) {
       console.error('Error deleting schedule:', error)
@@ -2493,22 +2646,17 @@ const confirmDeleteSchedule = async () => {
       showDeleteConfirmation.value = false
       scheduleToDeleteIndex.value = null
     }
-  } else {
-    console.error("Invalid index for deletion or schedule not found.");
-    showToastMessage('Error: Could not find schedule to delete.');
-    showDeleteConfirmation.value = false
-    scheduleToDeleteIndex.value = null
   }
 }
 
 // Schedule summary
 const scheduleSummary = computed(() => {
   if (wateringMode.value === 'weekly') {
-    const selectedDaysList = weekDays
+    const selectedDays = weekDays
       .filter((_, index) => wateringDays.value[index])
       .map(day => day.substring(0, 3))
       .join(', ')
-    return `Every ${selectedDaysList || 'N/A'}` // Handle case where no days are selected
+    return `Every ${selectedDays || 'day'}`
   } else if (wateringMode.value === 'daily') {
     return 'Every day'
   } else if (wateringMode.value === 'custom') {
@@ -2525,15 +2673,14 @@ const scheduleSummary = computed(() => {
 
 // COMPLETELY REWRITTEN: Time display computed property
 const timeDisplay = computed(() => {
+  // Convert 24-hour format to 12-hour format for display
   let hour12 = wateringHour.value % 12;
-  if (hour12 === 0) hour12 = 12; // 0 or 12 should display as 12
-
+  if (hour12 === 0) hour12 = 12; // 0 should display as 12 in 12-hour format
+  
   const minute = wateringMinute.value.toString().padStart(2, '0');
-  const ampm = (wateringHour.value < 12 || wateringHour.value === 0) && wateringHour.value !== 12 ? 'AM' : 'PM';
-  if (wateringHour.value === 12) ampm = 'PM'; // Explicitly 12 PM
-
-
-  // console.log(`timeDisplay computed: ${hour12}:${minute} ${ampm} (from hour: ${wateringHour.value}, isAm: ${isAm.value})`);
+  const ampm = wateringHour.value < 12 ? 'AM' : 'PM';
+  
+  console.log(`timeDisplay computed: ${hour12}:${minute} ${ampm} (from hour: ${wateringHour.value}, isAm: ${isAm.value})`);
   return `${hour12}:${minute} ${ampm}`;
 });
 
@@ -2545,50 +2692,30 @@ const pastSchedules = computed(() =>
   savedSchedules.value.filter(schedule => schedule.completed === true)
 );
 
-let unsubscribeSchedules = null;
 const fetchWateringSchedules = () => {
-  isLoadingSchedules.value = true;
   const schedulesRef = collection(db, 'watering_schedules');
-  // Order by scheduledTime to make it easier to find next/past
-  const schedulesQuery = query(schedulesRef, orderBy('scheduledTime', 'asc'));
+  const schedulesQuery = query(schedulesRef, orderBy('dateTime', 'desc'));
 
-  if (unsubscribeSchedules) unsubscribeSchedules(); // Unsubscribe from previous listener
-
-  unsubscribeSchedules = onSnapshot(schedulesQuery, (snapshot) => {
+  // Listen for real-time updates
+  onSnapshot(schedulesQuery, (snapshot) => {
     const schedules = [];
-    const now = Date.now();
 
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      const scheduleId = docSnap.id;
+    snapshot.forEach((doc) => {
+      const data = doc.data();
 
-      // Normalize scheduledTime if it's in seconds
+      // Normalize scheduledTime if needed
       if (data.scheduledTime && data.scheduledTime < 1e12) {
         data.scheduledTime = data.scheduledTime * 1000;
       }
-      
-      // Auto-mark as completed if past and not recurring
-      if (data.mode === 'one-time' && data.scheduledTime < now && data.completed === false) {
-        updateDoc(doc(db, 'watering_schedules', scheduleId), { completed: true, updatedAt: serverTimestamp() })
-          .then(() => console.log(`Auto-marked schedule ${scheduleId} as completed.`))
-          .catch(err => console.error("Error auto-updating schedule:", err));
-        // data.completed = true; // Reflect immediately in UI, Firestore update will follow
-      }
 
-
-      schedules.push({ id: scheduleId, ...data });
+      // ✅ Push all schedules (completed and not)
+      schedules.push({ id: doc.id, ...data });
     });
 
     savedSchedules.value = schedules;
-    // console.log('Realtime updated watering schedules:', schedules.length);
-    calculateNextWateringTime(); // Recalculate next watering time whenever schedules change
-    isLoadingSchedules.value = false;
-  }, (error) => {
-    console.error("Error listening to watering schedules:", error);
-    isLoadingSchedules.value = false;
+    console.log('Realtime updated watering schedules:', schedules.length);
   });
 };
-
 
 // MODIFIED: Function to calculate the next watering time from the database
 let unsubscribeNextWatering = null; // To avoid multiple listeners
@@ -2607,146 +2734,182 @@ const formatTime = (timestamp) => {
 
 const calculateNextWateringTime = () => {
   isLoadingNextWatering.value = true;
-  const now = new Date().getTime();
 
-  // Find the next upcoming schedule from the local `savedSchedules` array
-  // This array is kept in sync by the `fetchWateringSchedules` onSnapshot listener
-  const upcoming = savedSchedules.value
-    .filter(s => s.completed === false && s.scheduledTime >= now)
-    // .sort((a, b) => a.scheduledTime - b.scheduledTime); // Already sorted by query
-
-  if (upcoming.length > 0) {
-    nextWateringTime.value = formatTime(upcoming[0].scheduledTime);
-  } else {
-    nextWateringTime.value = 'No upcoming waterings';
+  // Unsubscribe previous snapshot listener
+  if (unsubscribeNextWatering) {
+    unsubscribeNextWatering();
   }
-  isLoadingNextWatering.value = false;
-};
 
-const saveWateringSchedule = async () => {
-  isLoading.value = true;
-  try {
-    // console.log("Starting saveWateringSchedule...");
+  const now = new Date();
 
-    const scheduledTime = new Date(); // This will be the basis for date parts if not one-time
+  const schedulesRef = collection(db, 'watering_schedules');
+  const nextWateringQuery = query(
+    schedulesRef,
+    where('scheduledTime', '>=', now.getTime()),
+    where('completed', '==', false),
+    orderBy('scheduledTime', 'asc'),
+    limit(1)
+  );
 
-    // wateringHour.value is already 0-23, wateringMinute.value is 0-59
-    const current24Hour = wateringHour.value;
-    const currentMinute = wateringMinute.value;
+  unsubscribeNextWatering = onSnapshot(nextWateringQuery, (snapshot) => {
+    if (!snapshot.empty) {
+      const doc = snapshot.docs[0];
+      const data = doc.data();
 
-    if (wateringMode.value === 'one-time') {
-      scheduledTime.setFullYear(
-        selectedDate.value.getFullYear(),
-        selectedDate.value.getMonth(),
-        selectedDate.value.getDate()
-      );
-    }
-    // For daily/weekly, scheduledTime will use today's date parts by default from `new Date()`
-    // This is fine as `scheduledTime` primarily stores the time of day for recurring,
-    // and the actual next occurrence logic might be handled server-side or by a scheduler.
-    // For Firestore `scheduledTime` field, it's crucial for querying the *next* absolute time.
-
-    scheduledTime.setHours(current24Hour, currentMinute, 0, 0);
-
-    const newScheduleDetails = {
-        mode: wateringMode.value,
-        hour: current24Hour,
-        minute: currentMinute,
-        duration: wateringDuration.value,
-        date: wateringMode.value === 'one-time' ? new Date(selectedDate.value) : null, // Pass a copy
-        days: wateringMode.value === 'weekly' ? [...wateringDays.value] : null // Pass a copy
-    };
-
-    const isDuplicate = isDuplicateSchedule(newScheduleDetails);
-
-    if (isDuplicate) { // isDuplicateSchedule now handles the editingScheduleId.value check internally
-      showToastMessage("Schedule conflicts with an existing one due to overlapping time, duration, or day(s).", 'warning');
-      isLoading.value = false;
-      return;
-    }
-
-    const formattedDateTime = (() => {
-      // Use the 'scheduledTime' object which has the correct date and time parts
-      return scheduledTime.toLocaleString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      });
-    })();
-
-    const schedulePayload = {
-      dateTime: formattedDateTime, // Human-readable string for display
-      duration: wateringDuration.value,
-      mode: wateringMode.value,
-      days: wateringMode.value === 'weekly' ? [...wateringDays.value] : [], // Always send 'days' as an array
-      skipIfRain: skipIfRain.value,
-      notifyWatering: notifyWatering.value,
-      waterFlowRate: waterFlowRate.value,
-      interval: wateringMode.value === 'custom'
-        ? {
-            value: wateringInterval.value,
-            unit: wateringIntervalUnit.value,
-          }
-        : null,
-      scheduledTime: scheduledTime.getTime(), // Crucial: Timestamp in milliseconds
-      completed: false,
-    };
-    
-    // If mode is not 'weekly', 'days' will be an empty array.
-    // If mode is not 'custom', 'interval' will be null.
-
-
-    // 👉 Step 1: Send to FastAPI backend (same for create/update)
-    const backendResponse = await fetch("http://127.0.0.1:8000/api/watering-schedule", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(schedulePayload),
-    });
-
-    const backendData = await backendResponse.json();
-
-    if (!backendResponse.ok) throw new Error(backendData.error || "Failed to save schedule in backend");
-    // console.log("Bypassing FastAPI call for now. Payload:", schedulePayload);
-
-
-    if (editingScheduleId.value) {
-      const docRef = doc(db, 'watering_schedules', editingScheduleId.value);
-      await updateDoc(docRef, {
-        ...schedulePayload,
-        updatedAt: serverTimestamp(),
-      });
-      showToastMessage('Schedule updated successfully','success');
+      if (data.scheduledTime) {
+        nextWateringTime.value = formatTime(data.scheduledTime);
+      } else {
+        nextWateringTime.value = 'No upcoming waterings';
+      }
     } else {
-      const newScheduleData = {
-        ...schedulePayload,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(), // Also set updatedAt on creation
-      };
-      await addDoc(collection(db, 'watering_schedules'), newScheduleData);
-      showToastMessage('New schedule saved successfully','success');
+      nextWateringTime.value = 'No upcoming waterings';
     }
 
-    // `fetchWateringSchedules` (via onSnapshot) will update `savedSchedules`
-    // and `calculateNextWateringTime` will be called by the snapshot listener.
-    closeScheduleModal();
-
-    // if (currentView.value === 'history') {
-      // fetchWateringSchedules(); // Already handled by onSnapshot
-    // }
-
-    editingScheduleId.value = null;
-    isLoading.value = false;
-
-  } catch (error) {
-    console.error("Error saving schedule:", error);
-    showToastMessage("Failed to save schedule. Please try again.", 'critical');
-    isLoading.value = false;
-  }
+    isLoadingNextWatering.value = false;
+  }, (error) => {
+    console.error('Real-time error:', error);
+    nextWateringTime.value = 'Error loading next watering';
+    isLoadingNextWatering.value = false;
+  });
 };
 
+// const saveWateringSchedule = async () => {
+//   isLoading.value = true
+//   try {
+//     console.log("Starting saveWateringSchedule...");
+
+//     const scheduledTime = new Date();
+
+//     if (wateringMode.value === 'one-time') {
+//       scheduledTime.setFullYear(
+//         selectedDate.value.getFullYear(),
+//         selectedDate.value.getMonth(),
+//         selectedDate.value.getDate()
+//       );
+//     }
+
+//     let hour24 = wateringHour.value;
+//     if (isAm.value && hour24 === 12) hour24 = 0;
+//     else if (!isAm.value && hour24 < 12) hour24 += 12;
+
+//     scheduledTime.setHours(hour24, wateringMinute.value, 0, 0);
+
+//     // ✅ Duplicate check before saving
+//     const isDuplicate = isDuplicateSchedule(
+//       wateringMode.value === 'one-time' ? selectedDate.value : new Date(),
+//       wateringHour.value,
+//       wateringMinute.value,
+//       wateringMode.value
+//     );
+
+//     if (isDuplicate && !editingScheduleId.value) {
+//       showToastMessage("A schedule for this date already exists.", 'warning');
+//       return;
+//     }
+
+//     const formattedDateTime = (() => {
+//       const timeDate = new Date();
+//       if (wateringMode.value === 'one-time') {
+//         timeDate.setFullYear(
+//           selectedDate.value.getFullYear(),
+//           selectedDate.value.getMonth(),
+//           selectedDate.value.getDate()
+//         );
+//       }
+//       timeDate.setHours(hour24, wateringMinute.value, 0, 0);
+//       return timeDate.toLocaleString('en-US', {
+//         weekday: 'short',
+//         month: 'short',
+//         day: 'numeric',
+//         hour: '2-digit',
+//         minute: '2-digit',
+//         hour12: true,
+//       });
+//     })();
+
+//     const now = new Date().getTime();
+
+//     const schedulePayload = {
+//       dateTime: formattedDateTime,
+//       duration: wateringDuration.value,
+//       mode: wateringMode.value,
+//       days: [...wateringDays.value],
+//       skipIfRain: skipIfRain.value,
+//       notifyWatering: notifyWatering.value,
+//       waterFlowRate: waterFlowRate.value,
+//       interval: wateringMode.value === 'custom'
+//         ? {
+//             value: wateringInterval.value,
+//             unit: wateringIntervalUnit.value,
+//           }
+//         : null,
+//       scheduledTime: scheduledTime.getTime(),
+//       completed: false,
+//     };
+
+//     // 👉 Step 1: Send to FastAPI backend (same for create/update)
+//     const backendResponse = await fetch("http://127.0.0.1:8000/api/watering-schedule", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify(schedulePayload),
+//     });
+
+//     const backendData = await backendResponse.json();
+
+//     if (!backendResponse.ok) throw new Error(backendData.error || "Failed to save schedule in backend");
+
+//     // Check if we're editing (i.e. updating an existing schedule)
+//     if (editingScheduleId.value) {
+//       const docRef = doc(db, 'watering_schedules', editingScheduleId.value);
+//       await updateDoc(docRef, {
+//         ...schedulePayload,
+//         updatedAt: serverTimestamp(),
+//       });
+
+//       const index = savedSchedules.value.findIndex(s => s.id === editingScheduleId.value);
+//       if (index !== -1) {
+//         savedSchedules.value[index] = {
+//           ...savedSchedules.value[index],
+//           ...schedulePayload,
+//         };
+//       }
+
+//       showToastMessage('Schedule updated successfully','success');
+//     } else {
+//       // Create new schedule
+//       const newScheduleData = {
+//         ...schedulePayload,
+//         updatedAt: serverTimestamp(),
+//         createdAt: serverTimestamp(),
+//       };
+
+//       const docRef = await addDoc(collection(db, 'watering_schedules'), newScheduleData);
+
+//       savedSchedules.value.push({
+//         ...newScheduleData,
+//         id: docRef.id,
+//       });
+
+//       showToastMessage('New schedule saved successfully','success');
+//     }
+
+//     await calculateNextWateringTime();
+//     closeScheduleModal();
+//     calculateNextWateringTime();
+
+//     if (currentView.value === 'history') {
+//       await fetchWateringSchedules();
+//     }
+
+//     // Clear editing state
+//     editingScheduleId.value = null;
+//     isLoading.value = false
+
+//   } catch (error) {
+//     console.error("Error saving schedule:", error);
+//     showToastMessage("Failed to save schedule. Please try again.");
+//   }
+// };
 
 const showToastMessage = (message, severity = 'info') => {
   if (toastTimeout.value) clearTimeout(toastTimeout.value)
@@ -2786,7 +2949,7 @@ const toastStyles = computed(() => {
         bg: 'bg-white',
         border: 'border-yellow-200'
       }
-    case 'critical': // Changed from 'error' to 'critical' to match usage
+    case 'critical':
       return {
         icon: XCircle,
         iconColor: 'text-red-600',
@@ -2794,7 +2957,7 @@ const toastStyles = computed(() => {
         bg: 'bg-white',
         border: 'border-red-200'
       }
-    case 'failed': // This case seems specific, ensure it's used or remove
+    case 'failed':
       return {
         icon: XCircle,
         iconColor: 'text-gray-600',
@@ -2815,41 +2978,113 @@ const toastStyles = computed(() => {
 
 defineExpose({ showToastMessage })
 
-watch(() => wateringHour.value, updateAmPm, { immediate: true })
-watch(() => isAm.value, () => {
-  // This watcher helps ensure wateringHour (0-23) is correct if isAm is changed directly
-  // (though direct change of isAm is less common than through setAmPm or hour changes)
-  let currentHour24 = wateringHour.value;
-  if (isAm.value) { // If AM
-    if (currentHour24 >= 12) wateringHour.value = currentHour24 - 12; // e.g. 13 (1PM) -> 1 (1AM)
-  } else { // If PM
-    if (currentHour24 < 12) wateringHour.value = currentHour24 + 12; // e.g. 1 (1AM) -> 13 (1PM)
-  }
-}, { immediate: false });
+// const sendNotification = async (schedule, status) => {
+//   try {
+//     const dateTimeFormatted = new Date(schedule.scheduledTime).toLocaleString('en-US', {
+//       weekday: 'short',
+//       year: 'numeric',
+//       month: 'short',
+//       day: 'numeric',
+//       hour: '2-digit',
+//       minute: '2-digit'
+//     })
 
+
+//     const message =
+//       status === 'started'
+//         ? `The watering scheduled at ${dateTimeFormatted} is now starting.`
+//         : `The watering scheduled at ${dateTimeFormatted} has ended.`
+
+//     const notification = {
+//       id: Date.now().toString(), // Optional: you can omit this if Firestore auto-generates an ID
+//       title: 'Scheduled Watering',
+//       message,
+//       severity: 'info',
+//       type: 'motor',
+//       read: false,
+//       timestamp: serverTimestamp()
+//     }
+
+//     await addDoc(collection(db, 'notifications'), notification)
+//     showToastMessage(`Schedule ${status}: ${dateTimeFormatted}`)
+//   } catch (error) {
+//     console.error('Notification error:', error)
+//   }
+// }
+
+watch(() => wateringHour.value, updateAmPm, { immediate: true })
 
 onMounted(() => {
-  // console.log('Component mounted, fetching data...')
+  console.log('Component mounted, fetching data...')
+  // Fetch initial motor status from Firebase
   fetchMotorStatus()
-  fetchWateringSchedules(); // This will also call calculateNextWateringTime via its snapshot listener
-
+  // Fetch watering schedules from Firebase
+  fetchWateringSchedules()
+  // fetchWateringSchedules().then(() => {
+    calculateNextWateringTime();
+  // });
+  
+  // Initialize history date filters to last 30 days by default
   const today = new Date()
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(today.getDate() - 30)
-
+  
   historyFilters.value.startDate = thirtyDaysAgo.toISOString().split('T')[0]
   historyFilters.value.endDate = today.toISOString().split('T')[0]
 
-  resetScheduleForm(); // Initialize form with correct AM/PM state
+  // setInterval(() => {
+  //   currentTime.value = Date.now()
+    
+  //   const now = Date.now()
+
+  //   savedSchedules.value.forEach(schedule => {
+  //     if (!schedule.notifyWatering) return
+
+  //     const start = schedule.scheduledTime
+  //     const end = start + (schedule.duration || 0) * 60000
+
+  //     // Check if it's starting
+  //     const isStarting = Math.abs(now - start) < 1000 * 30 // within 30 sec
+  //     if (isStarting && !notifiedStartIds.has(schedule.id)) {
+  //       // sendNotification(schedule, 'started')
+  //       notifiedStartIds.add(schedule.id)
+  //     }
+
+  //     // Check if it's ending
+  //     const isEnding = Math.abs(now - end) < 1000 * 30
+  //     if (isEnding && !notifiedEndIds.has(schedule.id)) {
+  //       // sendNotification(schedule, 'ended')
+  //       notifiedEndIds.add(schedule.id)
+  //     }
+  //   })
+  // }, 1000) // already in place
+
+
+  // onSnapshot(collection(db, 'watering_schedules'), async (snapshot) => {
+  //   const now = Date.now()
+  //   const schedules = []
+
+  //   for (const doc of snapshot.docs) {
+  //     const data = doc.data()
+  //     const pastDue = data.scheduledTime && data.scheduledTime <= now
+
+  //     if (pastDue && data.completed === false) {
+  //       await updateDoc(doc.ref, { completed: true })
+  //       data.completed = true
+  //     }
+
+  //     schedules.push({ id: doc.id, ...data })
+  //   }
+
+  //   savedSchedules.value = schedules
+  // })
 })
 
 onUnmounted(() => {
   if (toastTimeout.value) clearTimeout(toastTimeout.value)
   if (unsubscribeNextWatering) unsubscribeNextWatering();
-  if (unsubscribeSchedules) unsubscribeSchedules();
 })
 </script>
-
 
 <style>
 /* Keep your existing styles */

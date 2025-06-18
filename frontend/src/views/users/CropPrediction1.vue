@@ -2,14 +2,14 @@
   <div class="min-h-screen flex bg-gradient-to-br from-green-50 to-emerald-100 font-poppins overflow-hidden">
     <Sidebar />
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-screen pt-32">
+    <main class="flex-1 flex flex-col h-screen pt-24 sm:pt-24 md:pt-32">
       <!-- Container Wrapper with proper spacing -->
       <div class="flex-1 w-full px-4 sm:px-6 md:px-8 lg:px-10 overflow-hidden">
         <!-- Main Container with adjusted width -->
-        <div class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-green-100 h-[calc(100vh-140px)] overflow-y-auto transition-all duration-300 ease-in-out hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]">
-          <!-- Content Wrapper --> 
+        <div class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-green-100 h-[calc(100vh-115px)] overflow-y-auto transition-all duration-300 ease-in-out hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]">
+          <!-- Content Wrapper -->
           <div class="p-4 sm:p-6">
-            <!-- Clean Minimalist Metrics Section - With Loading State -->
+            <!-- Clean Minimalist Metrics Section -->
             <div class="grid grid-cols-4 gap-4 mb-6">
               <!-- Total Predictions -->
               <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
@@ -19,7 +19,7 @@
                     <span class="text-sm font-medium text-gray-700">Total</span>
                   </div>
                 </div>
-                <div v-if="!isStatsLoading" class="flex flex-col">
+                <div class="flex flex-col">
                   <div class="text-2xl font-bold text-gray-900 mb-2">{{ totalRecommendations }}</div>
                   <div 
                     :class="[
@@ -36,10 +36,6 @@
                     </span>
                   </div>
                 </div>
-                <div v-else class="animate-pulse">
-                  <div class="h-7 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div class="h-4 bg-gray-200 rounded w-1/2"></div>
-                </div>
               </div>
 
               <!-- Planted -->
@@ -50,7 +46,7 @@
                     <span class="text-sm font-medium text-gray-700">Planted</span>
                   </div>
                 </div>
-                <div v-if="!isStatsLoading" class="flex flex-col">
+                <div class="flex flex-col">
                   <div class="text-2xl font-bold text-gray-900 mb-2">{{ plantedCount }}</div>
                   <div 
                     :class="[
@@ -67,10 +63,6 @@
                     </span>
                   </div>
                 </div>
-                <div v-else class="animate-pulse">
-                  <div class="h-7 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div class="h-4 bg-gray-200 rounded w-1/2"></div>
-                </div>
               </div>
 
               <!-- Success Rate -->
@@ -81,7 +73,7 @@
                     <span class="text-sm font-medium text-gray-700">Rate</span>
                   </div>
                 </div>
-                <div v-if="!isStatsLoading" class="flex flex-col">
+                <div class="flex flex-col">
                   <div class="text-2xl font-bold text-gray-900 mb-2">{{ successRate }}%</div>
                   <div 
                     :class="[
@@ -98,10 +90,6 @@
                     </span>
                   </div>
                 </div>
-                <div v-else class="animate-pulse">
-                  <div class="h-7 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div class="h-4 bg-gray-200 rounded w-1/2"></div>
-                </div>
               </div>
 
               <!-- Ongoing -->
@@ -112,7 +100,7 @@
                     <span class="text-sm font-medium text-gray-700">Active</span>
                   </div>
                 </div>
-                <div v-if="!isStatsLoading" class="flex flex-col">
+                <div class="flex flex-col">
                   <div class="text-2xl font-bold text-gray-900 mb-2">{{ ongoingCount }}</div>
                   <div 
                     :class="[
@@ -128,10 +116,6 @@
                       {{ ongoingIsIncrease ? '+' : '-' }}{{ ongoingPercentageChange }}% {{ ongoingIsIncrease ? 'increase' : 'decrease' }}
                     </span>
                   </div>
-                </div>
-                <div v-else class="animate-pulse">
-                  <div class="h-7 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div class="h-4 bg-gray-200 rounded w-1/2"></div>
                 </div>
               </div>
             </div>
@@ -166,177 +150,117 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       <!-- Nitrogen Level -->
                       <div class="relative group">
-                        <template v-if="!isSensorDataLoading">
-                          <div class="absolute inset-0 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                          <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-green-300 hover:shadow-md">
-                            <div class="flex items-center gap-3 mb-3">
-                              <div class="p-2 bg-green-50 rounded-lg">
-                                <BeakerIcon class="w-4 h-4 text-green-600" />
-                              </div>
-                              <div>
-                                <label class="block text-sm font-medium text-gray-500">Nitrogen (N)</label>
-                                <div class="flex items-baseline gap-1 mt-0.5">
-                                  <input 
-                                    type="number"
-                                    v-model="nitrogen"
-                                    class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
-                                  />
-                                  <span class="text-xs text-gray-500">mg/kg</span>
-                                </div>
-                              </div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-green-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-green-50 rounded-lg">
+                              <BeakerIcon class="w-4 h-4 text-green-600" />
                             </div>
-                            <div class="h-1.5 w-full bg-gray-100 rounded-full">
-                              <div 
-                                class="h-1.5 bg-green-500 rounded-full transition-all duration-500"
-                                :style="{ width: `${(parseFloat(nitrogen) / 150) * 100}%` }"
-                              ></div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-500">Nitrogen (N)</label>
+                              <div class="flex items-baseline gap-1 mt-0.5">
+                                <input 
+                                  type="number"
+                                  v-model="nitrogen"
+                                  class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
+                                />
+                                <span class="text-xs text-gray-500">mg/kg</span>
+                              </div>
                             </div>
                           </div>
-                        </template>
-                        <div v-else class="relative bg-white rounded-lg p-4 border border-gray-100 animate-pulse">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="p-2 bg-gray-200 rounded-lg w-8 h-8"></div>
-                                <div>
-                                    <div class="h-4 bg-gray-200 rounded w-20 mb-1"></div>
-                                    <div class="flex items-baseline gap-1 mt-0.5">
-                                        <div class="h-6 bg-gray-200 rounded w-16"></div>
-                                        <div class="h-3 bg-gray-200 rounded w-8"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="h-1.5 w-full bg-gray-200 rounded-full"></div>
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
+                            <div 
+                              class="h-1.5 bg-green-500 rounded-full transition-all duration-500"
+                              :style="{ width: `${(parseFloat(nitrogen) / 150) * 100}%` }"
+                            ></div>
+                          </div>
                         </div>
                       </div>
 
                       <!-- Phosphorus Level -->
                       <div class="relative group">
-                        <template v-if="!isSensorDataLoading">
-                          <div class="absolute inset-0 bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                          <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-blue-300 hover:shadow-md">
-                            <div class="flex items-center gap-3 mb-3">
-                              <div class="p-2 bg-blue-50 rounded-lg">
-                                <TestTubesIcon class="w-4 h-4 text-blue-600" />
-                              </div>
-                              <div>
-                                <label class="block text-sm font-medium text-gray-500">Phosphorus (P)</label>
-                                <div class="flex items-baseline gap-1 mt-0.5">
-                                  <input 
-                                    type="number"
-                                    v-model="phosphorus"
-                                    class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
-                                  />
-                                  <span class="text-xs text-gray-500">mg/kg</span>
-                                </div>
-                              </div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-blue-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-blue-50 rounded-lg">
+                              <TestTubesIcon class="w-4 h-4 text-blue-600" />
                             </div>
-                            <div class="h-1.5 w-full bg-gray-100 rounded-full">
-                              <div 
-                                class="h-1.5 bg-blue-500 rounded-full transition-all duration-500"
-                                :style="{ width: `${(parseFloat(phosphorus) / 150) * 100}%` }"
-                              ></div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-500">Phosphorus (P)</label>
+                              <div class="flex items-baseline gap-1 mt-0.5">
+                                <input 
+                                  type="number"
+                                  v-model="phosphorus"
+                                  class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
+                                />
+                                <span class="text-xs text-gray-500">mg/kg</span>
+                              </div>
                             </div>
                           </div>
-                        </template>
-                        <div v-else class="relative bg-white rounded-lg p-4 border border-gray-100 animate-pulse">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="p-2 bg-gray-200 rounded-lg w-8 h-8"></div>
-                                <div>
-                                    <div class="h-4 bg-gray-200 rounded w-24 mb-1"></div>
-                                    <div class="flex items-baseline gap-1 mt-0.5">
-                                        <div class="h-6 bg-gray-200 rounded w-16"></div>
-                                        <div class="h-3 bg-gray-200 rounded w-8"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="h-1.5 w-full bg-gray-200 rounded-full"></div>
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
+                            <div 
+                              class="h-1.5 bg-blue-500 rounded-full transition-all duration-500"
+                              :style="{ width: `${(parseFloat(phosphorus) / 150) * 100}%` }"
+                            ></div>
+                          </div>
                         </div>
                       </div>
 
                       <!-- Potassium Level -->
                       <div class="relative group">
-                        <template v-if="!isSensorDataLoading">
-                          <div class="absolute inset-0 bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                          <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-purple-300 hover:shadow-md">
-                            <div class="flex items-center gap-3 mb-3">
-                              <div class="p-2 bg-purple-50 rounded-lg">
-                                <BeakerIcon class="w-4 h-4 text-purple-600" />
-                              </div>
-                              <div>
-                                <label class="block text-sm font-medium text-gray-500">Potassium (K)</label>
-                                <div class="flex items-baseline gap-1 mt-0.5">
-                                  <input 
-                                    type="number"
-                                    v-model="potassium"
-                                    class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
-                                  />
-                                  <span class="text-xs text-gray-500">mg/kg</span>
-                                </div>
-                              </div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-purple-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-purple-50 rounded-lg">
+                              <BeakerIcon class="w-4 h-4 text-purple-600" />
                             </div>
-                            <div class="h-1.5 w-full bg-gray-100 rounded-full">
-                              <div 
-                                class="h-1.5 bg-purple-500 rounded-full transition-all duration-500"
-                                :style="{ width: `${(parseFloat(potassium) / 150) * 100}%` }"
-                              ></div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-500">Potassium (K)</label>
+                              <div class="flex items-baseline gap-1 mt-0.5">
+                                <input 
+                                  type="number"
+                                  v-model="potassium"
+                                  class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
+                                />
+                                <span class="text-xs text-gray-500">mg/kg</span>
+                              </div>
                             </div>
                           </div>
-                        </template>
-                        <div v-else class="relative bg-white rounded-lg p-4 border border-gray-100 animate-pulse">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="p-2 bg-gray-200 rounded-lg w-8 h-8"></div>
-                                <div>
-                                    <div class="h-4 bg-gray-200 rounded w-24 mb-1"></div>
-                                    <div class="flex items-baseline gap-1 mt-0.5">
-                                        <div class="h-6 bg-gray-200 rounded w-16"></div>
-                                        <div class="h-3 bg-gray-200 rounded w-8"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="h-1.5 w-full bg-gray-200 rounded-full"></div>
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
+                            <div 
+                              class="h-1.5 bg-purple-500 rounded-full transition-all duration-500"
+                              :style="{ width: `${(parseFloat(potassium) / 150) * 100}%` }"
+                            ></div>
+                          </div>
                         </div>
                       </div>
 
                       <!-- pH Level -->
                       <div class="relative group">
-                        <template v-if="!isSensorDataLoading">
-                          <div class="absolute inset-0 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                          <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-amber-300 hover:shadow-md">
-                            <div class="flex items-center gap-3 mb-3">
-                              <div class="p-2 bg-amber-50 rounded-lg">
-                                <DropletIcon class="w-4 h-4 text-amber-600" />
-                              </div>
-                              <div>
-                                <label class="block text-sm font-medium text-gray-500">Soil pH</label>
-                                <div class="flex items-baseline gap-1 mt-0.5">
-                                  <input 
-                                    type="number"
-                                    v-model="soilpH"
-                                    class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
-                                  />
-                                  <span class="text-xs text-gray-500">pH</span>
-                                </div>
-                              </div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-amber-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-amber-50 rounded-lg">
+                              <DropletIcon class="w-4 h-4 text-amber-600" />
                             </div>
-                            <div class="h-1.5 w-full bg-gray-100 rounded-full">
-                              <div 
-                                class="h-1.5 bg-amber-500 rounded-full transition-all duration-500"
-                                :style="{ width: `${(parseFloat(soilpH) / 14) * 100}%` }"
-                              ></div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-500">Soil pH</label>
+                              <div class="flex items-baseline gap-1 mt-0.5">
+                                <input 
+                                  type="number"
+                                  v-model="soilpH"
+                                  class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
+                                />
+                                <span class="text-xs text-gray-500">pH</span>
+                              </div>
                             </div>
                           </div>
-                        </template>
-                        <div v-else class="relative bg-white rounded-lg p-4 border border-gray-100 animate-pulse">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="p-2 bg-gray-200 rounded-lg w-8 h-8"></div>
-                                <div>
-                                    <div class="h-4 bg-gray-200 rounded w-16 mb-1"></div>
-                                    <div class="flex items-baseline gap-1 mt-0.5">
-                                        <div class="h-6 bg-gray-200 rounded w-16"></div>
-                                        <div class="h-3 bg-gray-200 rounded w-6"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="h-1.5 w-full bg-gray-200 rounded-full"></div>
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
+                            <div 
+                              class="h-1.5 bg-amber-500 rounded-full transition-all duration-500"
+                              :style="{ width: `${(parseFloat(soilpH) / 14) * 100}%` }"
+                            ></div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -351,133 +275,88 @@
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <!-- Soil Moisture -->
                       <div class="relative group">
-                        <template v-if="!isSensorDataLoading">
-                          <div class="absolute inset-0 bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                          <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-cyan-300 hover:shadow-md">
-                            <div class="flex items-center gap-3 mb-3">
-                              <div class="p-2 bg-cyan-50 rounded-lg">
-                                <WavesIcon class="w-4 h-4 text-cyan-600" />
-                              </div>
-                              <div>
-                                <label class="block text-sm font-medium text-gray-500">Soil Moisture</label>
-                                <div class="flex items-baseline gap-1 mt-0.5">
-                                  <input 
-                                    type="number"
-                                    v-model="soilMoisture"
-                                    class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
-                                  />
-                                  <span class="text-xs text-gray-500">%</span>
-                                </div>
-                              </div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-cyan-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-cyan-50 rounded-lg">
+                              <WavesIcon class="w-4 h-4 text-cyan-600" />
                             </div>
-                            <div class="h-1.5 w-full bg-gray-100 rounded-full">
-                              <div 
-                                class="h-1.5 bg-cyan-500 rounded-full transition-all duration-500"
-                                :style="{ width: `${parseFloat(soilMoisture)}%` }"
-                              ></div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-500">Soil Moisture</label>
+                              <div class="flex items-baseline gap-1 mt-0.5">
+                                <input 
+                                  type="number"
+                                  v-model="soilMoisture"
+                                  class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
+                                />
+                                <span class="text-xs text-gray-500">%</span>
+                              </div>
                             </div>
                           </div>
-                        </template>
-                        <div v-else class="relative bg-white rounded-lg p-4 border border-gray-100 animate-pulse">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="p-2 bg-gray-200 rounded-lg w-8 h-8"></div>
-                                <div>
-                                    <div class="h-4 bg-gray-200 rounded w-28 mb-1"></div>
-                                    <div class="flex items-baseline gap-1 mt-0.5">
-                                        <div class="h-6 bg-gray-200 rounded w-16"></div>
-                                        <div class="h-3 bg-gray-200 rounded w-4"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="h-1.5 w-full bg-gray-200 rounded-full"></div>
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
+                            <div 
+                              class="h-1.5 bg-cyan-500 rounded-full transition-all duration-500"
+                              :style="{ width: `${parseFloat(soilMoisture)}%` }"
+                            ></div>
+                          </div>
                         </div>
                       </div>
 
                       <!-- Temperature -->
                       <div class="relative group">
-                        <template v-if="!isSensorDataLoading">
-                          <div class="absolute inset-0 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                          <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-orange-300 hover:shadow-md">
-                            <div class="flex items-center gap-3 mb-3">
-                              <div class="p-2 bg-orange-50 rounded-lg">
-                                <ThermometerIcon class="w-4 h-4 text-orange-600" />
-                              </div>
-                              <div>
-                                <label class="block text-sm font-medium text-gray-500">Temperature</label>
-                                <div class="flex items-baseline gap-1 mt-0.5">
-                                  <input 
-                                    type="number"
-                                    v-model="temperature"
-                                    class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
-                                  />
-                                  <span class="text-xs text-gray-500">°C</span>
-                                </div>
-                              </div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-orange-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-orange-50 rounded-lg">
+                              <ThermometerIcon class="w-4 h-4 text-orange-600" />
                             </div>
-                            <div class="h-1.5 w-full bg-gray-100 rounded-full">
-                              <div 
-                                class="h-1.5 bg-orange-500 rounded-full transition-all duration-500"
-                                :style="{ width: `${(parseFloat(temperature) / 50) * 100}%` }"
-                              ></div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-500">Temperature</label>
+                              <div class="flex items-baseline gap-1 mt-0.5">
+                                <input 
+                                  type="number"
+                                  v-model="temperature"
+                                  class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
+                                />
+                                <span class="text-xs text-gray-500">°C</span>
+                              </div>
                             </div>
                           </div>
-                        </template>
-                        <div v-else class="relative bg-white rounded-lg p-4 border border-gray-100 animate-pulse">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="p-2 bg-gray-200 rounded-lg w-8 h-8"></div>
-                                <div>
-                                    <div class="h-4 bg-gray-200 rounded w-24 mb-1"></div>
-                                    <div class="flex items-baseline gap-1 mt-0.5">
-                                        <div class="h-6 bg-gray-200 rounded w-16"></div>
-                                        <div class="h-3 bg-gray-200 rounded w-6"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="h-1.5 w-full bg-gray-200 rounded-full"></div>
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
+                            <div 
+                              class="h-1.5 bg-orange-500 rounded-full transition-all duration-500"
+                              :style="{ width: `${(parseFloat(temperature) / 50) * 100}%` }"
+                            ></div>
+                          </div>
                         </div>
                       </div>
 
                       <!-- Humidity -->
                       <div class="relative group">
-                        <template v-if="!isSensorDataLoading">
-                          <div class="absolute inset-0 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
-                          <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-teal-300 hover:shadow-md">
-                            <div class="flex items-center gap-3 mb-3">
-                              <div class="p-2 bg-teal-50 rounded-lg">
-                                <CloudIcon class="w-4 h-4 text-teal-600" />
-                              </div>
-                              <div>
-                                <label class="block text-sm font-medium text-gray-500">Humidity</label>
-                                <div class="flex items-baseline gap-1 mt-0.5">
-                                  <input 
-                                    type="number"
-                                    v-model="humidity"
-                                    class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
-                                  />
-                                  <span class="text-xs text-gray-500">%</span>
-                                </div>
-                              </div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl transition-opacity opacity-0 group-hover:opacity-100"></div>
+                        <div class="relative bg-white rounded-lg p-4 border border-gray-100 transition-all duration-300 hover:border-teal-300 hover:shadow-md">
+                          <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-teal-50 rounded-lg">
+                              <CloudIcon class="w-4 h-4 text-teal-600" />
                             </div>
-                            <div class="h-1.5 w-full bg-gray-100 rounded-full">
-                              <div 
-                                class="h-1.5 bg-teal-500 rounded-full transition-all duration-500"
-                                :style="{ width: `${parseFloat(humidity)}%` }"
-                              ></div>
+                            <div>
+                              <label class="block text-sm font-medium text-gray-500">Humidity</label>
+                              <div class="flex items-baseline gap-1 mt-0.5">
+                                <input 
+                                  type="number"
+                                  v-model="humidity"
+                                  class="text-xl font-bold text-gray-900 bg-transparent w-20 focus:outline-none"
+                                />
+                                <span class="text-xs text-gray-500">%</span>
+                              </div>
                             </div>
                           </div>
-                        </template>
-                        <div v-else class="relative bg-white rounded-lg p-4 border border-gray-100 animate-pulse">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="p-2 bg-gray-200 rounded-lg w-8 h-8"></div>
-                                <div>
-                                    <div class="h-4 bg-gray-200 rounded w-20 mb-1"></div>
-                                    <div class="flex items-baseline gap-1 mt-0.5">
-                                        <div class="h-6 bg-gray-200 rounded w-16"></div>
-                                        <div class="h-3 bg-gray-200 rounded w-4"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="h-1.5 w-full bg-gray-200 rounded-full"></div>
+                          <div class="h-1.5 w-full bg-gray-100 rounded-full">
+                            <div 
+                              class="h-1.5 bg-teal-500 rounded-full transition-all duration-500"
+                              :style="{ width: `${parseFloat(humidity)}%` }"
+                            ></div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -488,20 +367,10 @@
                     <button 
                       type="submit"
                       @click="submitForm"
-                      :disabled="isRecommending"
-                      class="inline-flex items-center justify-center px-6 sm:px-8 py-3 text-base font-medium text-white bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl transition-all duration-300 hover:from-green-600 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                      class="inline-flex items-center justify-center px-6 sm:px-8 py-3 text-base font-medium text-white bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl transition-all duration-300 hover:from-green-600 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 gap-2"
                     >
-                      <template v-if="isRecommending">
-                        <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span>Getting Recommendations...</span>
-                      </template>
-                      <template v-else>
-                        <SproutIcon class="w-5 h-5" />
-                        <span>Get Crop Recommendations</span>
-                      </template>
+                      <SproutIcon class="w-5 h-5" />
+                      <span>Get Crop Recommendations</span>
                     </button>
                   </div>
                 </div>
@@ -666,7 +535,7 @@
                 <div 
                   v-if="isGridView" 
                   class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 transition-all duration-300 ease-in-out"
-                > 
+                >
                   <div 
                     v-for="prediction in paginatedPredictions" 
                     :key="prediction.id"
@@ -725,29 +594,11 @@
                       </button>
                     </div>
                   </div>
-                  <!-- Skeleton for Grid View -->
-                  <template v-if="isPredictionsLoading">
-                    <div v-for="n in itemsPerPage" :key="`grid-skeleton-${n}`" class="bg-white rounded-lg border border-gray-200 p-4 animate-pulse">
-                      <div class="flex items-center gap-3 mb-3">
-                        <div class="w-10 h-10 rounded-lg bg-gray-200"></div>
-                        <div>
-                          <div class="h-4 bg-gray-200 rounded w-24 mb-1"></div>
-                          <div class="h-3 bg-gray-200 rounded w-16"></div>
-                        </div>
-                      </div>
-                      <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                      <div class="h-3 bg-gray-200 rounded w-1/2 mb-3"></div>
-                      <div class="flex items-center justify-between">
-                        <div class="h-6 bg-gray-200 rounded-full w-20"></div>
-                        <div class="h-8 bg-gray-200 rounded-lg w-24"></div>
-                      </div>
-                    </div>
-                  </template>
                 </div>
 
                 <!-- Enhanced Table with Truly Fixed Height -->
                 <div 
-                  v-if="!isGridView && !isPredictionsLoading"
+                  v-if="!isGridView"
                   class="overflow-hidden rounded-lg border border-gray-100 transition-all duration-300 ease-in-out"
                 >
                   <div class="overflow-x-auto">
@@ -841,25 +692,6 @@
                         </tbody>
                       </table>
                     </div>
-                  </div>
-                </div>
-                <!-- Loading state for Table View -->
-                <div v-if="!isGridView && isPredictionsLoading" class="overflow-hidden rounded-lg border border-gray-100">
-                  <div class="overflow-y-auto animate-pulse" style="height: 370px">
-                    <table class="w-full">
-                      <thead class="sticky top-0 bg-gray-50/95 backdrop-blur-sm z-10">
-                        <tr>
-                          <th v-for="header in tableHeaders" :key="header.key" class="px-4 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-gray-100">
-                        <tr v-for="n in itemsPerPage" :key="`table-skeleton-${n}`">
-                          <td v-for="header in tableHeaders" :key="`cell-skeleton-${header.key}-${n}`" class="px-4 py-3.5"><div class="h-5 bg-gray-200 rounded"></div></td>
-                        </tr>
-                      </tbody>
-                    </table>
                   </div>
                 </div>
 
@@ -1057,20 +889,10 @@
             </button>
             <button 
               @click="saveRecommendation"
-              :disabled="isSavingRecommendation"
-              class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-medium rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+              class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-medium rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors flex items-center gap-1.5 shadow-sm"
             >
-              <template v-if="isSavingRecommendation">
-                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Saving...</span>
-              </template>
-              <template v-else>
-                <DownloadIcon class="h-3.5 w-3.5" />
-                <span>Save Recommendation</span>
-              </template>
+              <DownloadIcon class="h-3.5 w-3.5" />
+              Save Recommendation
             </button>
           </div>
         </div>
@@ -1325,8 +1147,7 @@ import {
     getDoc,
     updateDoc,
     deleteDoc,
-    where,
-    onSnapshot,
+    where
   } from 'firebase/firestore'
 const db = getFirestore()
 
@@ -1394,12 +1215,6 @@ const previousSuccessRate = ref(0)
 const ongoingCount = ref(0) // Ongoing Count
 const ongoingPercentageChange = ref(0) // Ongoing Percentage Change
 const ongoingIsIncrease = ref(true) // Ongoing Increase or Decrease
-
-const isStatsLoading = ref(true); // For the top metric cards
-const isPredictionsLoading = ref(true); // For the predictions table/grid
-const isSensorDataLoading = ref(true); // For the NPK, pH, etc. input cards
-const isSavingRecommendation = ref(false); // For the save recommendation button in the modal
-const isRecommending = ref(false); // For the "Get Crop Recommendations" button
 
 // Function to toggle grid view
 const toggleGridView = () => {
@@ -1483,8 +1298,6 @@ const greenhouse2Data = ref({
 })
 
 onMounted(async () => {
-  isStatsLoading.value = true;
-  isSensorDataLoading.value = true; // Set loading for sensor data cards
   await fetchLatestSensorDataFromFirebase()
 
   // Step 2: Start listening for real-time updates
@@ -1504,60 +1317,36 @@ onMounted(async () => {
     console.log("🔁 Real-time data:", data)
   }
 
-  isPredictionsLoading.value = true;
   fetchSavedRecommendations()
   fetchRecommendationStats()
-  // isStatsLoading will be set to false within fetchRecommendationStats
 })
 
-// ✅ MODIFIED: Updated to fetch from new 3sensor_readings collection structure
 const fetchLatestSensorDataFromFirebase = async () => {
   try {
-    // Fetch from esp32-1 (NPK + pH)
-    // isSensorDataLoading.value = true; // Already set in onMounted before calling this
-    const esp32_1_query = query(
-      collection(db, "3sensor_readings", "esp32-1", "readings"), 
-      orderBy("timestamp", "desc"), 
-      limit(1)
-    );
-    const esp32_1_snapshot = await getDocs(esp32_1_query);
-    
-    if (!esp32_1_snapshot.empty) {
-      const esp32_1_data = esp32_1_snapshot.docs[0].data();
-      const timestamp = esp32_1_data.timestamp;
-      esp32_1_data.timestamp = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp.seconds * 1000);
-      
-      nitrogen.value = esp32_1_data.nitrogen;
-      phosphorus.value = esp32_1_data.phosphorus;
-      potassium.value = esp32_1_data.potassium;
-      soilpH.value = esp32_1_data.soilPh;
-      
-      console.log("📥 ESP32-1 Data (NPK + pH):", esp32_1_data);
-    }
+    const q = query(collection(db, "sensor_readings"), orderBy("timestamp", "desc"), limit(1))
+    const snapshot = await getDocs(q)
 
-    // Fetch from esp32-2 (Temperature, humidity, soil moisture)
-    const esp32_2_query = query(
-      collection(db, "3sensor_readings", "esp32-2", "readings"), 
-      orderBy("timestamp", "desc"), 
-      limit(1)
-    );
-    const esp32_2_snapshot = await getDocs(esp32_2_query);
-    
-    if (!esp32_2_snapshot.empty) {
-      const esp32_2_data = esp32_2_snapshot.docs[0].data();
-      const timestamp = esp32_2_data.timestamp;
-      esp32_2_data.timestamp = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp.seconds * 1000);
-      
-      temperature.value = esp32_2_data.temperature;
-      humidity.value = esp32_2_data.humidity;
-      soilMoisture.value = esp32_2_data.soilMoisture;
-      
-      console.log("📥 ESP32-2 Data (DHT21):", esp32_2_data);
+    if (!snapshot.empty) {
+      const latestDoc = snapshot.docs[0]
+      const latestData = latestDoc.data()
+
+      // ✅ Convert Firestore timestamp to JS Date
+      const timestamp = latestData.timestamp
+      latestData.timestamp = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp.seconds * 1000)
+
+      // Now assign the values
+      nitrogen.value = latestData.nitrogen
+      phosphorus.value = latestData.phosphorus
+      potassium.value = latestData.potassium
+      soilpH.value = latestData.soilPh
+      temperature.value = latestData.temperature
+      humidity.value = latestData.humidity
+      soilMoisture.value = latestData.soilMoisture
+
+      console.log("📥 Latest Firebase Data with Date:", latestData)
     }
   } catch (err) {
-    console.error("❌ Error fetching from new Firebase collection:", err)
-  } finally {
-    isSensorDataLoading.value = false; // Set to false after fetching or if an error occurs
+    console.error("❌ Error fetching from Firebase:", err)
   }
 }
 
@@ -1588,7 +1377,6 @@ const calculatePercentageChange = (docs, status = '') => {
 
 const fetchRecommendationStats = async () => {
   try {
-    isStatsLoading.value = true;
     // Fetch all crop recommendation records
     const snapshot = await getDocs(collection(db, 'crop_recommendations'))
     const allDocs = snapshot.docs.map(doc => doc.data())
@@ -1627,8 +1415,6 @@ const fetchRecommendationStats = async () => {
 
   } catch (error) {
     console.error("❌ Error fetching recommendation stats:", error)
-  } finally {
-    isStatsLoading.value = false;
   }
 }
 
@@ -1643,7 +1429,6 @@ const selectGreenhouse = (greenhouse) => {
 }
 
 const submitForm = async () => {
-  isRecommending.value = true;
   const payload = {
     nitrogen: parseFloat(nitrogen.value),
     phosphorus: parseFloat(phosphorus.value),
@@ -1672,15 +1457,11 @@ const submitForm = async () => {
     showModal.value = true
   } catch (error) {
     console.error('Fetch error:', error)
-  } finally {
-    isRecommending.value = false;
   }
 }
 
 const saveRecommendation = async () => {
-  isSavingRecommendation.value = true;
-  // Construct the document data matching your desired Firebase structure
-  const recommendationData = {
+  const payload = {
     recommendedCrop: recommendedCrop.value,
     successRate: successRate.value,
     soilCompatibility: soilCompatibility.value,
@@ -1713,51 +1494,36 @@ const saveRecommendation = async () => {
       soilMoisture: soilMoisture.value,
       temperature: temperature.value,
       humidity: humidity.value,
-    },
-    status: "Recommended", // Set default status
-    timestamp: serverTimestamp() // Use Firebase server timestamp
-  };
+    }
+  }
 
   try {
-    // ✅ MODIFIED: Save soil reading to new collection structure
-    // Save to esp32-1 for NPK + pH data
-    const esp32_1_ref = await addDoc(collection(db, "3sensor_readings", "esp32-1", "readings"), {
-      nitrogen: parseFloat(nitrogen.value),
-      phosphorus: parseFloat(phosphorus.value),
-      potassium: parseFloat(potassium.value),
-      soilPh: parseFloat(soilpH.value),
+    // First save the soil reading
+    const soilReadingRef = await addDoc(collection(db, "sensor_readings"), {
+      nitrogen: nitrogen.value,
+      phosphorus: phosphorus.value,
+      potassium: potassium.value,
+      soilPh: soilpH.value,
+      soilMoisture: soilMoisture.value,
+      temperature: temperature.value,
+      humidity: humidity.value,
       timestamp: serverTimestamp()
     });
 
-    // Save to esp32-2 for environmental data
-    const esp32_2_ref = await addDoc(collection(db, "3sensor_readings", "esp32-2", "readings"), {
-      soilMoisture: parseFloat(soilMoisture.value),
-      temperature: parseFloat(temperature.value),
-      humidity: parseFloat(humidity.value),
-      timestamp: serverTimestamp()
-    });
+    // Add the soil reading reference to the payload
+    payload.soilReadingId = soilReadingRef.id;
 
-    // Add a soilReadingId to the recommendationData.
-    // You need to decide how to represent this. Using one of the IDs, e.g., from esp32-1:
-    recommendationData.soilReadingId = esp32_1_ref.id;
-    // If you need both, you could store them in an object or concatenate them,
-    // but your target Firebase structure shows a single string for soilReadingId.
-
-    // Now, save directly to the 'crop_recommendations' collection
-    await addDoc(collection(db, "crop_recommendations"), recommendationData);
-    
-    console.log("✅ Saved recommendation directly to Firebase:", recommendationData);
+    const res = await api.post('/crop/save', payload)
+    console.log("send to back:", payload)
+    console.log("✅ Saved recommendation:", res.data)
     toastr.success('Recommendation Saved successfully')
     closeModal()
     fetchSavedRecommendations()
   } catch (error) {
     console.error('❌ Error saving recommendation:', error)
     toastr.error('Unexpected error, please try again')
-  } finally {
-    isSavingRecommendation.value = false;
   }
 }
-
 
 const closeModal = () => {
   showModal.value = false
@@ -1779,87 +1545,81 @@ const tableHeaders = [
   { key: 'actions', label: 'Actions' }
 ]
 
-const fetchSavedRecommendations = () => {
+const fetchSavedRecommendations = async () => {
   try {
-    isPredictionsLoading.value = true;
-
+    // Create a query to get all crop recommendations, ordered by timestamp
     const q = query(
       collection(db, 'crop_recommendations'),
-      orderBy('timestamp', 'asc')
-    );
-
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      predictions.value = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        let formattedDate = "N/A";
-
-        if (data.timestamp && typeof data.timestamp.toDate === 'function') {
-          try {
-            formattedDate = data.timestamp.toDate().toLocaleString();
-          } catch (e) {
-            console.warn("Error converting Firestore timestamp to Date:", e, "for doc ID:", doc.id);
-            if (data.timestamp.seconds && typeof data.timestamp.seconds === 'number') {
-              formattedDate = new Date(data.timestamp.seconds * 1000).toLocaleString();
-            }
+      orderBy('timestamp', 'desc')
+    )
+    
+    const querySnapshot = await getDocs(q)
+    
+    // Map the documents to include id and format the data
+    predictions.value = querySnapshot.docs.map(doc => {
+      const data = doc.data()
+      let formattedDate = new Date().toLocaleString() // Default to current date
+      
+      try {
+        if (data.timestamp) {
+          // Handle Firestore Timestamp
+          if (data.timestamp.toDate) {
+            formattedDate = data.timestamp.toDate().toLocaleString()
+          } 
+          // Handle regular Date object
+          else if (data.timestamp instanceof Date) {
+            formattedDate = data.timestamp.toLocaleString()
           }
-        } else if (typeof data.timestamp === 'string') {
-          try {
-            formattedDate = new Date(data.timestamp).toLocaleString();
-          } catch (e) {
-            console.warn("Error parsing string timestamp:", data.timestamp, "for doc ID:", doc.id, e);
+          // Handle timestamp as number
+          else if (typeof data.timestamp === 'number') {
+            formattedDate = new Date(data.timestamp).toLocaleString()
           }
         }
+      } catch (error) {
+        console.warn('Error formatting date:', error)
+      }
 
-        return {
-          id: doc.id,
-          crop: data.recommendedCrop,
-          successRate: data.successRate,
-          status: data.status || 'Recommended',
-          date: formattedDate,
-          soilCompatibility: data.soilCompatibility,
-          growthRate: data.growthRate,
-          yieldPotential: data.yieldPotential,
-          alternativeOptions: data.alternativeOptions?.map(alt => ({
-            ...alt,
-            fertilizer: alt.fertilizer || {
-              type: '',
-              name: '',
-              base_amount: 0,
-              adjusted_amount: 0,
-              unit: ''
-            }
-          })) || [],
-          fertilizer: data.fertilizer || {
+      return {
+        id: doc.id,
+        crop: data.recommendedCrop,
+        successRate: data.successRate,
+        status: data.status || 'Recommended',
+        date: formattedDate,
+        soilCompatibility: data.soilCompatibility,
+        growthRate: data.growthRate,
+        yieldPotential: data.yieldPotential,
+        alternativeOptions: data.alternativeOptions?.map(alt => ({
+          ...alt,
+          fertilizer: alt.fertilizer || {
             type: '',
             name: '',
             base_amount: 0,
             adjusted_amount: 0,
             unit: ''
           }
-        };
-      });
-
-      filteredPredictionsCache.value = [...predictions.value];
-      console.log("✅ Real-time fetched recommendations:", predictions.value);
-      isPredictionsLoading.value = false;
-    }, (error) => {
-      console.error("❌ Error with onSnapshot listener:", error);
-      toastr.error('Failed to fetch crop recommendations in real-time');
-      isPredictionsLoading.value = false;
-    });
-
-    // Optional: store or return the unsubscribe function if you want to stop listening later
-    return unsubscribe;
-
+        })) || [],
+        fertilizer: data.fertilizer || {
+          type: '',
+          name: '',
+          base_amount: 0,
+          adjusted_amount: 0,
+          unit: ''
+        }
+      }
+    })
+    
+    // Initialize filtered predictions cache
+    filteredPredictionsCache.value = [...predictions.value]
+    
+    console.log("✅ Fetched recommendations:", predictions.value)
   } catch (error) {
-    console.error("❌ Error setting up onSnapshot for predictions:", error);
-    toastr.error('Failed to set up real-time crop recommendation listener');
-    isPredictionsLoading.value = false;
+    console.error("❌ Error fetching predictions from Firebase:", error)
+    toastr.error('Failed to fetch crop recommendations')
   }
-};
+}
 
-// onMounted(fetchSavedRecommendations) // Already called in the main onMounted
- 
+onMounted(fetchSavedRecommendations)
+
 const filteredPredictions = computed(() => {
   // Start with the filtered cache if it exists, otherwise use all predictions
   let result = filteredPredictionsCache.value.length > 0 ? filteredPredictionsCache.value : predictions.value

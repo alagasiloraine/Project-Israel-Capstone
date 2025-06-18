@@ -1,6 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
-import { 
+import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    RecaptchaVerifier,
+    signInWithPhoneNumber
+} from "firebase/auth";
+import {
     getFirestore,
     collection,
     addDoc,
@@ -18,7 +24,7 @@ import {
     where
 } from "firebase/firestore";
 
-// 🔥 Replace with your actual Firebase config
+// ✅ Production Firebase config via environment variables
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_API_KEY,
     authDomain: import.meta.env.VITE_AUTH_DOMAIN,
@@ -28,21 +34,24 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_APP_ID
 };
 
-// Initialize Firebase - only initialize once
+// ✅ Initialize Firebase app (only once)
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);  // 🔹 Initialize Auth globally
-const db = getFirestore(app); // 🔹 Initialize Firestore globally
+
+// ✅ Initialize services
+const auth = getAuth(app);
+const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-export { 
-    auth, 
-    db, 
-    googleProvider, 
-    getAuth, 
-    signInWithPopup, 
-    RecaptchaVerifier, 
+// ✅ Export Firebase modules for use across your app
+export {
+    auth,
+    db,
+    googleProvider,
+    getAuth,
+    signInWithPopup,
+    RecaptchaVerifier,
     signInWithPhoneNumber,
-    // Firestore exports
+    // Firestore helpers
     collection,
     addDoc,
     getDocs,
@@ -58,4 +67,3 @@ export {
     deleteDoc,
     where
 };
-
