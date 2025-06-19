@@ -672,11 +672,19 @@ const formatDate = (date) => {
   return `${month} ${day}, ${year}`
 }
 
+// MODIFIED: Convert military time to 12-hour format with AM/PM
 const formatTime = (date) => {
   if (!date) return '--'
-  const hours = date.getHours().toString().padStart(2, '0')
+  let hours = date.getHours()
   const minutes = date.getMinutes().toString().padStart(2, '0')
-  return `${hours}:${minutes}`
+  const ampm = hours >= 12 ? 'PM' : 'AM'
+  
+  // Convert 24-hour to 12-hour format
+  hours = hours % 12
+  hours = hours ? hours : 12 // 0 should be 12
+  const displayHours = hours.toString().padStart(2, '0')
+  
+  return `${displayHours}:${minutes} ${ampm}`
 }
 
 // ESP32-1 computed properties
@@ -962,7 +970,7 @@ const exportAsCSV = () => {
   })
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const url = URL = URL.createObjectURL(blob)
+  const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.setAttribute('href', url)
   link.setAttribute('download', 'soil_analysis_combined_data.csv')

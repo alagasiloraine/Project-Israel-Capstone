@@ -307,7 +307,7 @@
                       </th>
                       <th class="w-[20%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
                         <div class="text-gray-600">Time</div>
-                        <div class="text-gray-400 text-[10px]">HH:MM:SS</div>
+                        <div class="text-gray-400 text-[10px]">HH:MM:SS AM/PM</div>
                       </th>
                     </tr>
                   </thead>
@@ -539,12 +539,12 @@ const fetchWaterLevelData = async () => {
             day: '2-digit'
           });
 
-          // Format time as "HH:mm:ss" (e.g., "14:30:45")
+          // Format time as 12-hour format (e.g., "2:30:45 PM")
           formattedTime = timestamp.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
-            hour12: false
+            hour12: true
           });
           
           timestampSeconds = data.timestamp?.seconds || timestamp.getTime() / 1000
@@ -648,12 +648,12 @@ const setupRealtimeListener = () => {
       const latestReading = newData[newData.length - 1]
       currentWaterLevelValue.value = latestReading.value.toFixed(2)
       
-      // Update last updated time
+      // Update last updated time in 12-hour format
       lastUpdated.value = latestReading.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-        hour12: false
+        hour12: true
       })
       
       // Calculate stats
@@ -690,11 +690,12 @@ const initializeChartData = (data) => {
     const latestReading = initialChartData[initialChartData.length - 1]
     currentWaterLevelValue.value = latestReading.value.toFixed(2)
     
+    // Set last updated time in 12-hour format
     lastUpdated.value = latestReading.timestamp.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false
+      hour12: true
     })
     
     const values = initialChartData.map(item => item.value)
@@ -728,7 +729,7 @@ const initializeChart = () => {
             return item.timestamp.toLocaleTimeString('en-US', {
               hour: '2-digit',
               minute: '2-digit',
-              hour12: false
+              hour12: true
             })
           }),
           datasets: [{
@@ -853,7 +854,7 @@ const updateChart = () => {
       return item.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: true
       })
     })
     

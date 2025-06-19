@@ -4,7 +4,7 @@
       <!-- Top row with logo and profile -->
       <div class="flex items-center justify-between">
         <!-- Logo and PROJECT ISRAEL text - positioned with padding-top -->
-        <div class="flex items-center relative w-[180px]" style="padding-top: 4px;">
+        <div class="flex items-center relative w-[180px]">
           <div class="bg-white rounded-full shadow-lg flex items-center justify-center overflow-hidden border-2 border-white/30 hover:border-white/50 transition-all duration-300" style="width: 2.8rem; height: 2.8rem;">
             <img 
               src="/public/images/logo/logo-wot-text.png"
@@ -137,20 +137,39 @@
             </div>
           </div>
           
-          <!-- Notification Icon -->
+          <!-- Notification Icon with Enhanced Minimalist Badge -->
           <div class="relative">
-            <a 
-            
-              href="/notifications"
-              class="relative flex items-center justify-center h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 text-white"
-              :class="{ 'bg-white/30': showNotifications }"
+            <router-link 
+              to="/notifications"
+              class="relative flex items-center justify-center h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 text-white group/bell"
+              :class="{ 'bg-white/30': $route.path === '/notifications' }"
+              @mouseenter="showNotificationTooltip = true"
+              @mouseleave="showNotificationTooltip = false"
             >
-              <Bell class="h-4 w-4" />
-              <!-- Notification Badge -->
-              <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">
-                {{ notifications.filter(n => n && !n.read).length }}
-              </span>
-            </a>
+              <Bell class="h-4 w-4 transition-transform duration-200 group-hover/bell:scale-110" />
+              
+              <!-- Enhanced Minimalist Notification Badge - Completely Static -->
+              <div 
+                v-if="unreadNotificationCount > 0"
+                class="notification-badge-static absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-red-500 text-white shadow-md border border-white/30"
+              >
+                <span class="text-[9px] font-semibold leading-none px-0.5">
+                  {{ unreadNotificationCount > 99 ? '99+' : unreadNotificationCount }}
+                </span>
+              </div>
+            </router-link>
+            
+            <!-- Ultra Small Notification Tooltip - Compact and Readable -->
+            <!-- Custom Small Notification Tooltip -->
+            <div 
+              v-show="showNotificationTooltip"
+              class="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-0.5 bg-green-100 text-green-900 font-medium text-[10px] rounded-md whitespace-nowrap z-50 transition-all duration-200 shadow-sm"
+              :class="showNotificationTooltip ? 'opacity-100' : 'opacity-0'"
+            >
+              Notifications
+              <!-- Custom small tooltip arrow -->
+              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-green-100"></div>
+            </div>
             
             <!-- Notification Panel -->
             <!-- <div 
@@ -272,14 +291,53 @@
             </div> -->
           </div>
 
-          
-          <div class="relative ml-4 cursor-pointer" @click="goToProfile">
-            <div class="absolute inset-0 bg-gradient-to-r from-[#00A572] to-[#008F61] rounded-full blur-md opacity-0 group-hover:opacity-50 transition-opacity"></div>
-            <img 
-              :src="user?.profilePicture || '/public/images/profile.jpg'"
-              class="w-8 h-8 rounded-full border-2 border-white/30 hover:border-white/60 transition-all duration-300 relative z-10 object-cover hover:scale-110"
-              alt="Profile"
-            />
+          <!-- Pure Minimalist Profile with Subtle Active State -->
+          <div 
+            class="relative ml-4 cursor-pointer group/profile" 
+            @click="goToProfile"
+            @mouseenter="showProfileTooltip = true"
+            @mouseleave="showProfileTooltip = false"
+          >
+            <!-- Profile Image with Ultra Clean Design -->
+            <div class="relative">
+              <div 
+                class="w-8 h-8 rounded-full overflow-hidden transition-all duration-300 ease-out group-hover/profile:scale-[1.02]"
+                :class="isOnProfilePage 
+                  ? 'ring-1 ring-green-400/60 ring-offset-1 ring-offset-white/20' 
+                  : 'ring-1 ring-white/15 hover:ring-white/25'"
+              >
+                <img 
+                  :src="user?.profilePicture || '/public/images/profile.jpg'"
+                  class="w-full h-full object-cover transition-all duration-300"
+                  :class="isOnProfilePage ? 'brightness-[1.02] saturate-[1.05]' : ''"
+                  alt="Profile"
+                />
+                
+                <!-- Ultra Subtle Active Overlay -->
+                <div 
+                  v-if="isOnProfilePage"
+                  class="absolute inset-0 bg-gradient-to-br from-green-400/8 via-transparent to-transparent"
+                ></div>
+              </div>
+              
+              <!-- Micro Active Indicator -->
+              <div 
+                v-if="isOnProfilePage"
+                class="absolute -bottom-px -right-px w-2 h-2 bg-green-400 rounded-full border border-white/40 shadow-sm"
+              ></div>
+            </div>
+            
+            <!-- Ultra Small Profile Tooltip - Compact and Readable -->
+            <!-- Custom Small Profile Tooltip -->
+            <div 
+              v-show="showProfileTooltip"
+              class="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-0.5 bg-green-100 text-green-800 text-[10px] font-medium rounded-md whitespace-nowrap z-50 transition-all duration-200 shadow-sm"
+              :class="showProfileTooltip ? 'opacity-100' : 'opacity-0'"
+            >
+              Profile
+              <!-- Custom small tooltip arrow -->
+              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-green-100"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -385,7 +443,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { 
   LayoutDashboard,
@@ -443,7 +501,6 @@ import {
 
 const db = getFirestore()
 
-
 const route = useRoute()
 const router = useRouter()
 const user = ref(null)
@@ -451,6 +508,8 @@ const isSensorDropdownOpen = ref(false)
 // Tooltip visibility states
 const showWifiTooltip = ref(false)
 const showWebSocketTooltip = ref(false)
+const showNotificationTooltip = ref(false)
+const showProfileTooltip = ref(false)
 
 // Notifications
 const showNotifications = ref(false)
@@ -468,6 +527,19 @@ const ipAddress = ref('')
 const notifications = ref([])
 const waterLevel = ref(0);
 const sensorReadings = ref([]);
+
+// Computed property for checking if user is on profile page
+const isOnProfilePage = computed(() => {
+  return route.name === 'UserProfile' || route.path === '/profile' || route.path.includes('/user-profile')
+})
+
+// Computed property for unread notification count
+const unreadNotificationCount = computed(() => {
+  return notifications.value.filter(n => n && !n.read).length;
+});
+
+// Provide the unread count to any child components that need it
+provide('unreadNotificationCount', unreadNotificationCount);
 
 const currentTime = ref(Date.now())
 const savedSchedules = ref([])
@@ -723,43 +795,41 @@ const sendScheduleNotification = async (schedule, status) => { // `status` is 's
   }
 };
 
+// Function to fetch notifications from Firestore
+const fetchNotifications = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "notifications"));
+    notifications.value = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    console.log('Fetched notifications:', notifications.value.length);
+  } catch (err) {
+    console.error("Error fetching notifications from Firebase:", err);
+  }
+};
 
-onMounted(() => {
-  const waterLevelQuery = query(
-    collection(db, 'water_level_readings'),
-    orderBy('timestamp', 'desc'),
-    limit(1)
-  );
-
-  onSnapshot(waterLevelQuery, (snapshot) => {
-    if (!snapshot.empty) {
-      const data = snapshot.docs[0].data();
-      evaluateWaterLevel(data.waterLevel);
-      waterLevel.value = data.waterLevel; // Update local ref if needed elsewhere
-    }
-  });
-
-  // fetchWateringSchedules(); // This is now called inside the onSnapshot for schedules
-
-  setInterval(() => {
-    currentTime.value = Date.now();
-    const now = Date.now();
-    savedSchedules.value.forEach((schedule) => {
-      // Skip if no notification needed, no scheduled time, or already completed (for start)
-      if (!schedule.notifyWatering || !schedule.scheduledTime || schedule.completed) return;
-
-      const start = schedule.scheduledTime;
-
-      // START notification
-      const isStarting = Math.abs(now - start) <= 2000; // Check if current time is within 2s of start
-      if (isStarting && !notifiedStartIds.has(schedule.id)) {
-        sendScheduleNotification(schedule, 'started'); // sendScheduleNotification now handles notifiedStartIds
-      }
-      // END notification logic moved to onSnapshot for watering_schedules
+// Set up real-time listener for notifications
+const setupNotificationsListener = () => {
+  const notificationsRef = collection(db, 'notifications');
+  const q = query(notificationsRef, orderBy('timestamp', 'desc'));
+  
+  return onSnapshot(q, (snapshot) => {
+    const notificationsList = [];
+    snapshot.forEach((doc) => {
+      notificationsList.push({
+        id: doc.id,
+        ...doc.data()
+      });
     });
-  }, 1000);
-});
+    notifications.value = notificationsList;
+    console.log('Notifications updated:', notifications.value.length);
+  }, (error) => {
+    console.error('Error in notifications listener:', error);
+  });
+};
 
+let unsubscribeNotifications = null;
 let unsubscribeSchedules = null;
 
 const fetchWateringSchedules = () => {
@@ -819,7 +889,6 @@ const fetchWateringSchedules = () => {
   );
 };
 
-
 const saveToLocalStorage = (notification) => {
   const existing = JSON.parse(localStorage.getItem('notifications') || '[]') // Corrected: localStorage.getItem
   // Prevent duplicates based on ID
@@ -829,80 +898,6 @@ const saveToLocalStorage = (notification) => {
     localStorage.setItem('notifications', JSON.stringify(existing))
   }
 }
-
-onMounted(async () => {
-  // const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-  // const host = location.hostname + ':800' // Assuming port 8000 for backend
-  // const ws = new WebSocket(`${protocol}://${host}/api/weather/ws/weather`)
-
-
-  // ws.onopen = () => {
-  //   isWebSocketConnected.value = true
-  //   wsStartTime = Date.now()
-  //   setInterval(() => {
-  //     const elapsed = Date.now() - wsStartTime
-  //     const mins = Math.floor(elapsed / 60000)
-  //     const hours = Math.floor(mins / 60)
-  //     wsUptime.value = `${hours}h ${mins % 60}m`
-  //   }, 60000)
-  // }
-
-  // ws.onclose = () => {
-  //   isWebSocketConnected.value = false
-  //   wsUptime.value = '0m'
-  // }
-
-  // ws.onerror = () => {
-  //   isWebSocketConnected.value = false
-  // }
-
-  // // Optional: latency ping-pong logic (if supported by backend)
-  // ws.onmessage = (e) => {
-  // const timeSent = Date.now()
-  //   wsLatency.value = timeSent - JSON.parse(e.data)?.timestamp || 30
-  // }
-
-
-  const res = await fetch('https://api.ipify.org?format=json');
-  const ipData = await res.json();
-  ipAddress.value = ipData.ip;
-
-  if ('connection' in navigator) {
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-
-    const updateWifiInfo = () => {
-      wifiStrength.value = conn.downlinkMax ? Math.min(conn.downlinkMax * 10, 100) : 70;
-      wifiNetwork.value = conn.effectiveType || 'WiFi';
-    };
-
-    // Initial set
-    updateWifiInfo();
-
-    // Watch for network changes (like switching Wi-Fi)
-    if (conn.addEventListener) {
-      conn.addEventListener('change', updateWifiInfo);
-    }
-  }
-
-  const saved = localStorage.getItem('notifications')
-  if (saved) {
-    notifications.value = JSON.parse(saved)
-  }
-
-  try {
-    const querySnapshot = await getDocs(collection(db, "notifications"));
-    notifications.value = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  } catch (err) {
-    console.error("Error fetching notifications from Firebase:", err);
-  }
-  
-  // Call fetchWateringSchedules here to set up the listener
-  fetchWateringSchedules(); 
-})
-
 
 const getSignalStrengthClass = (strength) => {
   if (strength >= 70) return 'bg-green-500'
@@ -958,11 +953,14 @@ const handleResize = () => {
       showNotifications.value = false
       showWifiTooltip.value = false
       showWebSocketTooltip.value = false
+      showNotificationTooltip.value = false
+      showProfileTooltip.value = false
     }
   }, 150)
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Get user data from storage
   const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user")
   if (storedUser) {
     try {
@@ -972,26 +970,92 @@ onMounted(() => {
     }
   }
   
+  // Set up event listeners
   document.addEventListener('click', closeDropdown)
   window.addEventListener('resize', handleResize)
   
+  // Handle responsive behavior
   handleResize()
-  // simulateConnectionChanges() // Start the connection status simulation
+  
+  // Fetch IP and network info
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    const ipData = await res.json();
+    ipAddress.value = ipData.ip;
+  } catch (error) {
+    console.error('Error fetching IP:', error);
+    ipAddress.value = 'Unknown';
+  }
+
+  // Set up network info
+  if ('connection' in navigator) {
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
+    const updateWifiInfo = () => {
+      wifiStrength.value = conn.downlinkMax ? Math.min(conn.downlinkMax * 10, 100) : 70;
+      wifiNetwork.value = conn.effectiveType || 'WiFi';
+    };
+
+    // Initial set
+    updateWifiInfo();
+
+    // Watch for network changes
+    if (conn.addEventListener) {
+      conn.addEventListener('change', updateWifiInfo);
+    }
+  }
+
+  // Load notifications from localStorage first for immediate display
+  const saved = localStorage.getItem('notifications')
+  if (saved) {
+    notifications.value = JSON.parse(saved)
+  }
+
+  // Then fetch from Firestore and set up real-time listener
+  await fetchNotifications();
+  unsubscribeNotifications = setupNotificationsListener();
+  
+  // Set up watering schedules listener
+  fetchWateringSchedules();
+  
+  // Set up interval for checking scheduled notifications
+  setInterval(() => {
+    currentTime.value = Date.now();
+    const now = Date.now();
+    savedSchedules.value.forEach((schedule) => {
+      // Skip if no notification needed, no scheduled time, or already completed (for start)
+      if (!schedule.notifyWatering || !schedule.scheduledTime || schedule.completed) return;
+
+      const start = schedule.scheduledTime;
+
+      // START notification
+      const isStarting = Math.abs(now - start) <= 2000; // Check if current time is within 2s of start
+      if (isStarting && !notifiedStartIds.has(schedule.id)) {
+        sendScheduleNotification(schedule, 'started');
+      }
+    });
+  }, 1000);
 })
 
 onBeforeUnmount(() => {
+  // Clean up event listeners
   document.removeEventListener('click', closeDropdown)
   window.removeEventListener('resize', handleResize)
   clearTimeout(resizeTimeout)
-  if (unsubscribeSchedules) unsubscribeSchedules(); // Clean up Firestore listener
+  
+  // Clean up Firestore listeners
+  if (unsubscribeSchedules) unsubscribeSchedules();
+  if (unsubscribeNotifications) unsubscribeNotifications();
 })
 
-
+// Watch for route changes to close dropdowns
 watch(() => route.path, () => {
   isSensorDropdownOpen.value = false
   showNotifications.value = false
   showWifiTooltip.value = false
   showWebSocketTooltip.value = false
+  showNotificationTooltip.value = false
+  showProfileTooltip.value = false
 })
 </script>
 
@@ -1015,6 +1079,35 @@ watch(() => route.path, () => {
 
 .router-link-active:hover::after {
   transform: scaleX(1);
+}
+
+/* Ensure notification badge styling is consistent */
+.notification-badge {
+  /* These styles will override any inline styles */
+  min-width: 16px !important;
+  height: 16px !important;
+  background-color: #ef4444 !important; /* Tailwind red-500 */
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Completely static notification badge - no animations */
+.notification-badge-static {
+  min-width: 16px !important;
+  height: 16px !important;
+  background-color: #ef4444 !important; /* Tailwind red-500 */
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  /* Explicitly disable all animations and transitions */
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+.notification-badge-static:hover {
+  /* Remove hover effects that might cause movement */
+  transform: none !important;
+  animation: none !important;
 }
 
 @media (max-width: 1024px) {
@@ -1098,5 +1191,21 @@ html {
   nav {
     display: none;
   }
+}
+
+/* Toast animation styles */
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
 }
 </style>

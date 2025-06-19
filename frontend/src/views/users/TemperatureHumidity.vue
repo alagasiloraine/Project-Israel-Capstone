@@ -32,7 +32,7 @@
                     @input="performSearch"
                   />
                 </div>
-  
+
                 <!-- Filter Button with enhanced styling -->
                 <div class="relative">
                   <button 
@@ -77,7 +77,7 @@
                     </div>
                   </div>
                 </div>
-  
+
                 <!-- Sort Button with enhanced styling -->
                 <div class="relative">
                   <button 
@@ -107,7 +107,7 @@
                     </div>
                   </div>
                 </div>
-  
+
                 <!-- Export Button with enhanced styling -->
                 <div class="relative">
                   <button 
@@ -142,7 +142,7 @@
               </div>
             </div>
           </div>
-  
+
           <!-- Table and Graph Section - Flex container for side-by-side layout -->
           <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
             <!-- Live Graph Container - Smaller width compared to table, now scrollable -->
@@ -353,7 +353,7 @@
               </div>
             </div>
           </div>
-  
+
           <!-- Fixed Pagination Section with enhanced styling -->
           <div class="border-t border-gray-100 py-4 px-6 bg-gradient-to-r from-white to-emerald-50 rounded-b-lg">
             <!-- Enhanced Pagination -->
@@ -378,7 +378,7 @@
                   {{ sortedData.length }}
                 </span>
               </div>
-  
+
               <div class="flex items-center gap-1">
                 <button 
                   @click="prevPage"
@@ -390,7 +390,7 @@
                   <ChevronLeft class="w-4 h-4 mr-1" />
                   Prev
                 </button>
-  
+
                 <div class="flex items-center">
                   <button
                     v-for="page in displayedPages"
@@ -408,7 +408,7 @@
                     {{ page }}
                   </button>
                 </div>
-  
+
                 <button 
                   @click="nextPage"
                   :disabled="currentPage >= totalPages"
@@ -556,12 +556,12 @@ const fetchTempHumidityData = async () => {
             day: '2-digit'
           });
 
-          // Format time as "HH:mm:ss" (e.g., "14:30:45")
+          // ✅ CHANGED: Format time as 12-hour format with AM/PM (e.g., "2:30:45 PM")
           formattedTime = timestamp.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
-            hour12: false
+            hour12: true
           });
           
           timestampSeconds = timestamp.getTime() / 1000
@@ -691,12 +691,12 @@ const setupRealtimeListener = () => {
       currentTempValue.value = latestReading.temperature.toFixed(2)
       currentHumidityValue.value = latestReading.humidity.toFixed(2)
       
-      // Update last updated time
+      // ✅ CHANGED: Update last updated time to 12-hour format
       const formattedTime = latestReading.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-        hour12: false
+        hour12: true
       })
       lastUpdated.value = formattedTime
       
@@ -750,11 +750,12 @@ const initializeChartData = (data) => {
     currentTempValue.value = latestReading.temperature.toFixed(2)
     currentHumidityValue.value = latestReading.humidity.toFixed(2)
     
+    // ✅ CHANGED: Format time as 12-hour format with AM/PM
     const formattedTime = latestReading.timestamp.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false
+      hour12: true
     })
     lastUpdated.value = formattedTime
     
@@ -795,10 +796,11 @@ const initializeChart = () => {
         type: 'line',
         data: {
           labels: chartData.value.map(item => {
+            // ✅ CHANGED: Chart labels to 12-hour format with AM/PM
             return item.timestamp.toLocaleTimeString('en-US', {
               hour: '2-digit',
               minute: '2-digit',
-              hour12: false
+              hour12: true
             })
           }),
           datasets: [
@@ -972,12 +974,12 @@ const initializeChart = () => {
 // Update the chart with new data - optimized for performance
 const updateChart = () => {
   if (chart.value && chartData.value.length > 0) {
-    // Update only what's needed
+    // ✅ CHANGED: Update chart labels to 12-hour format with AM/PM
     chart.value.data.labels = chartData.value.map(item => {
       return item.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: true
       })
     })
     

@@ -577,12 +577,12 @@ const fetchSoilMoistureData = async () => {
             day: '2-digit'
           });
 
-          // Format time as "HH:mm:ss" (e.g., "14:30:45")
+          // ✅ MODIFIED: Changed hour12 from false to true for 12-hour format
           formattedTime = timestamp.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
-            hour12: false
+            hour12: true
           });
           
           timestampSeconds = reading.timestamp instanceof Timestamp 
@@ -731,12 +731,12 @@ const updateRealtimeData = (snapshot, deviceId) => {
     const latestReading = combinedRealtimeData[combinedRealtimeData.length - 1]
     currentMoistureValue.value = latestReading.value.toFixed(2)
     
-    // Update last updated time
+    // ✅ MODIFIED: Changed hour12 from false to true for 12-hour format
     lastUpdated.value = latestReading.timestamp.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false
+      hour12: true
     })
     
     // Calculate stats
@@ -775,11 +775,12 @@ const initializeChartData = (data) => {
     const latestReading = initialChartData[initialChartData.length - 1]
     currentMoistureValue.value = latestReading.value.toFixed(2)
     
+    // ✅ MODIFIED: Changed hour12 from false to true for 12-hour format
     lastUpdated.value = latestReading.timestamp.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false
+      hour12: true
     })
     
     const values = initialChartData.map(item => item.value)
@@ -810,10 +811,11 @@ const initializeChart = () => {
         type: 'line',
         data: {
           labels: chartData.value.map(item => {
+            // ✅ MODIFIED: Changed hour12 from false to true for 12-hour format
             return item.timestamp.toLocaleTimeString('en-US', {
               hour: '2-digit',
               minute: '2-digit',
-              hour12: false
+              hour12: true
             })
           }),
           datasets: [{
@@ -935,10 +937,11 @@ const updateChart = () => {
   if (chart.value && chartData.value.length > 0) {
     // Update only what's needed
     chart.value.data.labels = chartData.value.map(item => {
+      // ✅ MODIFIED: Changed hour12 from false to true for 12-hour format
       return item.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: true
       })
     })
     

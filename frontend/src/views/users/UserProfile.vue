@@ -168,14 +168,17 @@
                             <p class="text-xs text-gray-500">Update your account password</p>
                           </div>
                         </div>
+                        
+                        <!-- Show Get Started button only when form is not visible -->
                         <button 
+                          v-if="!showPasswordSection"
                           @click="togglePasswordSection"
                           class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2.5 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                         >
-                          {{ showPasswordSection ? 'Cancel' : 'Get Started' }}
+                          Get Started
                         </button>
                         
-                        <!-- Password Form with Show/Hide -->
+                        <!-- Password Form with Show/Hide and TOP BORDER LINE -->
                         <div 
                           v-if="showPasswordSection"
                           class="mt-4 pt-4 border-t border-gray-100"
@@ -238,11 +241,25 @@
                                 </button>
                               </div>
                             </div>
+                          </div>
+                          
+                          <!-- Buttons Section with spacing -->
+                          <div class="space-y-3 mt-4">
+                            <!-- Update Password Button -->
                             <button 
                               @click="changePassword"
                               class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm font-medium"
                             >
                               Update Password
+                            </button>
+                            
+                            <!-- Cancel Button - POSITIONED BELOW Update Password Button -->
+                            <!-- Password Cancel Button with Visible Text -->
+                            <button 
+                              @click="togglePasswordSection"
+                              class="w-full bg-gradient-to-r from-blue-300 to-blue-400 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:from-blue-400 hover:to-blue-500 transition-all duration-200 text-sm font-medium"
+                            >
+                              Cancel
                             </button>
                           </div>
                         </div>
@@ -261,14 +278,17 @@
                             <p class="text-xs text-gray-500">Update your security pin</p>
                           </div>
                         </div>
+                        
+                        <!-- Show Get Started button only when form is not visible -->
                         <button 
+                          v-if="!showPinSection"
                           @click="togglePinSection"
                           class="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-2.5 px-4 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                         >
-                          {{ showPinSection ? 'Cancel' : 'Get Started' }}
+                          Get Started
                         </button>
                         
-                        <!-- Pin Form -->
+                        <!-- Pin Form with TOP BORDER LINE -->
                         <div 
                           v-if="showPinSection"
                           class="mt-4 pt-4 border-t border-gray-100"
@@ -334,12 +354,26 @@
                                 </button>
                               </div>
                             </div>
+                          </div>
+                          
+                          <!-- Buttons Section with spacing -->
+                          <div class="space-y-3 mt-4">
+                            <!-- Update Pin Button -->
                             <button 
                               @click="changePin"
                               class="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-2 px-4 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium"
                             >
                               Update Pin
                             </button>
+                            
+                            <!-- Cancel Button - POSITIONED BELOW Update Pin Button -->
+                            <!-- Pin Code Cancel Button with Visible Text -->
+                              <button 
+                                @click="togglePinSection"
+                                class="w-full bg-gradient-to-r from-purple-300 to-purple-400 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:from-purple-400 hover:to-purple-500 transition-all duration-200 text-sm font-medium"
+                              >
+                                Cancel
+                              </button>
                           </div>
                         </div>
                       </div>
@@ -350,16 +384,18 @@
 
                 <!-- Account Actions Section -->
                 <div>
+                  <!-- Header with improved icon for 'Account Actions' -->
                   <div class="flex items-center mb-6">
                     <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center mr-4">
-                      <LogOut class="w-5 h-5 text-red-600" />
+                      <UserCog class="w-5 h-5 text-red-600" />
                     </div>
                     <div>
                       <h3 class="text-base font-semibold text-gray-900">Account Actions</h3>
                       <p class="text-sm text-gray-500">Manage your account session</p>
                     </div>
                   </div>
-                  
+
+                  <!-- Logout Section -->
                   <div class="bg-white rounded-2xl border border-red-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
                     <div class="p-5">
                       <div class="flex items-center justify-between">
@@ -367,14 +403,11 @@
                           <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center mr-3">
                             <LogOut class="w-5 h-5 text-red-600" />
                           </div>
-                          <div>
-                            <h4 class="text-sm font-semibold text-gray-900">Logout</h4>
-                            <p class="text-xs text-gray-500">Sign out of your account</p>
-                          </div>
+                          <p class="text-sm font-medium text-red-600">Sign out of your account</p>
                         </div>
                         <button 
                           @click="logout"
-                          class="bg-gradient-to-r from-red-500 to-red-600 text-white py-2.5 px-6 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 min-w-[100px]"
+                          class="bg-gradient-to-r from-red-500 to-red-600 text-white py-2.5 px-8 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 min-w-[140px]"
                         >
                           Logout
                         </button>
@@ -382,7 +415,6 @@
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
@@ -412,6 +444,7 @@ import {
   Phone, 
   Lock, 
   Shield, 
+  UserCog,
   LogOut, 
   CheckCircle,
   Eye,

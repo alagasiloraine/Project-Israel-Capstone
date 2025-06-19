@@ -585,12 +585,12 @@ const fetchSoilPhData = async () => {
             day: '2-digit'
           });
 
-          // Format time as "HH:mm:ss" (e.g., "14:30:45")
+          // Format time as 12-hour format with AM/PM (e.g., "2:30:45 PM")
           formattedTime = timestamp.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
-            hour12: false
+            hour12: true
           });
           
           timestampSeconds = reading.timestamp instanceof Timestamp 
@@ -739,12 +739,12 @@ const updateRealtimeData = (snapshot, deviceId) => {
     const latestReading = combinedRealtimeData[combinedRealtimeData.length - 1]
     currentPhValue.value = latestReading.value.toFixed(1)
     
-    // Update last updated time
+    // Update last updated time with 12-hour format
     lastUpdated.value = latestReading.timestamp.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false
+      hour12: true
     })
     
     // Calculate stats
@@ -787,7 +787,7 @@ const initializeChartData = (data) => {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false
+      hour12: true
     })
     
     const values = initialChartData.map(item => item.value)
@@ -821,7 +821,7 @@ const initializeChart = () => {
             return item.timestamp.toLocaleTimeString('en-US', {
               hour: '2-digit',
               minute: '2-digit',
-              hour12: false
+              hour12: true
             })
           }),
           datasets: [{
@@ -946,7 +946,7 @@ const updateChart = () => {
       return item.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: true
       })
     })
     

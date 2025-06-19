@@ -161,7 +161,7 @@
         <div class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
       </div>
       <div class="text-sm font-mono font-semibold text-gray-800">
-        {{ lastUpdated || '--:--:--' }}
+        {{ lastUpdated || '--:--:-- --' }}
       </div>
       <div class="text-xs text-gray-400">
         {{ currentDate }}
@@ -345,7 +345,7 @@
                       </th>
                       <th class="w-[15%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
                         <div class="text-gray-600">Time</div>
-                        <div class="text-gray-400 text-[10px]">HH:MM:SS</div>
+                        <div class="text-gray-400 text-[10px]">HH:MM:SS AM/PM</div>
                       </th>
                     </tr>
                   </thead>
@@ -617,12 +617,12 @@ const fetchNPKData = async () => {
             day: '2-digit'
           });
 
-          // Format time as "HH:mm:ss" (e.g., "14:30:45")
+          // Format time as 12-hour format with AM/PM (e.g., "2:30:45 PM")
           formattedTime = timestamp.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
-            hour12: false
+            hour12: true
           });
           
           timestampSeconds = timestamp.getTime() / 1000
@@ -759,12 +759,12 @@ const setupRealtimeListener = () => {
       currentPhosphorusValue.value = latestReading.phosphorus.toFixed(2)
       currentPotassiumValue.value = latestReading.potassium.toFixed(2)
       
-      // Update last updated time
+      // Update last updated time with 12-hour format
       const formattedTime = latestReading.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-        hour12: false
+        hour12: true
       })
       lastUpdated.value = formattedTime
       
@@ -832,7 +832,7 @@ const initializeChartData = (data) => {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false
+      hour12: true
     })
     lastUpdated.value = formattedTime
     
@@ -890,7 +890,7 @@ const initializeNitrogenChart = () => {
           return item.timestamp.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
-            hour12: false
+            hour12: true
           })
         }),
         datasets: [{
@@ -984,7 +984,7 @@ const initializePhosphorusChart = () => {
           return item.timestamp.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
-            hour12: false
+            hour12: true
           })
         }),
         datasets: [{
@@ -1078,7 +1078,7 @@ const initializePotassiumChart = () => {
           return item.timestamp.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
-            hour12: false
+            hour12: true
           })
         }),
         datasets: [{
@@ -1169,7 +1169,7 @@ const updateNitrogenChart = () => {
       return item.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: true
       })
     })
     nitrogenChart.value.data.datasets[0].data = chartData.value.map(item => item.nitrogen)
@@ -1185,7 +1185,7 @@ const updatePhosphorusChart = () => {
       return item.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: true
       })
     })
     phosphorusChart.value.data.datasets[0].data = chartData.value.map(item => item.phosphorus)
@@ -1201,7 +1201,7 @@ const updatePotassiumChart = () => {
       return item.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: true
       })
     })
     potassiumChart.value.data.datasets[0].data = chartData.value.map(item => item.potassium)

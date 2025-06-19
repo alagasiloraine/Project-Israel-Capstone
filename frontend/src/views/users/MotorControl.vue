@@ -277,7 +277,7 @@
                       </th>
                       <th class="w-[20%] py-3.5 px-4 text-left text-xs font-medium uppercase tracking-wider border-b">
                         <div class="text-gray-600">Time</div>
-                        <div class="text-gray-400 text-[10px]">HH:MM:SS</div>
+                        <div class="text-gray-400 text-[10px]">HH:MM:SS AM/PM</div>
                       </th>
                     </tr>
                   </thead>
@@ -498,12 +498,12 @@ const fetchMotorControlData = async (showLoading = false) => {
           day: '2-digit'
         });
 
-        // Format time as "HH:mm:ss" (e.g., "14:30:45")
+        // Format time as 12-hour format with AM/PM (e.g., "2:30:45 PM")
         formattedTime = timestamp.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit',
           second: '2-digit',
-          hour12: false
+          hour12: true
         });
         
         timestampSeconds = data.timestamp?.seconds || timestamp.getTime() / 1000
@@ -621,12 +621,12 @@ const setupRealtimeListener = () => {
       currentDeviceId.value = latestReading.deviceId
       currentUser.value = latestReading.user
       
-      // Update last updated time
+      // Update last updated time in 12-hour format
       const formattedTime = latestReading.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-        hour12: false
+        hour12: true
       })
       lastUpdated.value = formattedTime
       
@@ -681,11 +681,12 @@ const initializeChartData = (data) => {
     currentDeviceId.value = latestReading.deviceId
     currentUser.value = latestReading.user
     
+    // Format time in 12-hour format
     const formattedTime = latestReading.timestamp.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false
+      hour12: true
     })
     lastUpdated.value = formattedTime
     
@@ -734,7 +735,7 @@ const initializeChart = () => {
             return item.timestamp.toLocaleTimeString('en-US', {
               hour: '2-digit',
               minute: '2-digit',
-              hour12: false
+              hour12: true
             })
           }),
           datasets: [
@@ -867,7 +868,7 @@ const updateChart = () => {
       return item.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: true
       })
     })
     
@@ -1406,4 +1407,4 @@ thead th, tbody td {
     transform: rotate(360deg);
   }
 }
-</style>  
+</style>
