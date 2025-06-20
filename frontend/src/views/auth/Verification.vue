@@ -145,7 +145,8 @@ import api from '../../api/index.js'
 import toastr from 'toastr'
 import LoadingPage from '../layout/LoadingPage.vue'
 // import { auth, googleProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber, query, where, getDocs } from "../../api/firebase.js"
-import { getFirestore, collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 const db = getFirestore();
 const auth = getAuth(); // ✅ This is required
 
@@ -250,27 +251,43 @@ onMounted(() => {
 //   }
 // };
 
-// // ✅ Resend Code and Start Cooldown
-// const resendCode = async () => {
-//   if (resendTimer.value > 0) return;
+// ✅ Resend Code and Start Cooldown
 
-//   try {
-//     const appVerifier = window.recaptchaVerifier;
+const resendCode = async () => {
+  if (resendTimer.value > 0) return;
 
-//     const formattedPhone = phone.startsWith("+63")
-//       ? phone
-//       : phone.replace(/^0/, "+63");
+  try {
+    const formattedPhone = phone.startsWith("+63")
+      ? phone
+      : phone.replace(/^0/, "+63");
 
-//     const confirmationResult = await signInWithPhoneNumber(firebaseAuth, formattedPhone, appVerifier);
-//     window.confirmationResult = confirmationResult;
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-//     toastr.success("A new verification code has been sent.");
-//     startResendCooldown();
-//   } catch (error) {
-//     toastr.error("Failed to resend code.");
-//     console.error("Resend code error:", error);
-//   }
-// };
+    // 🔁 Save new OTP to Firestore
+    const q = query(collection(db, "users"), where("phoneNumber", "==", formattedPhone));
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      await updateDoc(doc(db, "users", userDoc.id), {
+        otp,
+        otpSentAt: serverTimestamp()
+      });
+    }
+
+    // 🔁 Send OTP via backend (Vonage)
+    await api.post("/otp/send", {
+      number: formattedPhone,
+      message: `Your new OTP code is: ${otp}`
+    });
+
+    toastr.success("A new OTP has been sent to your phone.");
+    startResendCooldown();
+  } catch (error) {
+    console.error("Resend code error:", error);
+    toastr.error("Failed to resend OTP.");
+  }
+};
 
 const handleVerification = async () => {
   const code = verificationCode.value.join("").trim();
@@ -284,31 +301,35 @@ const handleVerification = async () => {
   isLoading.value = true;
 
   try {
-    const result = await window.confirmationResult.confirm(code);
-    const user = result.user;
-    console.log("✅ Code verified, user UID:", user.uid);
-
     const q = query(collection(db, "users"), where("phoneNumber", "==", phone));
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
       const userDoc = querySnapshot.docs[0];
+      const userData = userDoc.data();
+
+      if (userData.otp !== code) {
+        toastr.error("Invalid verification code.");
+        return;
+      }
+
       await updateDoc(doc(db, "users", userDoc.id), {
         verified: true,
+        otp: "", // Optional: clear stored OTP
       });
-      console.log("✅ Firestore user marked as verified.");
-    }
 
-    toastr.success("Phone number verified!");
-    router.push("/login");
+      toastr.success("Phone number verified!");
+      router.push("/login");
+    } else {
+      toastr.error("Phone number not found.");
+    }
   } catch (error) {
-    console.error("❌ Invalid verification code:", error);
-    toastr.error("Invalid verification code.");
+    console.error("❌ Error verifying OTP:", error);
+    toastr.error("Verification failed.");
   } finally {
     isLoading.value = false;
   }
 };
-
 
 // Start a 90-second cooldown for resending the code
 const startResendCooldown = () => {

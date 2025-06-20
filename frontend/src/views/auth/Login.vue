@@ -268,6 +268,8 @@ import {
   where,
   getDocs
 } from "firebase/firestore"
+import { useUserStore } from '../../utils/user' // adjust path as needed
+const userStore = useUserStore()
 
 const db = getFirestore();
 
@@ -379,70 +381,71 @@ function toE164(phone) {
 }
 
 const handleLogin = async () => {
-  isLoading.value = true;
+  isLoading.value = true
 
-  const { phoneNumber, password, pin, authType } = form.value;
-  const trimmedPhone = phoneNumber.trim();
+  const { phoneNumber, password, pin, authType } = form.value
+  const trimmedPhone = phoneNumber.trim()
 
-  // ✅ Validate phone number format
   if (!isValidPhilippinePhoneNumber(trimmedPhone)) {
-    toastr.error('Invalid Philippine phone number.');
-    isLoading.value = false;
-    return;
+    toastr.error('Invalid Philippine phone number.')
+    isLoading.value = false
+    return
   }
 
-  const formattedPhone = toE164(trimmedPhone);
+  const formattedPhone = toE164(trimmedPhone)
   if (!formattedPhone) {
-    toastr.error('Could not format phone number.');
-    isLoading.value = false;
-    return;
+    toastr.error('Could not format phone number.')
+    isLoading.value = false
+    return
   }
 
-  const credential = authType === 'pin' ? pin : password;
+  const credential = authType === 'pin' ? pin : password
   if (!credential.trim()) {
-    toastr.warning(`Please enter your ${authType}.`);
-    isLoading.value = false;
-    return;
+    toastr.warning(`Please enter your ${authType}.`)
+    isLoading.value = false
+    return
   }
 
   try {
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('phoneNumber', '==', formattedPhone));
-    const snapshot = await getDocs(q);
+    const usersRef = collection(db, 'users')
+    const q = query(usersRef, where('phoneNumber', '==', formattedPhone))
+    const snapshot = await getDocs(q)
 
     if (snapshot.empty) {
-      toastr.error('No account found with this phone number.');
-      return;
+      toastr.error('No account found with this phone number.')
+      return
     }
 
-    const userDoc = snapshot.docs[0];
-    const user = userDoc.data();
+    const userDoc = snapshot.docs[0]
+    const user = userDoc.data()
 
-    // ✅ Check credential based on selected login type
+    if (!user.verified) {
+      toastr.error('Account is not verified.')
+      return
+    }
+
     if (authType === 'password' && user.password !== password) {
-      toastr.error('Incorrect password.');
-      return;
+      toastr.error('Incorrect password.')
+      return
     }
 
     if (authType === 'pin' && user.pin !== pin) {
-      toastr.error('Incorrect PIN.');
-      return;
+      toastr.error('Incorrect PIN.')
+      return
     }
 
-    // ✅ Save session data
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('uid', userDoc.id);
+    // ✅ Save user session to Pinia + localStorage
+    userStore.setUser(user, userDoc.id)
 
-    toastr.success('Login successful!');
-    router.push('/dashboard');
+    toastr.success('Login successful!')
+    router.push('/dashboard')
   } catch (error) {
-    console.error('Login error:', error);
-    toastr.error('Login failed. Please try again.');
+    console.error('Login error:', error)
+    toastr.error('Login failed.')
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
-
+}
 
 // const handleLogin = async () => {
 //   isLoading.value = true;

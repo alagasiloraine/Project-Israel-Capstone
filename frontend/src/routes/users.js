@@ -32,56 +32,67 @@ export const userRoutes = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: Dashboard
+    component: Dashboard,
+    meta: { requiresAuth: true }
   },
   {
     path: '/prediction',
     name: 'CropPrediction',
-    component: CropPrediction
+    component: CropPrediction,
+    meta: { requiresAuth: true }
   },
   {
     path: '/control',
     name: 'DeviceControl',
-    component: DeviceControl
+    component: DeviceControl,
+    meta: { requiresAuth: true }
   },
   {
     path: '/soil-moisture',
     name: 'SoilMoisture',
-    component: SoilMoisture
+    component: SoilMoisture,
+    meta: { requiresAuth: true }
   },
   {
     path: '/water-level',
     name: 'WaterLevel',
-    component: WaterLevel
+    component: WaterLevel,
+    meta: { requiresAuth: true }
   },
   {
     path: '/temperature-humidity',
-    name: 'temperature-humidity',
-    component: TemperatureHumidity
+    name: 'TemperatureHumidity',
+    component: TemperatureHumidity,
+    meta: { requiresAuth: true }
   },
   {
-    path: "/motor-control",
-    name: "MotorControl",
+    path: '/motor-control',
+    name: 'MotorControl',
     component: MotorControl,
+    meta: { requiresAuth: true }
   },
   {
-    path: "/soil",
-    name: "SoilAnalysis",
+    path: '/soil',
+    name: 'SoilAnalysis',
     component: SoilAnalysis,
+    meta: { requiresAuth: true }
   },
   {
-    path: "/profile",
-    name: "UserProfile",
+    path: '/profile',
+    name: 'UserProfile',
     component: UserProfile,
+    meta: { requiresAuth: true }
   },
   {
-    path: "/weather",
-    name: "WeatherForecast",
+    path: '/weather',
+    name: 'WeatherForecast',
     component: WeatherForecast,
+    meta: { requiresAuth: true }
   },
   {
-    path: "/notifications",
-    name: "Notifications",
+    path: '/notifications',
+    name: 'Notifications',
     component: Notifications,
-  },
+    meta: { requiresAuth: true }
+  }
 ]

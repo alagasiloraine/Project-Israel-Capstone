@@ -254,7 +254,7 @@
                   </label>
                 </div> -->
 
-                 <div id="recaptcha-container"></div>
+                 <!-- <div id="recaptcha-container"></div> reCAPTCHA container removed -->
 
                 <button
                   type="submit" :disabled="isLoading"
@@ -321,14 +321,9 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ArrowLeft, Eye, EyeOff, LogIn } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import LoadingPage from '../layout/LoadingPage.vue'
-import api from '../../api/index.js'
+import api from '../../api/index.js' // Assuming this is your configured Axios instance
 import toastr from "toastr"
-import {
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  getAuth,
-} from '../../api/firebase.js' // Assuming firebase.js exports these
-
+import axios from 'axios'
 import {
   getFirestore,
   collection,
@@ -336,11 +331,13 @@ import {
   query,
   where,
   getDocs,
-  serverTimestamp
+  serverTimestamp,
+  doc, // Added import
+  updateDoc // Added import
 } from "firebase/firestore"
 
 const db = getFirestore();
-const auth = getAuth(); // Firebase auth instance
+// const auth = getAuth(); // Firebase auth instance removed (was for reCAPTCHA)
 const router = useRouter();
 const transitionKey = ref(0);
 const contentStyle = ref({});
@@ -358,9 +355,8 @@ const showPassword = ref(false)
 const passwordStrength = ref(0)
 const isMobile = ref(window.innerWidth < 640)
 const isLoading = ref(false)
-const recaptchaContainer = ref(null); // For the reCAPTCHA DOM element
-
-let globalRecaptchaVerifier = null; // Stores the reCAPTCHA verifier instance
+// const recaptchaContainer = ref(null); // For the reCAPTCHA DOM element - removed
+// let globalRecaptchaVerifier = null; // Stores the reCAPTCHA verifier instance - removed
 
 function isValidPhilippinePhoneNumber(number) {
   const cleaned = number.trim();
@@ -376,183 +372,144 @@ function toE164(phone) {
   return null;
 }
 
-function setupRecaptcha() {
-  if (!globalRecaptchaVerifier) { // Check if already initialized
-    try {
-      const verifier = new RecaptchaVerifier(auth, // Pass auth instance
-        'recaptcha-container', // ID of the reCAPTCHA container div
-        {
-          size: 'invisible', // Use invisible reCAPTCHA
-          callback: (response) => {
-            // reCAPTCHA solved, allow signInWithPhoneNumber.
-            console.log('✅ reCAPTCHA verified by callback:', response);
-            // handleSubmit(); // Or trigger form submission here if needed
-          },
-          'expired-callback': () => {
-            // Response expired. Ask user to solve reCAPTCHA again.
-            console.warn('⚠️ reCAPTCHA expired. Resetting...');
-            if (globalRecaptchaVerifier) {
-              globalRecaptchaVerifier.clear();
-            }
-            globalRecaptchaVerifier = null; // Reset the verifier
-            toastr.info("reCAPTCHA session expired. Please try submitting the form again.");
-            // setupRecaptcha(); // Optionally re-initialize immediately
-          }
-        }
-      );
-
-      verifier.render().then(widgetId => {
-        console.log('📛 reCAPTCHA widget ID:', widgetId);
-        window.recaptchaWidgetId = widgetId; // Store widget ID if needed
-      }).catch(error => {
-        console.error("Error rendering reCAPTCHA:", error);
-        toastr.error("Failed to initialize reCAPTCHA. Please refresh the page.");
-      });
-
-      globalRecaptchaVerifier = verifier; // Assign to global variable
-    } catch (err) {
-      console.error('❌ Failed to initialize reCAPTCHA:', err);
-      toastr.error("Critical error setting up reCAPTCHA. Please refresh.");
-    }
-  }
-}
+// function setupRecaptcha() - removed
 
 onMounted(() => {
   window.addEventListener('resize', handleResize);
-  if (auth) {
-    setupRecaptcha(); // Initialize reCAPTCHA when component mounts
-  } else {
-    console.error("Firebase auth instance is not available in onMounted.");
-    // Potentially retry or show an error to the user
-  }
+  // reCAPTCHA setup removed
 });
 
-const handleSubmit = async () => {
-  const { authType, phoneNumber, password, pin } = form.value;
-  const trimmedPhone = String(phoneNumber).trim();
+const avatarOptions = ref([
+  { id: 1, icon: '🌱', name: 'Seedling' },
+  { id: 2, icon: '🌿', name: 'Herb' },
+  { id: 3, icon: '🌾', name: 'Wheat' },
+  { id: 4, icon: '🌽', name: 'Corn' },
+  { id: 5, icon: '🥕', name: 'Carrot' },
+  { id: 6, icon: '🍅', name: 'Tomato' },
+  { id: 7, icon: '🥬', name: 'Lettuce' },
+  { id: 8, icon: '🌻', name: 'Sunflower' },
+  { id: 9, icon: '🌳', name: 'Tree' },
+  { id: 10, icon: '🍃', name: 'Leaves' },
+  { id: 11, icon: '🌵', name: 'Cactus' },
+  { id: 12, icon: '🌸', name: 'Blossom' },
+  { id: 13, icon: '🍄', name: 'Mushroom' },
+  { id: 14, icon: '🌺', name: 'Hibiscus' },
+  { id: 15, icon: '🌹', name: 'Rose' },
+  { id: 16, icon: '🌷', name: 'Tulip' },
+  { id: 17, icon: '🥦', name: 'Broccoli' },
+  { id: 18, icon: '🌶️', name: 'Pepper' },
+  { id: 19, icon: '🥒', name: 'Cucumber' },
+  { id: 20, icon: '🍆', name: 'Eggplant' },
+  { id: 21, icon: '🥔', name: 'Potato' },
+  { id: 22, icon: '🧄', name: 'Garlic' },
+  { id: 23, icon: '🧅', name: 'Onion' },
+  { id: 24, icon: '🥜', name: 'Peanut' }
+])
 
-  if (!trimmedPhone) {
-    toastr.warning('Phone number is required.');
-    return;
-  }
+const handleSubmit = async () => {
+  const { phoneNumber, password, pin, authType } = form.value
+  const credentialValue = authType === 'password' ? password : pin
+  const trimmedPhone = String(phoneNumber).trim()
 
   if (!isValidPhilippinePhoneNumber(trimmedPhone)) {
-    toastr.warning('Enter a valid Philippine phone number.');
-    return;
+    toastr.error('Enter a valid PH number.')
+    return
   }
 
-  const formattedPhone = toE164(trimmedPhone);
+  const formattedPhone = toE164(trimmedPhone)
   if (!formattedPhone) {
-    toastr.error('Invalid phone number format.');
-    return;
+    toastr.error('Invalid phone format.')
+    return
   }
 
-  const credential = authType === 'pin' ? pin : password;
-  if (!String(credential).trim()) {
-    toastr.warning(`Please enter your ${authType}.`);
-    return;
+  if (!credentialValue || !credentialValue.trim()) {
+    toastr.error(`Please enter your ${authType}.`)
+    return
   }
 
-  isLoading.value = true;
+  isLoading.value = true
 
   try {
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('phoneNumber', '==', formattedPhone));
-    const snapshot = await getDocs(q);
+    const usersRef = collection(db, 'users')
+    const q = query(usersRef, where('phoneNumber', '==', formattedPhone))
+    const snapshot = await getDocs(q)
 
-    let userDocId = null;
-    let userExists = !snapshot.empty;
-    let isVerified = false;
+    let userDocId = null
+    const userExists = !snapshot.empty
+    let isVerified = false
+
+    // Generate random OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+
+    // Pick random avatar
+    const randomAvatar = avatarOptions.value[Math.floor(Math.random() * avatarOptions.value.length)]
 
     if (userExists) {
-      const existingUserDoc = snapshot.docs[0];
-      userDocId = existingUserDoc.id;
-      const existingUserData = existingUserDoc.data();
-      isVerified = existingUserData.verified;
+      const existingUser = snapshot.docs[0]
+      userDocId = existingUser.id
+      const data = existingUser.data()
+      isVerified = data.verified
 
       if (isVerified) {
-        toastr.error('Phone number already registered and verified.');
-        isLoading.value = false;
-        return;
+        toastr.info('Phone number already verified.')
+        isLoading.value = false
+        return
       }
-      console.log('User exists but not verified. Proceeding with OTP.');
-      // Optionally, update existing user's authType, password/pin if they are re-registering
-      // await updateDoc(doc(db, 'users', userDocId), {
-      //   authType,
-      //   password: authType === 'password' ? password : '',
-      //   pin: authType === 'pin' ? pin : '',
-      //   updatedAt: serverTimestamp()
-      // });
+
+      await updateDoc(doc(db, 'users', userDocId), {
+        authType,
+        password: authType === 'password' ? credentialValue : '',
+        pin: authType === 'pin' ? credentialValue : '',
+        otp,
+        otpSentAt: serverTimestamp(),
+        avatar: randomAvatar,
+        updatedAt: serverTimestamp()
+      })
+
+      toastr.info('User found. Sending OTP again...')
     } else {
-      // New user, add to Firestore with verified: false
       const newUserRef = await addDoc(usersRef, {
         phoneNumber: formattedPhone,
         authType,
-        password: authType === 'password' ? password : '',
-        pin: authType === 'pin' ? pin : '',
-        verified: false, // User is not verified until OTP confirmation
-        createdAt: serverTimestamp(),
-        // Add other fields like firstName, lastName if you collect them
-      });
-      userDocId = newUserRef.id;
-      console.log('New user added to Firestore with ID:', userDocId);
+        password: authType === 'password' ? credentialValue : '',
+        pin: authType === 'pin' ? credentialValue : '',
+        otp,
+        otpSentAt: serverTimestamp(),
+        verified: false,
+        avatar: randomAvatar,
+        createdAt: serverTimestamp()
+      })
+      userDocId = newUserRef.id
+      toastr.success('User registered. Sending OTP...')
     }
 
-    if (!globalRecaptchaVerifier) {
-      toastr.error("reCAPTCHA is not initialized. Please refresh the page or try again shortly.");
-      isLoading.value = false;
-      return;
-    }
+    // 🔁 Call FastAPI backend to send OTP via Vonage
+    await api.post('/otp/send', {
+      number: formattedPhone,
+      message: `Your OTP code is: ${otp}`
+    })
 
-    const appVerifier = globalRecaptchaVerifier; // Use the initialized reCAPTCHA verifier
-
-    // Send OTP
-    const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-    window.confirmationResult = confirmationResult; // Store for the verification page
-
-    toastr.success('Verification code sent to your phone number.');
-    // Redirect to OTP verification page, passing phone number as a query param
-    router.push(`/auth/verify-otp?phone=${encodeURIComponent(formattedPhone)}`);
+    localStorage.setItem('otpPhone', formattedPhone)
+    toastr.success('OTP sent successfully.')
+    router.push(`/auth/verify-otp?phone=${encodeURIComponent(formattedPhone)}`)
 
   } catch (error) {
-    console.error('Error during registration or sending OTP:', error);
-    // Handle specific Firebase errors
-    if (error.code === 'auth/too-many-requests') {
-        toastr.error('Too many requests. Please try again later.');
-    } else if (error.message && error.message.includes("reCAPTCHA")) { // Check error message for reCAPTCHA issues
-        toastr.error('reCAPTCHA verification failed. Please try again.');
-        // Reset reCAPTCHA if it failed
-        if (globalRecaptchaVerifier) {
-            globalRecaptchaVerifier.clear();
-            globalRecaptchaVerifier = null;
-            setupRecaptcha(); // Re-initialize
-        }
-    } else {
-        toastr.error('An error occurred during registration. Please try again.');
-    }
+    console.error('❌ Error:', error)
+    toastr.error(error?.response?.data?.detail || 'An error occurred. Please try again.')
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
+
+
 
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640
 }
 
-// onMounted(() => { // Combined with reCAPTCHA setup
-//   window.addEventListener('resize', handleResize)
-// })
-
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
-  // Optional: Clear reCAPTCHA if the component is unmounted
-  if (globalRecaptchaVerifier) {
-    globalRecaptchaVerifier.clear();
-    globalRecaptchaVerifier = null;
-  }
-  if (window.recaptchaWidgetId) {
-     // grecaptcha.reset(window.recaptchaWidgetId); // If you have access to grecaptcha directly
-  }
+  // reCAPTCHA cleanup removed
 })
 
 const beforeLeave = (el) => {
@@ -624,7 +581,7 @@ const onLoadingComplete = () => {
 
 // const handleGoogleRegister = async () => { // Kept for reference if needed later
 //   try {
-//     const result = await signInWithPopup(auth, googleProvider);
+//     const result = await signInWithPopup(auth, googleProvider); // Note: 'auth' would be undefined here now
 //     const user = result.user;
 //     console.log("✅ Google User:", user);
 //     const idToken = await user.getIdToken();
