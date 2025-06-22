@@ -21,7 +21,7 @@ const router = createRouter({
 })
 
 // Define which routes are public (accessible without auth)
-const publicPaths = ['/', '/about', '/organicsection', '/login', '/register', '/verify-otp']
+const publicPaths = ['/', '/about', '/organicsection', '/login', '/register', '/verify-otp', '/forgotpassword']
 
 // Global middleware (navigation guard)
 router.beforeEach((to, from, next) => {

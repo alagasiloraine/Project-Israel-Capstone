@@ -731,14 +731,18 @@
               Cancel
             </button>
             <button 
-              @click="confirmToggleWaterPump" 
+              @click="confirmToggleWaterPump"
+              :disabled="isTogglingMotor" 
               :class="waterPumpActive 
                 ? 'bg-red-600 hover:bg-red-700' 
                 : 'bg-green-600 hover:bg-green-700'"
               class="text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors flex items-center gap-2"
             >
-              <Power class="w-4 h-4" />
-              <span>{{ waterPumpActive ? 'Turn OFF' : 'Turn ON' }}</span>
+              <span v-if="isTogglingMotor">Processing...</span>
+              <div v-else class="flex gap-2">
+                <Power class="w-4 h-4" />
+                <span>{{ waterPumpActive ? 'Turn OFF' : 'Turn ON' }}</span>
+              </div>
             </button>
           </div>
         </div>
@@ -1383,6 +1387,7 @@ const notifiedStartIds = new Set()
 const notifiedEndIds = new Set()
 
 const isLoading = ref(false)
+const isTogglingMotor = ref(false)
 
 
 // Display pagination buttons
@@ -1925,150 +1930,301 @@ watch(showToggleConfirmationDialog, async (newVal) => {
 });
 
 // NEW: Function to confirm and execute water pump toggle
+// const confirmToggleWaterPump = async () => {
+//   try {
+//     // Toggle the state
+//     waterPumpActive.value = !waterPumpActive.value
+
+//     console.log('Toggling water pump to:', waterPumpActive.value ? 'ON' : 'OFF')
+
+//     // Get current timestamp
+//     const now = new Date()
+//     const formattedTime = now.toLocaleString('en-US', {
+//       weekday: 'short',
+//       month: 'short',
+//       day: 'numeric',
+//       hour: '2-digit',
+//       minute: '2-digit',
+//       hour12: true
+//     })
+
+//     // Create the status document
+//     const statusData = {
+//       status: waterPumpActive.value,
+//       timestamp: serverTimestamp(),
+//       device_id: 'main_motor',
+//       user: 'system',
+//       formattedTime: formattedTime
+//     }
+
+//     console.log('Saving data to Firebase motor_status collection:', statusData)
+
+//     // Save to Firebase
+//     await setDoc(doc(db, 'motor_status', 'current'), statusData)
+//     console.log('Successfully saved current status to Firebase')
+
+//     const historyRef = collection(db, 'motor_status', 'history', 'logs')
+//     await addDoc(historyRef, statusData)
+//     console.log('Successfully added to history logs')
+
+//     // Add to UI activity log
+//     const newActivity = {
+//       status: waterPumpActive.value,
+//       timestamp: `Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+//     }
+//     motorActivities.value.unshift(newActivity)
+
+//     // Show toast
+//     showToastMessage(`Motor turned ${waterPumpActive.value ? 'ON' : 'OFF'} successfully`)
+//     showToggleConfirmationDialog.value = false
+
+//     // ✅ Send motor status to FastAPI backend here
+//     try {
+//       const response = await axios.post('http://localhost:8000/api/motor_status/', {
+//         status: waterPumpActive.value,
+//         device_id: 'main_motor',
+//         user: 'system',
+//         timestamp: now.toISOString(),
+//         formatted_time: formattedTime
+//       })
+
+//       console.log('Motor status sent to FastAPI backend:', response.data)
+//     } catch (error) {
+//       console.error('Error sending motor status to FastAPI:', error)
+//     }
+
+//   } catch (error) {
+//     console.error('Error saving motor status to Firebase:', error)
+//     console.error('Error details:', {
+//       code: error.code,
+//       message: error.message,
+//       stack: error.stack
+//     })
+
+//     waterPumpActive.value = !waterPumpActive.value
+//     showToastMessage('Error saving motor status. Please check console for details.')
+//     showToggleConfirmationDialog.value = false
+//   }
+// }
+
 const confirmToggleWaterPump = async () => {
-try {
-  // Toggle the state
-  waterPumpActive.value = !waterPumpActive.value
-
-  console.log('Toggling water pump to:', waterPumpActive.value ? 'ON' : 'OFF')
-
-  // Get current timestamp
-  const now = new Date()
-  const formattedTime = now.toLocaleString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  })
-
-  // Create the status document
-  const statusData = {
-    status: waterPumpActive.value,
-    timestamp: serverTimestamp(),
-    device_id: 'main_motor',
-    user: 'system',
-    formattedTime: formattedTime
-  }
-
-  console.log('Saving data to Firebase motor_status collection:', statusData)
-
-  // Save to Firebase
-  await setDoc(doc(db, 'motor_status', 'current'), statusData)
-  console.log('Successfully saved current status to Firebase')
-
-  const historyRef = collection(db, 'motor_status', 'history', 'logs')
-  await addDoc(historyRef, statusData)
-  console.log('Successfully added to history logs')
-
-  // Add to UI activity log
-  const newActivity = {
-    status: waterPumpActive.value,
-    timestamp: `Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-  }
-  motorActivities.value.unshift(newActivity)
-
-  // Show toast
-  showToastMessage(`Motor turned ${waterPumpActive.value ? 'ON' : 'OFF'} successfully`)
-  showToggleConfirmationDialog.value = false
-
-  // ✅ Send motor status to FastAPI backend here
   try {
-    const response = await axios.post('http://localhost:8000/api/motor_status/', {
-      status: waterPumpActive.value,
-      device_id: 'main_motor',
-      user: 'system',
-      timestamp: now.toISOString(),
-      formatted_time: formattedTime
+    isTogglingMotor.value = true;
+    // Toggle the motor state
+    waterPumpActive.value = !waterPumpActive.value
+    console.log('Toggling water pump to:', waterPumpActive.value ? 'ON' : 'OFF')
+
+    const now = new Date()
+    const formattedTime = now.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
     })
 
-    console.log('Motor status sent to FastAPI backend:', response.data)
-  } catch (error) {
-    console.error('Error sending motor status to FastAPI:', error)
-  }
-
-} catch (error) {
-  console.error('Error saving motor status to Firebase:', error)
-  console.error('Error details:', {
-    code: error.code,
-    message: error.message,
-    stack: error.stack
-  })
-
-  waterPumpActive.value = !waterPumpActive.value
-  showToastMessage('Error saving motor status. Please check console for details.')
-  showToggleConfirmationDialog.value = false
-}
-}
-
-// Function to fetch motor status from Firebase
-const fetchMotorStatus = async () => {
-  try {
-    console.log('Fetching motor status from Firebase...')
-    isLoadingActivities.value = true
-
-    // First try to get the current status document
-    try {
-      const currentStatusDoc = await getDoc(doc(db, 'motor_status', 'current'))
-      if (currentStatusDoc.exists()) {
-        const data = currentStatusDoc.data()
-        waterPumpActive.value = data.status
-        console.log('Fetched current motor status:', data.status)
-      } else {
-        console.log('No current status document found')
-      }
-    } catch (err) {
-      console.warn('Error fetching current status, will try collection query instead:', err)
+    const statusData = {
+      status: waterPumpActive.value,
+      timestamp: serverTimestamp(),
+      device_id: 'main_motor',
+      user: 'system',
+      formattedTime: formattedTime
     }
 
-    // Calculate date 7 days ago for filtering
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    // Update motor_status/current
+    await setDoc(doc(db, 'motor_status', 'current'), statusData)
+    console.log('✅ Motor status updated in current')
 
-    // Fetch recent activities from the history subcollection
-    try {
-      const historyRef = collection(db, 'motor_status', 'history', 'logs')
-      // Add where clause to filter by timestamp
-      const activitiesQuery = query(
-        historyRef,
-        orderBy('timestamp', 'desc'),
-        // No need to limit here as we'll filter in the computed property
+    // Add to motor_status/history/logs
+    const historyRef = collection(db, 'motor_status', 'history', 'logs')
+    await addDoc(historyRef, statusData)
+    console.log('📖 Added motor status to history logs')
+
+    // Add to local UI activity
+    const newActivity = {
+      status: waterPumpActive.value,
+      timestamp: `Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    }
+    motorActivities.value.unshift(newActivity)
+
+    // ✅ Check for ongoing watering schedule and cancel if motor was turned OFF
+    if (!waterPumpActive.value) {
+      const schedulesRef = collection(db, 'watering_schedules')
+      const q = query(
+        schedulesRef,
+        where('completed', '==', false)
       )
-      const activitiesSnapshot = await getDocs(activitiesQuery)
 
-      const activities = []
-      activitiesSnapshot.forEach(doc => {
-        const data = doc.data()
+      const snapshot = await getDocs(q)
+      let foundOngoing = false
 
-        // FIXED: Format the timestamp correctly based on the actual date
-        let formattedTimestamp;
-        if (data.timestamp) {
-          const timestampDate = data.timestamp.toDate();
-          formattedTimestamp = formatFirebaseTimestamp(timestampDate);
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data()
+
+        let start;
+        if (data.scheduledTime instanceof Timestamp) {
+          start = data.scheduledTime.toDate()
         } else {
-          formattedTimestamp = data.formattedTime || 'Unknown time';
+          start = new Date(data.scheduledTime)
         }
 
-        activities.push({
-          status: data.status,
-          timestamp: formattedTimestamp
-        })
-      })
+        const duration = data.duration || 0
+        const end = new Date(start.getTime() + duration * 60 * 1000)
 
-      if (activities.length > 0) {
-        motorActivities.value = activities
-        console.log('Fetched motor activities:', activities.length)
+        if (now >= start && now <= end) {
+          await updateDoc(doc(db, 'watering_schedules', docSnap.id), {
+            completed: true,
+            cancellationReason: 'Cancelled manually via motor toggle'
+          })
+          console.log(`⛔ Schedule ${docSnap.id} marked as cancelled`)
+          foundOngoing = true
+        }
       }
-    } catch (err) {
-      console.warn('Error fetching history logs:', err)
-    } finally {
-      isLoadingActivities.value = false
+
+      if (foundOngoing) {
+        showToastMessage('❌ Ongoing watering canceled due to motor toggle.')
+      } else {
+        console.log('✅ No matching ongoing watering schedule found to cancel.')
+      }
+    }
+
+    // Show success toast
+    showToastMessage(`Motor turned ${waterPumpActive.value ? 'ON' : 'OFF'} successfully`)
+    isTogglingMotor.value = false
+    showToggleConfirmationDialog.value = false
+
+
+    // Optionally send to FastAPI backend
+    try {
+      const response = await axios.post('http://localhost:8000/api/motor_status/', {
+        status: waterPumpActive.value,
+        device_id: 'main_motor',
+        user: 'system',
+        timestamp: now.toISOString(),
+        formatted_time: formattedTime
+      })
+      console.log('📡 Motor status sent to FastAPI:', response.data)
+    } catch (error) {
+      console.error('❌ Error sending motor status to FastAPI:', error)
     }
 
   } catch (error) {
-    console.error('Error in fetchMotorStatus:', error)
+    console.error('❌ Error toggling motor:', error)
+    waterPumpActive.value = !waterPumpActive.value
+    showToastMessage('Error saving motor status. Please check console for details.')
+    showToggleConfirmationDialog.value = false
+  }
+}
+
+
+const fetchMotorStatus = () => {
+  console.log('Setting up real-time motor status listeners...')
+  isLoadingActivities.value = true
+
+  // 🔁 Real-time listener for motor_status/current
+  const currentStatusUnsub = onSnapshot(
+    doc(db, 'motor_status', 'current'),
+    async (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data()
+        waterPumpActive.value = data.status
+        console.log('📡 Real-time motor status:', data.status)
+
+        // ✅ If motor turned OFF, check for ongoing watering
+        if (data.status === false) {
+          const now = Date.now()
+
+          try {
+            const schedulesRef = collection(db, 'watering_schedules')
+            const q = query(
+              schedulesRef,
+              where('completed', '==', false),
+              where('scheduledTime', '<=', now)
+            )
+            const snapshot = await getDocs(q)
+
+            if (!snapshot.empty) {
+              for (const docSnap of snapshot.docs) {
+                const scheduleData = docSnap.data()
+                const endTime = scheduleData.scheduledTime + (scheduleData.duration || 0) * 60000
+
+                if (now <= endTime) {
+                  await updateDoc(doc(db, 'watering_schedules', docSnap.id), {
+                    completed: true,
+                    cancellationReason: 'Cancelled due to manual motor OFF',
+                    updatedAt: serverTimestamp()
+                  })
+
+                  // ✅ Show toast
+                  showToastMessage(`Watering schedule cancelled due to motor OFF`, 'warning')
+
+                  // ✅ Save a notification (adjust your collection path if needed)
+                  const notification = {
+                    title: 'Watering Cancelled',
+                    message: `A watering schedule has been cancelled due to manual motor OFF.`,
+                    type: 'warning',
+                    timestamp: serverTimestamp(),
+                    scheduleId: docSnap.id
+                  }
+
+                  await addDoc(collection(db, 'notifications'), notification)
+                  console.log(`📬 Cancellation notification saved for schedule ${docSnap.id}`)
+                }
+              }
+            } else {
+              console.log('✅ No ongoing watering schedule to cancel.')
+            }
+          } catch (err) {
+            console.error('❌ Error checking/canceling watering schedules after motor OFF:', err)
+          }
+        }
+      } else {
+        console.warn('⚠️ No current motor status found in Firestore.')
+      }
+    },
+    (error) => {
+      console.error('❌ Error listening to current motor status:', error)
+    }
+  )
+
+  // 🔁 Real-time listener for motor_status/history/logs
+  const historyRef = collection(db, 'motor_status', 'history', 'logs')
+  const activitiesQuery = query(historyRef, orderBy('timestamp', 'desc'))
+
+  const historyUnsub = onSnapshot(activitiesQuery, (querySnapshot) => {
+    const activities = []
+
+    querySnapshot.forEach(doc => {
+      const data = doc.data()
+      console.log('[DeviceControl] History Log Entry ID:', doc.id, '| Status Value:', data.status)
+
+      let formattedTimestamp
+      if (data.timestamp) {
+        const timestampDate = data.timestamp.toDate()
+        formattedTimestamp = formatFirebaseTimestamp(timestampDate)
+      } else {
+        formattedTimestamp = data.formattedTime || 'Unknown time'
+      }
+
+      activities.push({
+        id: doc.id,
+        status: data.status,
+        timestamp: formattedTimestamp
+      })
+    })
+
+    motorActivities.value = activities
     isLoadingActivities.value = false
+    console.log('📡 Real-time motor activity logs updated:', activities.length)
+  }, (error) => {
+    console.error('❌ Error listening to motor history logs:', error)
+    isLoadingActivities.value = false
+  })
+
+  return {
+    unsubscribeCurrent: currentStatusUnsub,
+    unsubscribeHistory: historyUnsub
   }
 }
 
@@ -2527,14 +2683,13 @@ const scheduleSummary = computed(() => {
 const timeDisplay = computed(() => {
   let hour12 = wateringHour.value % 12;
   if (hour12 === 0) hour12 = 12; // 0 or 12 should display as 12
-
   const minute = wateringMinute.value.toString().padStart(2, '0');
-  const ampm = (wateringHour.value < 12 || wateringHour.value === 0) && wateringHour.value !== 12 ? 'AM' : 'PM';
-  if (wateringHour.value === 12) ampm = 'PM'; // Explicitly 12 PM
-
+  // Use the reactive 'isAm' ref which is correctly maintained and updated
+  // by the `updateAmPm` function and its watcher.
+  const ampm = isAm.value ? 'AM' : 'PM';
 
   // console.log(`timeDisplay computed: ${hour12}:${minute} ${ampm} (from hour: ${wateringHour.value}, isAm: ${isAm.value})`);
-  return `${hour12}:${minute} ${ampm}`;
+  return `${hour12.toString().padStart(2, '0')}:${minute} ${ampm}`;
 });
 
 const upcomingSchedules = computed(() =>
@@ -2546,48 +2701,115 @@ const pastSchedules = computed(() =>
 );
 
 let unsubscribeSchedules = null;
+
 const fetchWateringSchedules = () => {
   isLoadingSchedules.value = true;
   const schedulesRef = collection(db, 'watering_schedules');
-  // Order by scheduledTime to make it easier to find next/past
   const schedulesQuery = query(schedulesRef, orderBy('scheduledTime', 'asc'));
 
-  if (unsubscribeSchedules) unsubscribeSchedules(); // Unsubscribe from previous listener
+  if (unsubscribeSchedules) unsubscribeSchedules(); // Clean up previous listener
 
-  unsubscribeSchedules = onSnapshot(schedulesQuery, (snapshot) => {
+  unsubscribeSchedules = onSnapshot(schedulesQuery, async (snapshot) => {
     const schedules = [];
     const now = Date.now();
 
+    snapshot.docChanges().forEach(async (change) => {
+      const docSnap = change.doc;
+      const data = docSnap.data();
+      const scheduleId = docSnap.id;
+
+      // Normalize timestamp if needed
+      if (data.scheduledTime && data.scheduledTime < 1e12) {
+        data.scheduledTime = data.scheduledTime * 1000;
+      }
+
+      // ✅ Check for schedule marked as completed
+      // if (change.type === 'modified' && data.completed === true) {
+      //   try {
+      //     const motorRef = doc(db, 'motor_status', 'current');
+      //     const motorSnapshot = await getDoc(motorRef);
+
+      //     if (motorSnapshot.exists()) {
+      //       const motorData = motorSnapshot.data();
+
+      //       if (motorData.status === true) {
+      //         const nowDate = new Date();
+      //         const formattedTime = nowDate.toLocaleString('en-US', {
+      //           weekday: 'short',
+      //           month: 'short',
+      //           day: 'numeric',
+      //           hour: '2-digit',
+      //           minute: '2-digit',
+      //           hour12: true
+      //         });
+
+      //         // ✅ Update motor status to OFF
+      //         await updateDoc(motorRef, {
+      //           status: false,
+      //           timestamp: serverTimestamp(),
+      //           formattedTime: formattedTime,
+      //           user: 'system',
+      //           device_id: 'main_motor'
+      //         });
+
+      //         // ✅ Log to history
+      //         const historyRef = collection(db, 'motor_status', 'history', 'logs');
+      //         await addDoc(historyRef, {
+      //           status: false,
+      //           timestamp: serverTimestamp(),
+      //           device_id: 'main_motor',
+      //           user: 'system',
+      //           formattedTime: formattedTime
+      //         });
+
+      //         // ✅ Send to FastAPI backend
+      //         try {
+      //           const response = await axios.post('http://localhost:8000/api/motor_status/', {
+      //             status: false,
+      //             device_id: 'main_motor',
+      //             user: 'system',
+      //             timestamp: nowDate.toISOString(),
+      //             formatted_time: formattedTime
+      //           });
+
+      //           console.log('📤 Motor status sent to FastAPI backend:', response.data);
+      //         } catch (error) {
+      //           console.error('❌ Failed to send motor status to backend:', error);
+      //         }
+
+      //         // ✅ Show toast
+      //         showToastMessage('Motor turned OFF automatically after watering completed.');
+      //         console.log(`🛑 Motor turned OFF because schedule ${scheduleId} completed.`);
+      //       }
+      //     }
+      //   } catch (err) {
+      //     console.error(`❌ Error turning off motor after schedule ${scheduleId} completed:`, err);
+      //   }
+      // }
+    });
+
+    // 🧠 Rebuild savedSchedules array
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
       const scheduleId = docSnap.id;
 
-      // Normalize scheduledTime if it's in seconds
       if (data.scheduledTime && data.scheduledTime < 1e12) {
         data.scheduledTime = data.scheduledTime * 1000;
       }
-      
-      // Auto-mark as completed if past and not recurring
-      if (data.mode === 'one-time' && data.scheduledTime < now && data.completed === false) {
-        updateDoc(doc(db, 'watering_schedules', scheduleId), { completed: true, updatedAt: serverTimestamp() })
-          .then(() => console.log(`Auto-marked schedule ${scheduleId} as completed.`))
-          .catch(err => console.error("Error auto-updating schedule:", err));
-        // data.completed = true; // Reflect immediately in UI, Firestore update will follow
-      }
-
 
       schedules.push({ id: scheduleId, ...data });
     });
 
     savedSchedules.value = schedules;
-    // console.log('Realtime updated watering schedules:', schedules.length);
-    calculateNextWateringTime(); // Recalculate next watering time whenever schedules change
+    calculateNextWateringTime();
     isLoadingSchedules.value = false;
   }, (error) => {
-    console.error("Error listening to watering schedules:", error);
+    console.error("❌ Error listening to watering schedules:", error);
     isLoadingSchedules.value = false;
   });
 };
+
+
 
 
 // MODIFIED: Function to calculate the next watering time from the database
@@ -2626,11 +2848,8 @@ const calculateNextWateringTime = () => {
 const saveWateringSchedule = async () => {
   isLoading.value = true;
   try {
-    // console.log("Starting saveWateringSchedule...");
+    const scheduledTime = new Date();
 
-    const scheduledTime = new Date(); // This will be the basis for date parts if not one-time
-
-    // wateringHour.value is already 0-23, wateringMinute.value is 0-59
     const current24Hour = wateringHour.value;
     const currentMinute = wateringMinute.value;
 
@@ -2641,47 +2860,67 @@ const saveWateringSchedule = async () => {
         selectedDate.value.getDate()
       );
     }
-    // For daily/weekly, scheduledTime will use today's date parts by default from `new Date()`
-    // This is fine as `scheduledTime` primarily stores the time of day for recurring,
-    // and the actual next occurrence logic might be handled server-side or by a scheduler.
-    // For Firestore `scheduledTime` field, it's crucial for querying the *next* absolute time.
 
     scheduledTime.setHours(current24Hour, currentMinute, 0, 0);
 
     const newScheduleDetails = {
-        mode: wateringMode.value,
-        hour: current24Hour,
-        minute: currentMinute,
-        duration: wateringDuration.value,
-        date: wateringMode.value === 'one-time' ? new Date(selectedDate.value) : null, // Pass a copy
-        days: wateringMode.value === 'weekly' ? [...wateringDays.value] : null // Pass a copy
+      mode: wateringMode.value,
+      hour: current24Hour,
+      minute: currentMinute,
+      duration: wateringDuration.value,
+      date: wateringMode.value === 'one-time' ? new Date(selectedDate.value) : null,
+      days: wateringMode.value === 'weekly' ? [...wateringDays.value] : null,
     };
 
-    const isDuplicate = isDuplicateSchedule(newScheduleDetails);
+    // ✅ Check for duplicates manually
+    const hasExactDuplicate = savedSchedules.value.some((schedule) => {
+      const isSameMode = schedule.mode === newScheduleDetails.mode;
+      const isSameHour = schedule.hour === newScheduleDetails.hour;
+      const isSameMinute = schedule.minute === newScheduleDetails.minute;
+      const isSameDuration = schedule.duration === newScheduleDetails.duration;
+      const isSameDayList = JSON.stringify(schedule.days || []) === JSON.stringify(newScheduleDetails.days || []);
+      const isSameDate =
+        wateringMode.value === 'one-time' &&
+        schedule.date &&
+        newScheduleDetails.date &&
+        new Date(schedule.date).toDateString() === newScheduleDetails.date.toDateString();
 
-    if (isDuplicate) { // isDuplicateSchedule now handles the editingScheduleId.value check internally
+      // ✨ Skip if this is the one we're editing
+      if (editingScheduleId.value && editingScheduleId.value === schedule.id) return false;
+
+      // ✅ Allow if the old one is completed
+      if (schedule.completed === true) return false;
+
+      // Compare based on mode
+      if (wateringMode.value === 'weekly') {
+        return isSameMode && isSameHour && isSameMinute && isSameDuration && isSameDayList;
+      } else if (wateringMode.value === 'one-time') {
+        return isSameMode && isSameHour && isSameMinute && isSameDuration && isSameDate;
+      } else {
+        return isSameMode && isSameHour && isSameMinute && isSameDuration;
+      }
+    });
+
+    if (hasExactDuplicate) {
       showToastMessage("Schedule conflicts with an existing one due to overlapping time, duration, or day(s).", 'warning');
       isLoading.value = false;
       return;
     }
 
-    const formattedDateTime = (() => {
-      // Use the 'scheduledTime' object which has the correct date and time parts
-      return scheduledTime.toLocaleString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      });
-    })();
+    const formattedDateTime = scheduledTime.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
 
     const schedulePayload = {
-      dateTime: formattedDateTime, // Human-readable string for display
+      dateTime: formattedDateTime,
       duration: wateringDuration.value,
       mode: wateringMode.value,
-      days: wateringMode.value === 'weekly' ? [...wateringDays.value] : [], // Always send 'days' as an array
+      days: wateringMode.value === 'weekly' ? [...wateringDays.value] : [],
       skipIfRain: skipIfRain.value,
       notifyWatering: notifyWatering.value,
       waterFlowRate: waterFlowRate.value,
@@ -2691,15 +2930,11 @@ const saveWateringSchedule = async () => {
             unit: wateringIntervalUnit.value,
           }
         : null,
-      scheduledTime: scheduledTime.getTime(), // Crucial: Timestamp in milliseconds
+      scheduledTime: scheduledTime.getTime(),
       completed: false,
     };
-    
-    // If mode is not 'weekly', 'days' will be an empty array.
-    // If mode is not 'custom', 'interval' will be null.
 
-
-    // 👉 Step 1: Send to FastAPI backend (same for create/update)
+    // 🛰️ Send to backend
     const backendResponse = await fetch("http://127.0.0.1:8000/api/watering-schedule", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -2707,10 +2942,7 @@ const saveWateringSchedule = async () => {
     });
 
     const backendData = await backendResponse.json();
-
     if (!backendResponse.ok) throw new Error(backendData.error || "Failed to save schedule in backend");
-    // console.log("Bypassing FastAPI call for now. Payload:", schedulePayload);
-
 
     if (editingScheduleId.value) {
       const docRef = doc(db, 'watering_schedules', editingScheduleId.value);
@@ -2723,20 +2955,13 @@ const saveWateringSchedule = async () => {
       const newScheduleData = {
         ...schedulePayload,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(), // Also set updatedAt on creation
+        updatedAt: serverTimestamp(),
       };
       await addDoc(collection(db, 'watering_schedules'), newScheduleData);
       showToastMessage('New schedule saved successfully','success');
     }
 
-    // `fetchWateringSchedules` (via onSnapshot) will update `savedSchedules`
-    // and `calculateNextWateringTime` will be called by the snapshot listener.
     closeScheduleModal();
-
-    // if (currentView.value === 'history') {
-      // fetchWateringSchedules(); // Already handled by onSnapshot
-    // }
-
     editingScheduleId.value = null;
     isLoading.value = false;
 
@@ -2746,6 +2971,7 @@ const saveWateringSchedule = async () => {
     isLoading.value = false;
   }
 };
+
 
 
 const showToastMessage = (message, severity = 'info') => {

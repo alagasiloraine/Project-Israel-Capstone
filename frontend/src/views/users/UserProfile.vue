@@ -388,6 +388,195 @@
                   </div>
                 </div>
 
+                <!-- Reset Password/PIN via OTP Card -->
+                <div class="mb-8">
+                  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
+                    <div class="p-5">
+                      <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center mr-3 group-hover:bg-orange-200 transition-colors duration-200">
+                          <KeyRound class="w-5 h-5 text-orange-600" />
+                        </div>
+                        <div>
+                          <h4 class="text-sm font-semibold text-gray-900">Reset Password/PIN via OTP</h4>
+                          <p class="text-xs text-gray-500">Recover your account credentials if forgotten</p>
+                        </div>
+                      </div>
+
+                      <button
+                        v-if="!showResetPasswordSection"
+                        @click="toggleResetPasswordSection"
+                        :disabled="isLoadingReset"
+                        class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-2.5 px-4 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        {{ isLoadingReset ? 'Loading...' : 'Get Started' }}
+                      </button>
+
+                      <div v-if="showResetPasswordSection" class="mt-4 pt-4 border-t border-gray-100">
+                        <h3 class="text-sm font-semibold text-[#2B5329] mb-2 text-center">
+                          {{ currentResetStep === 1 ? 'Send Verification Code' :
+                             currentResetStep === 2 ? 'Verify Code' : 'Create New Credential' }}
+                        </h3>
+                        <p v-if="currentResetStep === 1" class="text-xs text-gray-600 text-center mb-4">
+                          A code will be sent to your registered phone number: {{ user?.phoneNumber }}
+                        </p>
+
+                        <!-- Step 1: Send Code -->
+                        <form v-if="currentResetStep === 1" @submit.prevent="handleSendResetCode" class="space-y-4">
+                          <button
+                            type="submit" :disabled="isLoadingReset"
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
+                          >
+                            {{ isLoadingReset ? "Sending Code..." : "Send Code" }}
+                          </button>
+                        </form>
+
+                        <!-- Step 2: Verification Code -->
+                        <form v-if="currentResetStep === 2" @submit.prevent="handleVerifyCode" class="space-y-6">
+                          <div class="text-center">
+                            <h3 class="text-sm font-semibold text-[#2B5329] mb-2">Enter the 6-digit code</h3>
+                            <p class="text-sm text-gray-600">We sent to your phone number</p>
+                          </div>
+
+                          <div class="flex justify-center gap-2">
+                            <template v-for="i in 6" :key="i">
+                              <input
+                                type="text"
+                                :ref="el => codeRefs[i-1] = el"
+                                v-model="verificationDigits[i-1]"
+                                maxlength="1"
+                                class="w-12 h-12 text-center text-lg border-2 border-gray-300 rounded-lg focus:border-[#2B5329] focus:ring-2 focus:ring-[#2B5329] focus:outline-none transition-colors"
+                                @input="handleCodeInput($event, i-1)"
+                                @keydown.delete="handleBackspace($event, i-1)"
+                                @keydown.left="focusPrevious(i-1)"
+                                @keydown.right="focusNext(i-1)"
+                                @paste="handlePaste"
+                              />
+                            </template>
+                          </div>
+
+                          <button
+                            type="submit" :disabled="isLoadingReset"
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
+                          >
+                            {{ isLoadingReset ? "Verifying Code..." : "Verify Code" }}
+                          </button>
+
+                          <div class="text-center mt-4">
+                            <p class="text-sm text-gray-600">
+                              Didn't receive the code?
+                              <button
+                                type="button"
+                                @click="handleResendCode"
+                                class="text-[#2B5329] hover:text-[#FFA500] font-medium transition-colors ml-1"
+                                :disabled="resendTimer > 0"
+                              >
+                                {{ resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend Code' }}
+                              </button>
+                            </p>
+                          </div>
+                        </form>
+
+                        <!-- Step 3: New Password / PIN -->
+                        <form v-if="currentResetStep === 3" @submit.prevent="handleResetPassword" class="space-y-4">
+                          <div class="text-center mb-4">
+                            <p class="text-sm text-gray-600">Choose how you'd like to secure your account.</p>
+                          </div>
+
+                          <!-- Auth Type Choice -->
+                          <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Choose New Login Type</label>
+                            <div class="flex gap-2">
+                              <button
+                                type="button"
+                                @click="resetAuthType = 'password'"
+                                :class="[
+                                  'px-4 py-1.5 rounded-md text-sm font-medium transition w-full',
+                                  resetAuthType === 'password'
+                                    ? 'bg-[#2B5329] text-white shadow'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ]"
+                              >
+                                New Password
+                              </button>
+                              <button
+                                type="button"
+                                @click="resetAuthType = 'pin'"
+                                :class="[
+                                  'px-4 py-1.5 rounded-md text-sm font-medium transition w-full',
+                                  resetAuthType === 'pin'
+                                    ? 'bg-[#2B5329] text-white shadow'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ]"
+                              >
+                                New 4-digit PIN
+                              </button>
+                            </div>
+                          </div>
+
+                          <!-- Password Inputs -->
+                          <div v-if="resetAuthType === 'password'" class="space-y-4">
+                            <div>
+                              <label for="newResetPassword" class="block text-sm font-medium text-gray-700">New Password</label>
+                              <div class="relative">
+                                <input
+                                  :type="showNewResetPassword ? 'text' : 'password'"
+                                  id="newResetPassword"
+                                  v-model="newResetPassword"
+                                  required
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
+                                />
+                                <button type="button" @click="showNewResetPassword = !showNewResetPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                  <Eye v-if="!showNewResetPassword" class="h-4 w-4" /><EyeOff v-else class="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+                            <div>
+                              <label for="confirmResetPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                              <div class="relative">
+                                <input
+                                  :type="showConfirmResetPassword ? 'text' : 'password'"
+                                  id="confirmResetPassword"
+                                  v-model="confirmResetPassword"
+                                  required
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
+                                />
+                                <button type="button" @click="showConfirmResetPassword = !showConfirmResetPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                  <Eye v-if="!showConfirmResetPassword" class="h-4 w-4" /><EyeOff v-else class="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- PIN Inputs -->
+                          <div v-else class="space-y-4">
+                            <div>
+                              <label for="newResetPin" class="block text-sm font-medium text-gray-700">New 4-digit PIN</label>
+                              <input id="newResetPin" type="password" v-model="newResetPin" required maxlength="4" pattern="\d*" inputmode="numeric" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]" />
+                            </div>
+                            <div>
+                              <label for="confirmResetPin" class="block text-sm font-medium text-gray-700">Confirm PIN</label>
+                              <input id="confirmResetPin" type="password" v-model="confirmResetPin" required maxlength="4" pattern="\d*" inputmode="numeric" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]" />
+                            </div>
+                          </div>
+
+                          <button
+                            type="submit" :disabled="isLoadingReset"
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
+                          >
+                            {{ isLoadingReset ? "Resetting..." : "Reset Credentials" }}
+                          </button>
+                        </form>
+                        <button
+                          @click="toggleResetPasswordSection"
+                          class="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-sm font-medium mt-4"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Account Actions Section -->
                 <div>
                   <!-- Header with improved icon for 'Account Actions' -->
@@ -456,12 +645,13 @@ import {
   LogOut, 
   CheckCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  KeyRound
 } from 'lucide-vue-next'
 import { useUserStore } from '../../utils/user'
 import LogoutModal from '../layout/LogoutModal.vue'
 import { getDoc, doc, updateDoc, getFirestore } from 'firebase/firestore'
-
+import { collection, query, where, getDocs, serverTimestamp } from "firebase/firestore";
 const db = getFirestore()
 const router = useRouter()
 const user = ref(null)
@@ -476,6 +666,16 @@ const showModal = ref(false)
 const isLoadingProfile = ref(false)
 const isLoadingPassword = ref(false)
 const isLoadingPin = ref(false)
+const isLoadingReset = ref(false) // New loading state for the reset flow
+
+// New reset flow state
+const currentResetStep = ref(1)
+const verificationDigits = ref(['', '', '', '', '', ''])
+const codeRefs = ref([]) // For OTP input refs
+const resendTimer = ref(0)
+const resetAuthType = ref('password') // 'password' or 'pin' for the reset flow
+const newResetPassword = ref('')
+const confirmResetPassword = ref('')
 
 // Password visibility toggles
 const showCurrentPassword = ref(false)
@@ -485,6 +685,9 @@ const showConfirmPassword = ref(false)
 // Pin visibility toggles (add after password visibility toggles)
 const showCurrentPin = ref(false)
 const showNewPin = ref(false)
+const newResetPin = ref('')
+const confirmResetPin = ref('')
+const showResetPasswordSection = ref(false) // Controls visibility of the new reset flow
 const showConfirmPin = ref(false)
 
 // Disable password section if authType is 'pin'
@@ -598,6 +801,10 @@ const togglePinSection = () => {
     showNewPin.value = false
     showConfirmPin.value = false
   }
+}
+
+const toggleResetPasswordSection = () => {
+  showResetPasswordSection.value = !showResetPasswordSection.value
 }
 
 const showToastMessage = (message) => {
@@ -724,6 +931,278 @@ const changePin = async () => {
   }
 }
 
+// Utility functions for phone number validation (copied from ForgotPassword.vue)
+function isValidPhilippinePhoneNumber(number) {
+  const cleaned = number.trim();
+  return /^(\+639|09)\d{9}$/.test(cleaned);
+}
+
+function toE164(phone) {
+  const trimmed = phone.trim();
+  if (trimmed.startsWith('+63')) return trimmed;
+  const cleaned = trimmed.replace(/\D/g, '');
+  if (cleaned.startsWith('0')) return '+63' + cleaned.slice(1);
+  if (cleaned.startsWith('63')) return '+' + cleaned;
+  return null;
+}
+
+// OTP input handlers (copied from ForgotPassword.vue)
+const handleCodeInput = (event, index) => {
+  const value = event.target.value
+  if (!/^\d*$/.test(value)) {
+    verificationDigits.value[index] = ''
+    return
+  }
+  if (value && index < 5) {
+    codeRefs.value[index + 1]?.focus()
+  }
+}
+
+const handleBackspace = (event, index) => {
+  if (!verificationDigits.value[index] && index > 0) {
+    codeRefs.value[index - 1]?.focus()
+  }
+}
+
+const focusPrevious = (index) => {
+  if (index > 0) {
+    codeRefs.value[index - 1]?.focus()
+  }
+}
+
+const focusNext = (index) => {
+  if (index < 5) {
+    codeRefs.value[index + 1]?.focus()
+  }
+}
+
+const handlePaste = (event) => {
+  event.preventDefault()
+  const pastedData = event.clipboardData.getData('text')
+  const numbers = pastedData.match(/\d/g)
+  if (numbers) {
+    numbers.slice(0, 6).forEach((num, i) => {
+      verificationDigits.value[i] = num
+    })
+  }
+}
+
+// Resend timer logic (copied from ForgotPassword.vue)
+let resendInterval = null
+const startResendTimer = () => {
+  resendTimer.value = 30
+  resendInterval = setInterval(() => {
+    if (resendTimer.value > 0) {
+      resendTimer.value--
+    } else {
+      clearInterval(resendInterval)
+    }
+  }, 1000)
+}
+
+// New Reset Password/PIN flow functions (adapted from ForgotPassword.vue)
+const handleSendResetCode = async () => {
+  const trimmedPhone = user.value?.phoneNumber?.trim()
+  if (!isValidPhilippinePhoneNumber(trimmedPhone)) {
+    showToastMessage('Invalid phone number. Please update your profile first.')
+    return
+  }
+
+  const formattedPhone = toE164(trimmedPhone)
+  if (!formattedPhone) {
+    showToastMessage('Could not format phone number.')
+    return
+  }
+
+  isLoadingReset.value = true;
+
+  try {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('phoneNumber', '==', formattedPhone));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      showToastMessage('This phone number is not registered yet.');
+      isLoadingReset.value = false;
+      return;
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const userDoc = snapshot.docs[0];
+
+    await updateDoc(doc(db, 'users', userDoc.id), {
+      otp,
+      otpSentAt: serverTimestamp()
+    });
+
+    await api.post('/otp/send', {
+      number: formattedPhone,
+      message: `Your password reset code is: ${otp}`
+    });
+
+    showToastMessage('A password reset code has been sent to your phone.');
+    currentResetStep.value = 2;
+    startResendTimer();
+
+  } catch (error) {
+    console.error("Error sending reset code:", error.response?.data || error);
+    showToastMessage(error.response?.data?.detail || "Error sending reset code.");
+  } finally {
+    isLoadingReset.value = false;
+  }
+};
+
+const handleResendCode = async () => {
+  if (resendTimer.value > 0) return;
+  isLoadingReset.value = true;
+  try {
+    const trimmedPhone = user.value?.phoneNumber?.trim()
+    const formattedPhone = toE164(trimmedPhone)
+
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('phoneNumber', '==', formattedPhone));
+    const snapshot = await getDocs(q);
+    const userDoc = snapshot.docs[0];
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    await updateDoc(doc(db, 'users', userDoc.id), { otp, otpSentAt: serverTimestamp() });
+
+    await api.post('/otp/send', { number: formattedPhone, message: `Your new password reset code is: ${otp}` });
+
+    showToastMessage("A new code has been sent to your phone.");
+    startResendTimer();
+
+  } catch (error) {
+    console.error("Error resending code:", error.response?.data || error);
+    showToastMessage(error.response?.data?.detail || "Error resending code.");
+  } finally {
+    isLoadingReset.value = false;
+  }
+}
+
+const handleVerifyCode = async () => {
+  const code = verificationDigits.value.join('').trim();
+
+  if (code.length !== 6) {
+    showToastMessage('Please enter the 6-digit code.');
+    return;
+  }
+
+  isLoadingReset.value = true;
+
+  try {
+    const formattedPhone = toE164(user.value?.phoneNumber);
+    const q = query(collection(db, 'users'), where('phoneNumber', '==', formattedPhone));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      showToastMessage('User not found. Please start over.');
+      currentResetStep.value = 1;
+      return;
+    }
+
+    const userDoc = querySnapshot.docs[0];
+    const userData = userDoc.data();
+
+    if (userData.otp !== code) {
+      showToastMessage('Invalid verification code.');
+      return;
+    }
+
+    await updateDoc(doc(db, 'users', userDoc.id), {
+      otp: '',
+    });
+
+    showToastMessage('Code verified successfully!');
+    currentResetStep.value = 3;
+
+  } catch (error) {
+    console.error('Error verifying code:', error);
+    showToastMessage('An error occurred during verification.');
+  } finally {
+    isLoadingReset.value = false;
+  }
+}
+
+const handleResetPassword = async () => {
+  isLoadingReset.value = true;
+
+  const formattedPhone = toE164(user.value?.phoneNumber);
+  if (!formattedPhone) {
+    showToastMessage('Invalid phone number format.');
+    isLoadingReset.value = false;
+    return;
+  }
+
+  const updateData = {
+    authType: resetAuthType.value,
+    updatedAt: serverTimestamp()
+  };
+
+  if (resetAuthType.value === 'password') {
+    if (newResetPassword.value !== confirmResetPassword.value) {
+      showToastMessage('Passwords do not match!');
+      isLoadingReset.value = false;
+      return;
+    }
+    if (newResetPassword.value.length < 6) {
+      showToastMessage('Password must be at least 6 characters long.');
+      isLoadingReset.value = false;
+      return;
+    }
+    updateData.password = newResetPassword.value;
+    updateData.pin = '';
+  } else { // authType is 'pin'
+    if (newResetPin.value !== confirmResetPin.value) {
+      showToastMessage('PINs do not match!');
+      isLoadingReset.value = false;
+      return;
+    }
+    if (!/^\d{4}$/.test(newResetPin.value)) {
+        showToastMessage('PIN must be 4 digits.');
+        isLoadingReset.value = false;
+        return;
+    }
+    updateData.pin = newResetPin.value;
+    updateData.password = '';
+  }
+
+  try {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('phoneNumber', '==', formattedPhone));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      showToastMessage('Could not find an account with that phone number.');
+      isLoadingReset.value = false;
+      return;
+    }
+
+    const userDocRef = snapshot.docs[0].ref;
+    await updateDoc(userDocRef, updateData);
+
+    // Update local user store
+    const updatedUser = { ...user.value, ...updateData };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    sessionStorage.setItem('user', JSON.stringify(updatedUser));
+    user.value = updatedUser;
+
+    showToastMessage('Your credentials have been reset successfully.');
+    toggleResetPasswordSection(); // Close the reset form
+    currentResetStep.value = 1; // Reset step for next time
+    newResetPassword.value = '';
+    confirmResetPassword.value = '';
+    newResetPin.value = '';
+    confirmResetPin.value = '';
+
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    showToastMessage("An error occurred while resetting your credentials.");
+  } finally {
+    isLoadingReset.value = false;
+  }
+};
+
 const promptLogout = () => {
   showModal.value = true;
 }
@@ -780,6 +1259,10 @@ onMounted(async () => {
       } else if (user.value.authType === 'password') {
         showPinSection.value = false
       }
+
+      // Initialize new reset form visibility
+      showResetPasswordSection.value = false;
+      currentResetStep.value = 1;
     }
   } catch (err) {
     console.error('Error fetching user profile:', err)

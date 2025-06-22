@@ -374,7 +374,7 @@
                     </div>
                     <div class="w-full">
                       <p class="text-xs text-emerald-600 font-medium bg-emerald-100 px-3 py-1 rounded-full shadow-sm inline-block">
-                        Last 24 Hours
+                        {{ soilMoistureTimeRange }}
                       </p>
                     </div>
                   </div>
@@ -386,9 +386,9 @@
                         <span class="text-3xl font-bold text-emerald-600">{{ soilMoisture ?? '0.0' }}%</span>
                         <span
                           class="ml-2 text-sm font-medium"
-                          :class="getSoilMoistureStatus(soilMoisture || todayReading?.soilMoisture).color"
+                          :class="getSoilMoistureStatus(latestSoilMoisture).color"
                         >
-                          {{ getSoilMoistureStatus(soilMoisture || todayReading?.soilMoisture).label }}
+                          {{ getSoilMoistureStatus(latestSoilMoisture).label }}
                         </span>
                       </div>
                       <div class="flex items-center mt-1" v-if="soilMoistureChange">
@@ -443,7 +443,7 @@
                     </div>
                     <div class="w-full">
                       <p class="text-xs text-sky-600 font-medium bg-sky-100 px-3 py-1 rounded-full shadow-sm inline-block">
-                        Last 24 Hours
+                        {{ humidityTimeRange }}
                       </p>
                     </div>
                   </div>
@@ -455,9 +455,9 @@
                         <span class="text-3xl font-bold text-sky-600">{{ humidity % 100 ?? '0.0'}}</span>
                         <span
                           class="ml-2 text-sm font-medium"
-                          :class="getHumidityStatus(humidity || todayReading?.humidity).color"
+                          :class="getHumidityStatus(latestHumidity).color"
                         >
-                          {{ getHumidityStatus(humidity || todayReading?.humidity).label }}
+                          {{ getHumidityStatus(latestHumidity).label }}
                         </span>
                       </div>
                       <div class="flex items-center mt-1" v-if="humidityChange">
@@ -515,9 +515,10 @@
                     </div>
                     <div class="w-full">
                       <p class="text-xs text-red-600 font-medium bg-red-100 px-3 py-1 rounded-full shadow-sm inline-block">
-                        Last 24 Hours
+                        {{ temperatureTimeRange }}
                       </p>
                     </div>
+
                   </div>
 
                   <!-- Current Value with Enhanced Styling -->
@@ -527,9 +528,9 @@
                         <span class="text-3xl font-bold text-red-600">{{ temperature ?? '0.0' }}°C</span>
                         <span
                           class="ml-2 text-sm font-medium"
-                          :class="getTemperatureStatus(temperature || todayReading?.temperature).color"
+                          :class="getTemperatureStatus(latestTemperature).color"
                         >
-                          {{ getTemperatureStatus(temperature || todayReading?.temperature).label }}
+                          {{ getTemperatureStatus(latestTemperature).label }}
                         </span>
                       </div>
                       <div class="flex items-center mt-1" v-if="temperatureChange">
@@ -583,7 +584,7 @@
                     </div>
                     <div class="w-full">
                       <p class="text-xs text-orange-600 font-medium bg-orange-100 px-3 py-1 rounded-full shadow-sm inline-block">
-                        Last 24 Hours
+                        {{ soilPhTimeRange }}
                       </p>
                     </div>
                   </div>
@@ -595,9 +596,9 @@
                         <span class="text-3xl font-bold text-orange-600">{{ soilpH ?? '0.0' }}</span>
                         <span
                           class="ml-2 text-sm font-medium"
-                          :class="getPhStatus(soilpH || todayReading?.soilPh || todayReading?.soilpH).color"
+                          :class="getPhStatus(latestSoilPh).color"
                         >
-                          {{ getPhStatus(soilpH || todayReading?.soilPh || todayReading?.soilpH).label }}
+                          {{ getPhStatus(latestSoilPh).label }}
                         </span>
 
                       </div>
@@ -657,7 +658,7 @@
                   </div>
                   <div class="w-full">
                     <p class="text-xs text-green-600 font-medium bg-green-100 px-3 py-1 rounded-full shadow-sm inline-block">
-                      Weekly Performance Overview
+                      {{ npkTimeRange }}
                     </p>
                   </div>
                 </div>
@@ -837,7 +838,13 @@ const soilpH = ref(null)
 const temperature = ref(null)
 const humidity = ref(null)
 const soilMoisture = ref(null)
-const sensorReadings = ref([]);
+
+// Refs for chart-specific data
+const soilMoistureReadings = ref([]);
+const humidityReadings = ref([]);
+const temperatureReadings = ref([]);
+const soilPhReadings = ref([]);
+const npkReadings = ref([]);
 
 let intervalId = null;
 
@@ -900,18 +907,21 @@ const metrics = [
 
 // Step 1: Calculate average values
 const avgNitrogen = computed(() => {
-  const total = sensorReadings.value.reduce((sum, r) => sum + (r.nitrogen || 0), 0);
-  return sensorReadings.value.length ? total / sensorReadings.value.length : 0;
+  if (!npkReadings.value || npkReadings.value.length === 0) return 0;
+  const total = npkReadings.value.reduce((sum, r) => sum + (r.nitrogen || 0), 0);
+  return total / npkReadings.value.length;
 });
 
 const avgPhosphorus = computed(() => {
-  const total = sensorReadings.value.reduce((sum, r) => sum + (r.phosphorus || 0), 0);
-  return sensorReadings.value.length ? total / sensorReadings.value.length : 0;
+  if (!npkReadings.value || npkReadings.value.length === 0) return 0;
+  const total = npkReadings.value.reduce((sum, r) => sum + (r.phosphorus || 0), 0);
+  return total / npkReadings.value.length;
 });
 
 const avgPotassium = computed(() => {
-  const total = sensorReadings.value.reduce((sum, r) => sum + (r.potassium || 0), 0);
-  return sensorReadings.value.length ? total / sensorReadings.value.length : 0;
+  if (!npkReadings.value || npkReadings.value.length === 0) return 0;
+  const total = npkReadings.value.reduce((sum, r) => sum + (r.potassium || 0), 0);
+  return total / npkReadings.value.length;
 });
 
 // Step 2: Normalize so total = 100%
@@ -991,136 +1001,105 @@ const loadWeather = async () => {
   }
 };
 
-onMounted(async () => {
-  isLoading.value = true;       // For top metric cards
-  isWeatherLoading.value = true; // For weather section
-  isChartsLoading.value = true;  // For charts section
+// onMounted(async () => {
+//   isLoading.value = true;       // For top metric cards
+//   isWeatherLoading.value = true; // For weather section
+//   isChartsLoading.value = true;  // For charts section
 
-  let weatherLoaded = false;
-  let topMetricsLoaded = false;
+//   let weatherLoaded = false;
+//   let topMetricsLoaded = false;
 
-  // Load weather data
-  try {
-    await loadWeather();
-    weatherLoaded = true;
-  } catch (error) {
-    console.error('Failed to load weather initially:', error);
-  } finally {
-    isWeatherLoading.value = false;
-  }
+//   // Load weather data
+//   try {
+//     await loadWeather();
+//     weatherLoaded = true;
+//   } catch (error) {
+//     console.error('Failed to load weather initially:', error);
+//   } finally {
+//     isWeatherLoading.value = false;
+//   }
   
-  // Fetch data for top cards
-  try {
-    await fetchLatestSensorDataFromFirebase();
-    topMetricsLoaded = true;
-  } catch (error) {
-    console.error('Failed to load top metric data:', error);
-  } finally {
-    isLoading.value = false; // Top metric cards loaded or failed
-  }
+//   // Fetch data for top cards
+//   try {
+//     await fetchLatestSensorDataFromFirebase();
+//     topMetricsLoaded = true;
+//   } catch (error) {
+//     console.error('Failed to load top metric data:', error);
+//   } finally {
+//     isLoading.value = false; // Top metric cards loaded or failed
+//   }
 
-  intervalId = setInterval(loadWeather, 600000); 
+//   intervalId = setInterval(loadWeather, 600000); 
 
-  const eventSource = new EventSource('http://localhost:8000/api/stream')
+//   const eventSource = new EventSource('http://localhost:8000/api/stream')
 
-  eventSource.onmessage = (event) => {
-    const data = JSON.parse(event.data)
+//   eventSource.onmessage = (event) => {
+//     const data = JSON.parse(event.data)
 
-    nitrogen.value = data.nitrogen
-    phosphorus.value = data.phosphorus
-    potassium.value = data.potassium
-    soilpH.value = data.soilPh
-    temperature.value = data.temperature
-    humidity.value = data.humidity
-    soilMoisture.value = data.soilMoisture
+//     nitrogen.value = data.nitrogen
+//     phosphorus.value = data.phosphorus
+//     potassium.value = data.potassium
+//     soilpH.value = data.soilPh
+//     temperature.value = data.temperature
+//     humidity.value = data.humidity
+//     soilMoisture.value = data.soilMoisture
 
-    console.log("🔁 Real-time data:", data)
-  }
+//     console.log("🔁 Real-time data:", data)
+//   }
 
-  await fetchLatestWaterLevel()
+//   await fetchLatestWaterLevel()
 
-  const eventWaterSource = new EventSource('http://localhost:8000/api/water-stream')
+//   const eventWaterSource = new EventSource('http://localhost:8000/api/water-stream')
 
-  eventWaterSource.onmessage = (event) => {
-    const data = JSON.parse(event.data)
+//   eventWaterSource.onmessage = (event) => {
+//     const data = JSON.parse(event.data)
 
-    if (data.type === 'water') {
-      waterLevel.value = data.data.waterLevel
-      console.log("💧 Updated Water Level:", waterLevel.value + "%")
-    }
-  }
+//     if (data.type === 'water') {
+//       waterLevel.value = data.data.waterLevel
+//       console.log("💧 Updated Water Level:", waterLevel.value + "%")
+//     }
+//   }
 
-  eventSource.onerror = (e) => {
-    console.error("❌ SSE Error:", e)
-  }
+//   eventSource.onerror = (e) => {
+//     console.error("❌ SSE Error:", e)
+//   }
   
-  // Fetch sensor data for charts
-  try {
-    await fetchSensorData();
-    await fetchMotorStatusData();
-    
-    // Now that data is fetched, prepare to render charts
-    isChartsLoading.value = false; // Make canvas elements appear
-    await nextTick();             // Wait for DOM update
-    initAllCharts();              // Initialize charts on the now-visible canvases
-  } catch (error) {
-    console.error("Error fetching sensor data or initializing charts:", error);
-    isChartsLoading.value = false; // Ensure loading is false on error, spinners hide
-    // Optionally, call createChartsWithSampleData() here or display an error message for charts
-  }
-})
+//   // Fetch chart data and motor status in parallel
+//   try {
+//     await Promise.all([
+//       fetchDeviceChartData('esp32-2', '24h', [soilMoistureReadings, humidityReadings, temperatureReadings]),
+//       fetchDeviceChartData('esp32-1', '24h', [soilPhReadings]),
+//       fetchDeviceChartData('esp32-1', '7d', [npkReadings]),
+//       fetchMotorStatusData()
+//     ]);
 
-watch(sensorReadings, (newVal) => {
-  if (newVal && newVal.length > 0) {
-    initAllCharts(); // Re-initialize charts when sensorReadings updates
-    isInitialRender.value = false;
-    getSoilMoistureStatus();
-    getHumidityStatus();
-    getTemperatureStatus();
-    getPhStatus();
-  }
-});
+//     isChartsLoading.value = false;
+//     await nextTick();
 
-const unsubscribeListeners = []; // To store unsubscribe functions if needed later
+//     // Initial chart render
+//     initSoilMoistureChart();
+//     initHumidityChart();
+//     initTemperatureChart();
+//     initSoilPhChart();
+//     initNpkChart();
 
-const fetchSensorData = () => {
-  const deviceIds = ['esp32-1', 'esp32-2', 'esp32-3'];
-  const allDeviceData = {};
+//   } catch (error) {
+//     console.error("Error fetching initial data for charts:", error);
+//     isChartsLoading.value = false;
+//     createChartsWithSampleData();
+//   }
+// })
 
-  deviceIds.forEach(deviceId => {
-    const readingsQuery = query(
-      collection(db, '3sensor_readings', deviceId, 'readings'),
-      orderBy('timestamp', 'desc'),
-      limit(20)
-    );
 
-    const unsubscribe = onSnapshot(readingsQuery, (snapshot) => {
-      const readings = snapshot.docs.map(doc => {
-        const data = doc.data();
-        const timestamp = data.timestamp;
-        const jsDate = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp.seconds * 1000);
-        return {
-          id: doc.id,
-          deviceId,
-          ...data,
-          timestamp: jsDate,
-        };
-      });
 
-      allDeviceData[deviceId] = readings;
+// Call this in your onMounted hook if you're still having issues
+// await debugCollectionStructure();
 
-      // Flatten all readings and sort by timestamp (desc)
-      const mergedReadings = Object.values(allDeviceData).flat().sort((a, b) => b.timestamp - a.timestamp);
-      sensorReadings.value = mergedReadings;
-
-      console.log(`📡 Real-time update from ${deviceId}, ${readings.length} readings`);
-    }, (error) => {
-      console.error(`❌ Real-time listener error on ${deviceId}:`, error);
-    });
-
-    unsubscribeListeners.push(unsubscribe);
-  });
-};
+watch(soilMoistureReadings, () => initSoilMoistureChart(), { deep: true });
+watch(humidityReadings, () => initHumidityChart(), { deep: true });
+watch(temperatureReadings, () => initTemperatureChart(), { deep: true });
+watch(soilPhReadings, () => initSoilPhChart(), { deep: true });
+watch(npkReadings, () => initNpkChart(), { deep: true });
 
 const fetchLatestSensorDataFromFirebase = async () => {
   // Ensure isLoading is true at the start if this function is responsible for initial load
@@ -1259,215 +1238,279 @@ const fetchMotorStatusData = async () => {
   }
 }
 
+const mapSnapshotToReadings = (snapshot, deviceId) => {
+  return snapshot.docs.map(doc => {
+    const data = doc.data();
+    let timestamp;
+    
+    if (data.timestamp?.toDate) {
+      timestamp = data.timestamp.toDate();
+    } else if (data.timestamp?.seconds) {
+      timestamp = new Date(data.timestamp.seconds * 1000);
+    } else if (data.timestamp instanceof Date) {
+      timestamp = data.timestamp;
+    } else {
+      console.warn('Unknown timestamp format in document:', doc.id);
+      timestamp = new Date(); // fallback to current time
+    }
+
+    return {
+      id: doc.id,
+      deviceId,
+      ...data,
+      timestamp: timestamp
+    };
+  }).filter(reading => {
+    // Filter out any readings that might have invalid data
+    return (
+      reading.timestamp instanceof Date && 
+      !isNaN(reading.timestamp.getTime())
+    );
+  });
+};
+
+const fetchDeviceChartData = async (deviceId, timeRange, targetRefs) => {
+  const now = new Date();
+  let startDate;
+  const minDataPoints = 6; // Minimum data points we want to display
+  
+  // Define base time ranges
+  const baseRange = timeRange === '24h' ? 24 : 7 * 24;
+  let currentRangeHours = baseRange;
+  
+  try {
+    let readings = [];
+    let sufficientData = false;
+    let attempts = 0;
+    const maxAttempts = 5; // Maximum extension attempts to prevent infinite loops
+    
+    // Keep extending the time range until we have enough data points
+    while (!sufficientData && attempts < maxAttempts) {
+      startDate = new Date(now.getTime() - currentRangeHours * 60 * 60 * 1000);
+      
+      const queryRef = query(
+        collection(db, '3sensor_readings', deviceId, 'readings'),
+        where('timestamp', '>=', Timestamp.fromDate(startDate)),
+        orderBy('timestamp', 'asc')
+      );
+      
+      const snapshot = await getDocs(queryRef);
+      readings = mapSnapshotToReadings(snapshot, deviceId);
+      
+      // Check if we have enough data points
+      if (readings.length >= minDataPoints) {
+        sufficientData = true;
+      } else {
+        // Double the time range for next attempt
+        currentRangeHours *= 2;
+        attempts++;
+      }
+    }
+    
+    // Update all target refs with the fetched readings
+    targetRefs.forEach(ref => {
+      ref.value = readings;
+    });
+
+    // Set up real-time listener using the final range
+    const finalQueryRef = query(
+      collection(db, '3sensor_readings', deviceId, 'readings'),
+      where('timestamp', '>=', Timestamp.fromDate(startDate)),
+      orderBy('timestamp', 'asc')
+    );
+    
+    const unsubscribe = onSnapshot(finalQueryRef, (snapshot) => {
+      const updatedReadings = mapSnapshotToReadings(snapshot, deviceId);
+      targetRefs.forEach(ref => {
+        ref.value = updatedReadings;
+      });
+    });
+
+    firestoreListenersUnsubscribers.value.push(unsubscribe);
+    
+    return readings;
+  } catch (error) {
+    console.error(`Error fetching ${timeRange} data for ${deviceId}:`, error);
+    return [];
+  }
+};
+
+const formatTimeLabel = (timestamp) => {
+  const date = timestamp?.toDate?.() || new Date(timestamp);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+// Format date for chart labels
+const formatDateLabel = (timestamp) => {
+  const date = timestamp?.toDate?.() || new Date(timestamp);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 const isInitialChartRender = ref(true);
 const isInitialRender = ref(true);
 
-// ✅ FIXED: Improved chart initialization with better error handling and data validation
-const initAllCharts = () => {
+const initSoilMoistureChart = () => {
+  // if (!soilMoistureChartRef.value || soilMoistureReadings.value.length === 0) return;
+  if (!soilMoistureChartRef.value) return;
   try {
-    console.log("🎯 Initializing all charts...");
-    console.log("📊 Sensor readings available:", sensorReadings.value.length);
-    
-    if (!sensorReadings.value.length) {
-      console.warn("⚠️ No sensor readings available for charts");
-      createChartsWithSampleData(); 
-      return;
+    if (soilMoistureChartInstance.value) {
+      soilMoistureChartInstance.value.destroy();
     }
 
-    const readings = sensorReadings.value.slice(0, 10).reverse();
-    const labels = readings.map(r => {
-      const date = new Date(r.timestamp);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const labels = soilMoistureReadings.value.map(r => formatTimeLabel(r.timestamp));
+    const data = soilMoistureReadings.value.map(r => r.soilMoisture || 0);
+    const maxY = Math.max(...data, 50);
+
+    soilMoistureChartInstance.value = new Chart(soilMoistureChartRef.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Soil Moisture (%)',
+          data,
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#10b981',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: getChartOptions('Soil Moisture', '%', maxY, true)
     });
+  } catch (error) {
+    console.error("Error initializing soil moisture chart:", error);
+  }
+};
 
-    const extractData = (key) => {
-      const data = readings.map(r => r[key]).filter(val => val !== null && val !== undefined);
-      return data.length > 0 ? readings.map(r => r[key] || 0) : [0, 0, 0, 0, 0];
-    };
-
-    const animationSetting = isInitialChartRender.value;
-
-    // Soil Moisture Chart
-    if (soilMoistureChartRef.value) {
-      const data = extractData('soilMoisture');
-      const maxY = Math.max(...data, 50);
-
-      if (soilMoistureChartInstance.value) soilMoistureChartInstance.value.destroy();
-
-      soilMoistureChartInstance.value = new Chart(soilMoistureChartRef.value.getContext('2d'), {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Soil Moisture (%)',
-            data,
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            fill: true,
-            tension: 0.4,
-            borderWidth: 3,
-            pointRadius: 4,
-            pointBackgroundColor: '#10b981',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 2
-          }]
-        },
-        options: {
-          animation: animationSetting,
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: true, position: 'top' }},
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: Math.ceil(maxY / 10) * 10,
-              ticks: { stepSize: 10, callback: v => v + '%' },
-              grid: { color: 'rgba(16, 185, 129, 0.1)' }
-            },
-            x: { grid: { display: false } }
-          }
-        }
-      });
+const initHumidityChart = () => {
+  // if (!humidityChartRef.value || humidityReadings.value.length === 0) return;
+  if (!humidityChartRef.value) return;
+  try {
+    if (humidityChartInstance.value) {
+      humidityChartInstance.value.destroy();
     }
 
-    // Humidity Chart
-    if (humidityChartRef.value) {
-      const data = extractData('humidity');
-      const maxY = Math.max(...data, 50);
+    const labels = humidityReadings.value.map(r => formatTimeLabel(r.timestamp));
+    const data = humidityReadings.value.map(r => r.humidity || 0);
+    const maxY = Math.max(...data, 50);
 
-      if (humidityChartInstance.value) humidityChartInstance.value.destroy();
+    humidityChartInstance.value = new Chart(humidityChartRef.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Humidity (%)',
+          data,
+          borderColor: '#0ea5e9',
+          backgroundColor: 'rgba(14, 165, 233, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#0ea5e9',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: getChartOptions('Humidity', '%', maxY, true)
+    });
+  } catch (error) {
+    console.error("Error initializing humidity chart:", error);
+  }
+};
 
-      humidityChartInstance.value = new Chart(humidityChartRef.value.getContext('2d'), {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Humidity (%)',
-            data,
-            borderColor: '#0ea5e9',
-            backgroundColor: 'rgba(14, 165, 233, 0.1)',
-            fill: true,
-            tension: 0.4,
-            borderWidth: 3,
-            pointRadius: 4,
-            pointBackgroundColor: '#0ea5e9',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 2
-          }]
-        },
-        options: {
-          animation: animationSetting,
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: true, position: 'top' }},
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: Math.ceil(maxY / 10) * 10,
-              ticks: { stepSize: 10, callback: v => v + '%' },
-              grid: { color: 'rgba(14, 165, 233, 0.1)' }
-            },
-            x: { grid: { display: false } }
-          }
-        }
-      });
+const initTemperatureChart = () => {
+  // if (!temperatureChartRef.value || temperatureReadings.value.length === 0) return;
+  if (!temperatureChartRef.value) return;
+  try {
+    if (temperatureChartInstance.value) {
+      temperatureChartInstance.value.destroy();
     }
 
-    // Temperature Chart
-    if (temperatureChartRef.value) {
-      const data = extractData('temperature');
-      const maxY = Math.max(...data, 30);
+    const labels = temperatureReadings.value.map(r => formatTimeLabel(r.timestamp));
+    const data = temperatureReadings.value.map(r => r.temperature || 0);
+    const maxY = Math.max(...data, 30);
 
-      if (temperatureChartInstance.value) temperatureChartInstance.value.destroy();
+    temperatureChartInstance.value = new Chart(temperatureChartRef.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Temperature (°C)',
+          data,
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#ef4444',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: getChartOptions('Temperature', '°C', maxY, true)
+    });
+  } catch (error) {
+    console.error("Error initializing temperature chart:", error);
+  }
+};
 
-      temperatureChartInstance.value = new Chart(temperatureChartRef.value.getContext('2d'), {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Temperature (°C)',
-            data,
-            borderColor: '#ef4444',
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            fill: true,
-            tension: 0.4,
-            borderWidth: 3,
-            pointRadius: 4,
-            pointBackgroundColor: '#ef4444',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 2
-          }]
-        },
-        options: {
-          animation: animationSetting,
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: true, position: 'top' }},
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: Math.ceil(maxY / 5) * 5,
-              ticks: { stepSize: 5, callback: v => v + '°C' },
-              grid: { color: 'rgba(239, 68, 68, 0.1)' }
-            },
-            x: { grid: { display: false } }
-          }
-        }
-      });
+const initSoilPhChart = () => {
+  // if (!soilPhChartRef.value || soilPhReadings.value.length === 0) return;
+  if (!soilPhChartRef.value) return;  
+  try {
+    if (soilPhChartInstance.value) {
+      soilPhChartInstance.value.destroy();
     }
 
-    // Soil pH Chart
-    if (soilPhChartRef.value) {
-      const data = extractData('soilPh');
-      const minY = Math.min(...data, 7);
-      const maxY = Math.max(...data, 7);
+    const labels = soilPhReadings.value.map(r => formatTimeLabel(r.timestamp));
+    const data = soilPhReadings.value.map(r => r.soilPh || 0);
+    const minY = Math.min(...data, 7);
+    const maxY = Math.max(...data, 7);
 
-      if (soilPhChartInstance.value) soilPhChartInstance.value.destroy();
+    soilPhChartInstance.value = new Chart(soilPhChartRef.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Soil pH',
+          data,
+          borderColor: '#f97316',
+          backgroundColor: 'rgba(249, 115, 22, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#f97316',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: getChartOptions('Soil pH', '', maxY, false, minY)
+    });
+  } catch (error) {
+    console.error("Error initializing soil pH chart:", error);
+  }
+};
 
-      soilPhChartInstance.value = new Chart(soilPhChartRef.value.getContext('2d'), {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Soil pH',
-            data,
-            borderColor: '#f97316',
-            backgroundColor: 'rgba(249, 115, 22, 0.1)',
-            fill: true,
-            tension: 0.4,
-            borderWidth: 3,
-            pointRadius: 4,
-            pointBackgroundColor: '#f97316',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 2
-          }]
-        },
-        options: {
-          animation: animationSetting,
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: true, position: 'top' }},
-          scales: {
-            y: {
-              beginAtZero: false,
-              min: Math.max(0, minY - 1),
-              max: maxY + 1,
-              ticks: { stepSize: 0.5 },
-              grid: { color: 'rgba(249, 115, 22, 0.1)' }
-            },
-            x: { grid: { display: false } }
-          }
-        }
-      });
-    }
+const initNpkChart = () => {
+  if (performanceChartRef.value) {
+    const readings = npkReadings.value;
+    const labels = readings.map(r => {
+    const date = new Date(r.timestamp);
+      return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    });
+    const nitrogenData = readings.map(r => r.nitrogen || 0);
+    const phosphorusData = readings.map(r => r.phosphorus || 0);
+    const potassiumData = readings.map(r => r.potassium || 0);
 
-    // NPK Chart
-    if (performanceChartRef.value) {
-      const nitrogenData = extractData('nitrogen');
-      const phosphorusData = extractData('phosphorus');
-      const potassiumData = extractData('potassium');
+    if (nitrogenData.length > 0 || phosphorusData.length > 0 || potassiumData.length > 0) {
       const maxY = Math.ceil(Math.max(...nitrogenData, ...phosphorusData, ...potassiumData, 50) / 10) * 10;
-
       if (performanceChartInstance.value) performanceChartInstance.value.destroy();
 
       performanceChartInstance.value = new Chart(performanceChartRef.value.getContext('2d'), {
@@ -1517,7 +1560,7 @@ const initAllCharts = () => {
           ]
         },
         options: {
-          animation: animationSetting,
+          animation: isInitialChartRender.value,
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
@@ -1554,15 +1597,201 @@ const initAllCharts = () => {
         }
       });
     }
-
-    // 🔄 Disable animation for next update
-    isInitialChartRender.value = false;
-
-    console.log("✅ All charts initialized successfully!");
-  } catch (error) {
-    console.error("❌ Error during chart initialization:", error);
   }
 };
+
+const getChartOptions = (title, unit, maxY, beginAtZero = true, minY = 0) => {
+  return {
+    animation: isInitialChartRender.value,
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+        labels: {
+          usePointStyle: true,
+          padding: 20
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `${context.dataset.label}: ${context.parsed.y}${unit}`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero,
+        min: minY,
+        max: maxY,
+        ticks: {
+          callback: value => `${value}${unit}`,
+          color: '#6B7280'
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)'
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: '#6B7280'
+        }
+      }
+    }
+  };
+};
+
+watch([soilMoistureReadings, soilMoistureChartRef], () => {
+  if (soilMoistureChartRef.value) initSoilMoistureChart();
+}, { deep: true });
+
+watch([humidityReadings, humidityChartRef], () => {
+  if (humidityChartRef.value) initHumidityChart();
+}, { deep: true });
+
+watch([temperatureReadings, temperatureChartRef], () => {
+  if (temperatureChartRef.value) initTemperatureChart();
+}, { deep: true });
+
+watch([soilPhReadings, soilPhChartRef], () => {
+  if (soilPhChartRef.value) initSoilPhChart();
+}, { deep: true });
+
+watch([npkReadings, performanceChartRef], () => {
+  if (performanceChartRef.value) initNpkChart();
+}, { deep: true });
+
+const initAllCharts = () => {
+  initSoilMoistureChart();
+  initHumidityChart();
+  initTemperatureChart();
+  initSoilPhChart();
+  initNpkChart();
+  isInitialChartRender.value = false;
+};
+
+// Destroy all charts
+const destroyAllCharts = () => {
+  [soilMoistureChartInstance, humidityChartInstance, 
+   temperatureChartInstance, soilPhChartInstance, 
+   performanceChartInstance].forEach(chart => {
+    if (chart.value) {
+      chart.value.destroy();
+      chart.value = null;
+    }
+  });
+};
+
+onMounted(async () => {
+  isLoading.value = true;
+  isWeatherLoading.value = true;
+  isChartsLoading.value = true;
+
+  try {
+    // Load initial data
+    await Promise.all([
+      loadWeather(),
+      fetchLatestSensorDataFromFirebase(),
+      fetchLatestWaterLevel()
+    ]);
+
+    // Set up real-time data streams
+    const eventSource = new EventSource('http://localhost:8000/api/stream');
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      nitrogen.value = data.nitrogen;
+      phosphorus.value = data.phosphorus;
+      potassium.value = data.potassium;
+      soilpH.value = data.soilPh;
+      temperature.value = data.temperature;
+      humidity.value = data.humidity;
+      soilMoisture.value = data.soilMoisture;
+    };
+
+    // Fetch chart data from each device separately
+    const results = await Promise.allSettled([
+      // esp32-2 for environmental readings
+      fetchDeviceChartData('esp32-2', '24h', [soilMoistureReadings]),
+      fetchDeviceChartData('esp32-2', '24h', [humidityReadings]),
+      fetchDeviceChartData('esp32-2', '24h', [temperatureReadings]),
+
+      // esp32-1 for soil pH and NPK data
+      fetchDeviceChartData('esp32-1', '24h', [soilPhReadings]),
+      fetchDeviceChartData('esp32-1', '7d', [npkReadings]),
+
+      // Optional: motor status if needed
+      fetchMotorStatusData()
+    ]);
+
+    // Log any failed fetches
+    results.forEach(result => {
+      if (result.status === 'rejected') {
+        console.error('Fetch error:', result.reason);
+      }
+    });
+
+    // Initialize charts after data is loaded
+    await nextTick();
+    initAllCharts();
+
+    // Fallback if data is missing
+    if (
+      soilMoistureReadings.value.length === 0 ||
+      humidityReadings.value.length === 0 ||
+      temperatureReadings.value.length === 0
+    ) {
+      console.warn('Insufficient data - falling back to sample data');
+      createChartsWithSampleData();
+    }
+  } catch (error) {
+    console.error("Initialization error:", error);
+    createChartsWithSampleData();
+  } finally {
+    isLoading.value = false;
+    isWeatherLoading.value = false;
+    isChartsLoading.value = false;
+  }
+});
+
+const getTimeRangeLabel = (readings, isWeekly = false) => {
+  if (readings.length === 0) return isWeekly ? 'No Data' : 'No Recent Data';
+  
+  const first = readings[0].timestamp;
+  const last = readings[readings.length - 1].timestamp;
+  const diffHours = Math.abs(last - first) / 36e5;
+  const diffDays = Math.ceil(diffHours / 24);
+  
+  if (isWeekly) {
+    if (diffDays <= 7) return 'Last 7 Days';
+    if (diffDays <= 14) return 'Last 14 Days';
+    return `Last ${diffDays} Days`;
+  }
+  
+  if (diffHours <= 24) return 'Last 24 Hours';
+  if (diffHours <= 48) return 'Last 48 Hours';
+  return `Last ${Math.ceil(diffHours)} Hours`;
+};
+
+const soilMoistureTimeRange = computed(() => 
+  getTimeRangeLabel(soilMoistureReadings.value));
+
+const humidityTimeRange = computed(() => 
+  getTimeRangeLabel(humidityReadings.value));
+
+const temperatureTimeRange = computed(() => 
+  getTimeRangeLabel(temperatureReadings.value));
+
+const soilPhTimeRange = computed(() => 
+  getTimeRangeLabel(soilPhReadings.value));
+
+const npkTimeRange = computed(() => 
+  getTimeRangeLabel(npkReadings.value, true));
 
 // ✅ ADDED: Fallback function to create charts with sample data
 const createChartsWithSampleData = () => {
@@ -1695,27 +1924,6 @@ const createChartsWithSampleData = () => {
   }
 };
 
-const todayReading = computed(() => {
-  // Prioritize the latest real-time soilpH value if available,
-  // otherwise fall back to the latest reading from the fetched history
-  return soilpH.value !== null && soilpH.value !== undefined
-    ? { soilPh: soilpH.value } // Create a temporary object structure matching sensorReadings
-    : (sensorReadings.value.length > 0 ? sensorReadings.value[0] : null);
-});
-const yesterdayReading = computed(() => {
-  const now = new Date();
-  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-  return sensorReadings.value.find(r => {
-    const ts = new Date(r.timestamp);
-    return ts < oneDayAgo; // First reading older than 24h
-  }) || sensorReadings.value.find(r => {
-    // Fallback: find any reading that is not the very latest one,
-    // assuming the sensorReadings array is sorted descending by time.
-    return r !== sensorReadings.value[0];
-  }) || null;
-});
-
 function getChange(current, previous) {
   const currentVal = parseFloat(current);
   const previousVal = parseFloat(previous);
@@ -1749,36 +1957,30 @@ function getChange(current, previous) {
   };
 }
 
-const soilMoistureChange = computed(() => {
-  return getChange(todayReading.value?.soilMoisture, yesterdayReading.value?.soilMoisture);
-});
+const createChangeComputed = (readingsRef, key) => {
+  return computed(() => {
+    if (!readingsRef.value || readingsRef.value.length < 2) {
+      return null;
+    }
+    const currentVal = readingsRef.value[readingsRef.value.length - 1]?.[key];
+    const previousVal = readingsRef.value[0]?.[key];
+    return getChange(currentVal, previousVal);
+  });
+};
 
-const humidityChange = computed(() => {
-  return getChange(todayReading.value?.humidity, yesterdayReading.value?.humidity);
-});
+const soilMoistureChange = createChangeComputed(soilMoistureReadings, 'soilMoisture');
+const humidityChange = createChangeComputed(humidityReadings, 'humidity');
+const temperatureChange = createChangeComputed(temperatureReadings, 'temperature');
+const soilPhChange = createChangeComputed(soilPhReadings, 'soilPh');
 
-const temperatureChange = computed(() => {
-  return getChange(todayReading.value?.temperature, yesterdayReading.value?.temperature);
-});
+const latestSoilMoisture = computed(() => soilMoisture.value ?? (soilMoistureReadings.value.length > 0 ? soilMoistureReadings.value[soilMoistureReadings.value.length - 1].soilMoisture : null));
+const latestHumidity = computed(() => humidity.value ?? (humidityReadings.value.length > 0 ? humidityReadings.value[humidityReadings.value.length - 1].humidity : null));
+const latestTemperature = computed(() => temperature.value ?? (temperatureReadings.value.length > 0 ? temperatureReadings.value[temperatureReadings.value.length - 1].temperature : null));
+const latestSoilPh = computed(() => soilpH.value ?? (soilPhReadings.value.length > 0 ? soilPhReadings.value[soilPhReadings.value.length - 1].soilPh : null));
 
-const soilPhChange = computed(() => {
-  // Attempt to get current pH value, checking both common property names
-  const currentPhValue = todayReading.value 
-    ? (todayReading.value.soilPh ?? todayReading.value.soilpH) 
-    : undefined;
-  // Attempt to get previous pH value, checking both common property names
-  const previousPhValue = yesterdayReading.value 
-    ? (yesterdayReading.value.soilPh ?? yesterdayReading.value.soilpH) 
-    : undefined;
-  return getChange(currentPhValue, previousPhValue);
-});
-
-
-const readings = sensorReadings.value.slice(0, 8).reverse();
-
-const nitrogenData = readings.map(r => r.nitrogen || 0);
-const phosphorusData = readings.map(r => r.phosphorus || 0);
-const potassiumData = readings.map(r => r.potassium || 0);
+const nitrogenData = computed(() => npkReadings.value.map(r => r.nitrogen || 0));
+const phosphorusData = computed(() => npkReadings.value.map(r => r.phosphorus || 0));
+const potassiumData = computed(() => npkReadings.value.map(r => r.potassium || 0));
 
 function getSoilMoistureStatus(value) {
   const val = Number(value);
@@ -1831,14 +2033,14 @@ function getPhStatus(value) {
 
 
 // Get highest value among all NPK
-const maxNpk = Math.max(
-  ...nitrogenData,
-  ...phosphorusData,
-  ...potassiumData
-);
+const maxNpk = computed(() => Math.max(
+  ...(nitrogenData.value || [0]),
+  ...(phosphorusData.value || [0]),
+  ...(potassiumData.value || [0])
+));
 
 // Round up to nearest multiple of 10 (for clean y-axis)
-const maxY = Math.ceil(maxNpk / 10) * 10;
+const maxY = computed(() => Math.ceil(maxNpk.value / 10) * 10);
 
 const getMaxY = (data, step = 10) => {
   const max = Math.max(...data);

@@ -84,7 +84,7 @@
             Enter your phone number and we'll send you a verification code to reset your password
           </p>
 
-          <!-- Step 1: Phone Number Input -->
+          <!-- Step 1: Email Input -->
           <form v-if="currentStep === 1" @submit.prevent="handleSendResetCode" class="space-y-4">
             <div>
               <label for="phoneNumber" class="block text-sm font-medium text-gray-700">Phone Number</label>
@@ -154,101 +154,66 @@
             </div>
           </form>
 
-          <!-- Step 3: New Password / PIN -->
+          <!-- Step 3: New Password -->
           <form v-if="currentStep === 3" @submit.prevent="handleResetPassword" class="space-y-4">
-            <div class="text-center mb-4">
-              <p class="text-sm text-gray-600">Choose how you'd like to secure your account.</p>
+            <div class="text-center mb-6">
+              <p class="text-sm text-gray-600">Create a password that's both secure and easy to remember.</p>
             </div>
-
-            <!-- Auth Type Choice -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Choose New Login Type</label>
-              <div class="flex gap-2">
-                <button
+              <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
+              <div class="relative">
+                <input 
+                  :type="showPassword ? 'text' : 'password'"
+                  id="newPassword" 
+                  v-model="newPassword"
+                  required 
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
+                />
+                <button 
                   type="button"
-                  @click="resetAuthType = 'password'"
-                  :class="[
-                    'px-4 py-1.5 rounded-md text-sm font-medium transition w-full',
-                    resetAuthType === 'password'
-                      ? 'bg-[#2B5329] text-white shadow'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  ]"
+                  @click="showPassword = !showPassword"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                 >
-                  New Password
-                </button>
-                <button
-                  type="button"
-                  @click="resetAuthType = 'pin'"
-                  :class="[
-                    'px-4 py-1.5 rounded-md text-sm font-medium transition w-full',
-                    resetAuthType === 'pin'
-                      ? 'bg-[#2B5329] text-white shadow'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  ]"
-                >
-                  New 4-digit PIN
+                  <Eye v-if="!showPassword" class="h-4 w-4" />
+                  <EyeOff v-else class="h-4 w-4" />
                 </button>
               </div>
             </div>
 
-            <!-- Password Inputs -->
-            <div v-if="resetAuthType === 'password'" class="space-y-4">
-              <div>
-                <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
-                <div class="relative">
-                  <input 
-                    :type="showPassword ? 'text' : 'password'"
-                    id="newPassword" 
-                    v-model="newPassword"
-                    required 
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
-                  />
-                  <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    <Eye v-if="!showPassword" class="h-4 w-4" /><EyeOff v-else class="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
-                <div class="relative">
-                  <input 
-                    :type="showConfirmPassword ? 'text' : 'password'"
-                    id="confirmPassword" 
-                    v-model="confirmPassword"
-                    required 
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
-                  />
-                  <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    <Eye v-if="!showConfirmPassword" class="h-4 w-4" /><EyeOff v-else class="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- PIN Inputs -->
-            <div v-else class="space-y-4">
-              <div>
-                <label for="newPin" class="block text-sm font-medium text-gray-700">New 4-digit PIN</label>
-                <input id="newPin" type="password" v-model="newPin" required maxlength="4" pattern="\d*" inputmode="numeric" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]" />
-              </div>
-              <div>
-                <label for="confirmNewPin" class="block text-sm font-medium text-gray-700">Confirm PIN</label>
-                <input id="confirmNewPin" type="password" v-model="confirmNewPin" required maxlength="4" pattern="\d*" inputmode="numeric" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]" />
+            <div>
+              <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+              <div class="relative">
+                <input 
+                  :type="showConfirmPassword ? 'text' : 'password'"
+                  id="confirmPassword" 
+                  v-model="confirmPassword"
+                  required 
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
+                />
+                <button 
+                  type="button"
+                  @click="showConfirmPassword = !showConfirmPassword"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                >
+                  <Eye v-if="!showConfirmPassword" class="h-4 w-4" />
+                  <EyeOff v-else class="h-4 w-4" />
+                </button>
               </div>
             </div>
 
             <button 
-              type="submit" :disabled="isLoading"
+              type="submit" :isLoading="false"
               class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
             >
-              {{ isLoading ? "Resetting..." : "Reset Credentials" }}
+              {{ isLoading ? "Reseting Password..." : "Reset Password" }}
             </button>
           </form>
         </div>
         <LoadingPage 
           :is-visible="isLoading"
-          :title="loadingTitle"
-          message="Please wait while we process your request..."
+          title="Sending Verification Code..."
+          message="Please wait while we set up your new account"
+          @loading-complete="onLoadingComplete"
         />
       </div>
     </div>
@@ -256,7 +221,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-vue-next'
 import api from '../../api/index.js'
@@ -279,18 +244,7 @@ const resendTimer = ref(0)
 const isLoading = ref(false);
 let resendInterval = null
 
-const resetAuthType = ref('password') // 'password' or 'pin'
-const newPin = ref('')
-const confirmNewPin = ref('')
-
 const db = getFirestore();
-
-const loadingTitle = computed(() => {
-  if (currentStep.value === 1) return "Sending Verification Code...";
-  if (currentStep.value === 2) return "Verifying Code...";
-  if (currentStep.value === 3) return "Resetting Credentials...";
-  return "Loading...";
-});
 
 function isValidPhilippinePhoneNumber(number) {
   const cleaned = number.trim();
@@ -524,69 +478,36 @@ const handleVerifyCode = async () => {
 
 
 const handleResetPassword = async () => {
-  isLoading.value = true;
-
-  const formattedPhone = toE164(phoneNumber.value);
-  if (!formattedPhone) {
-    toastr.error('Invalid phone number format.');
-    isLoading.value = false;
+  isLoading.value = false; // Show loading state
+  // Check if the new password and confirm password match
+  if (newPassword.value !== confirmPassword.value) {
+    toastr.warning('Passwords do not match!');
     return;
   }
 
-  const updateData = {
-    authType: resetAuthType.value,
-    updatedAt: serverTimestamp()
-  };
-
-  if (resetAuthType.value === 'password') {
-    if (newPassword.value !== confirmPassword.value) {
-      toastr.warning('Passwords do not match!');
-      isLoading.value = false;
-      return;
-    }
-    if (newPassword.value.length < 6) {
-      toastr.warning('Password must be at least 6 characters long.');
-      isLoading.value = false;
-      return;
-    }
-    updateData.password = newPassword.value;
-    updateData.pin = ''; // Clear PIN when setting a password
-  } else { // authType is 'pin'
-    if (newPin.value !== confirmNewPin.value) {
-      toastr.warning('PINs do not match!');
-      isLoading.value = false;
-      return;
-    }
-    if (!/^\d{4}$/.test(newPin.value)) {
-        toastr.warning('PIN must be 4 digits.');
-        isLoading.value = false;
-        return;
-    }
-    updateData.pin = newPin.value;
-    updateData.password = ''; // Clear password when setting a PIN
+  // Check if password meets any required criteria (e.g., length, strength)
+  if (newPassword.value.length < 6) {
+    toastr.warning('Password must be at least 6 characters long.');
+    return;
   }
-
+ // Show loading state
   try {
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('phoneNumber', '==', formattedPhone));
-    const snapshot = await getDocs(q);
+    isLoading.value = true; // Show loading state
+    // Send request to backend to reset the password
+    const response = await api.post("/auth/reset-password", {
+      phoneNumber: toE164(phoneNumber.value), // User's phone number
+      new_password: newPassword.value, // New password
+    });
 
-    if (snapshot.empty) {
-      toastr.error('Could not find an account with that phone number.');
-      isLoading.value = false;
-      return;
-    }
+    toastr.success(response.data.message); // Notify the user
+    router.push('/login'); // Redirect to login page after password is reset
 
-    const userDocRef = snapshot.docs[0].ref;
-    await updateDoc(userDocRef, updateData);
-
-    toastr.success('Your credentials have been reset successfully.');
-    router.push('/login');
   } catch (error) {
-    console.error("Error resetting password:", error);
-    toastr.error("An error occurred while resetting your credentials.");
+    isLoading.value = false; // Hide loading state
+    console.error("Error resetting password:", error.response?.data || error);
+    toastr.error(error.response?.data?.detail || "Error resetting password.");
   } finally {
-    isLoading.value = false;
+    isLoading.value = false; // Hide loading state
   }
 };
 

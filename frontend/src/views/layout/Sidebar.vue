@@ -841,59 +841,106 @@ let unsubscribeSchedules = null;
 
 const fetchWateringSchedules = () => {
   const schedulesRef = collection(db, 'watering_schedules');
-  const schedulesQuery = query(schedulesRef, orderBy('dateTime', 'desc')); // Consider ordering by scheduledTime for consistency
+  const schedulesQuery = query(schedulesRef, orderBy('scheduledTime', 'asc'));
 
-  if (unsubscribeSchedules) unsubscribeSchedules();
+  if (unsubscribeSchedules) unsubscribeSchedules(); // Clean up previous listener
 
-  unsubscribeSchedules = onSnapshot(
-    schedulesQuery,
-    (snapshot) => {
-      const now = Date.now();
-      const schedules = [];
+  unsubscribeSchedules = onSnapshot(schedulesQuery, async (snapshot) => {
+    const schedules = [];
+    const now = Date.now();
 
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const scheduleId = doc.id;
-        const currentScheduleData = { id: scheduleId, ...data };
+    snapshot.docChanges().forEach(async (change) => {
+      const docSnap = change.doc;
+      const data = docSnap.data();
+      const scheduleId = docSnap.id;
 
-        // Normalize scheduledTime to ms
-        if (currentScheduleData.scheduledTime && currentScheduleData.scheduledTime < 1e12) {
-          currentScheduleData.scheduledTime *= 1000;
-        }
+      // Normalize timestamp if needed
+      if (data.scheduledTime && data.scheduledTime < 1e12) {
+        data.scheduledTime = data.scheduledTime * 1000;
+      }
 
-        const previousScheduleState = previousSchedulesMap.get(scheduleId);
+      // ✅ Check for schedule marked as completed
+      // if (change.type === 'modified' && data.completed === true) {
+      //   try {
+      //     const motorRef = doc(db, 'motor_status', 'current');
+      //     const motorSnapshot = await getDoc(motorRef);
 
-        // Auto-mark as completed if past and not recurring
-        if (currentScheduleData.mode === 'one-time' && currentScheduleData.scheduledTime < now && currentScheduleData.completed === false) {
-          updateDoc(doc(db, 'watering_schedules', scheduleId), { completed: true, updatedAt: serverTimestamp() })
-            .then(() => console.log(`Auto-marked schedule ${scheduleId} as completed.`))
-            .catch(err => console.error("Error auto-updating schedule:", err));
-          // The onSnapshot will pick this change up again, and currentScheduleData.completed will be true in a subsequent callback.
-        }
+      //     if (motorSnapshot.exists()) {
+      //       const motorData = motorSnapshot.data();
 
-        // Check for 'completed' transition for END notification
-        if (previousScheduleState && previousScheduleState.completed === false && currentScheduleData.completed === true) {
-          if (!notifiedEndIds.has(scheduleId)) {
-            // Check if the schedule's end time was relatively recent to avoid old notifications
-            const scheduleEndTime = currentScheduleData.scheduledTime + (currentScheduleData.duration || 0) * 60000;
-            if (Math.abs(now - scheduleEndTime) < 5 * 60 * 1000) { // e.g., within last 5 minutes
-              sendScheduleNotification(currentScheduleData, 'ended'); // sendScheduleNotification now handles notifiedEndIds
-            } else {
-              console.log(`Schedule ${scheduleId} completed, but end time was not recent. Not sending 'ended' notification.`);
-              notifiedEndIds.add(scheduleId); // Still mark to prevent future attempts if logic changes
-            }
-          }
-        }
-        schedules.push(currentScheduleData);
-        previousSchedulesMap.set(scheduleId, { ...currentScheduleData }); // Store a copy for next comparison
-      });
+      //       if (motorData.status === true) {
+      //         const nowDate = new Date();
+      //         const formattedTime = nowDate.toLocaleString('en-US', {
+      //           weekday: 'short',
+      //           month: 'short',
+      //           day: 'numeric',
+      //           hour: '2-digit',
+      //           minute: '2-digit',
+      //           hour12: true
+      //         });
 
-      savedSchedules.value = schedules;
-    },
-    (error) => {
-      console.error('Error listening to watering schedules:', error);
-    }
-  );
+      //         // ✅ Update motor status to OFF
+      //         await updateDoc(motorRef, {
+      //           status: false,
+      //           timestamp: serverTimestamp(),
+      //           formattedTime: formattedTime,
+      //           user: 'system',
+      //           device_id: 'main_motor'
+      //         });
+
+      //         // ✅ Log to history
+      //         const historyRef = collection(db, 'motor_status', 'history', 'logs');
+      //         await addDoc(historyRef, {
+      //           status: false,
+      //           timestamp: serverTimestamp(),
+      //           device_id: 'main_motor',
+      //           user: 'system',
+      //           formattedTime: formattedTime
+      //         });
+
+      //         // ✅ Send to FastAPI backend
+      //         try {
+      //           const response = await axios.post('http://localhost:8000/api/motor_status/', {
+      //             status: false,
+      //             device_id: 'main_motor',
+      //             user: 'system',
+      //             timestamp: nowDate.toISOString(),
+      //             formatted_time: formattedTime
+      //           });
+
+      //           console.log('📤 Motor status sent to FastAPI backend:', response.data);
+      //         } catch (error) {
+      //           console.error('❌ Failed to send motor status to backend:', error);
+      //         }
+
+      //         // ✅ Show toast
+      //         showToastMessage('Motor turned OFF automatically after watering completed.');
+      //         console.log(`🛑 Motor turned OFF because schedule ${scheduleId} completed.`);
+      //       }
+      //     }
+      //   } catch (err) {
+      //     console.error(`❌ Error turning off motor after schedule ${scheduleId} completed:`, err);
+      //   }
+      // }
+    });
+
+    // 🧠 Rebuild savedSchedules array
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const scheduleId = docSnap.id;
+
+      if (data.scheduledTime && data.scheduledTime < 1e12) {
+        data.scheduledTime = data.scheduledTime * 1000;
+      }
+
+      schedules.push({ id: scheduleId, ...data });
+    });
+
+    savedSchedules.value = schedules;
+    // calculateNextWateringTime();
+  }, (error) => {
+    console.error("❌ Error listening to watering schedules:", error);
+  });
 };
 
 const saveToLocalStorage = (notification) => {
@@ -1016,84 +1063,128 @@ const fetchUserRealtime = () => {
 }
 
 onMounted(async () => {
-  // Get user data from storage
-  // const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user")
-  // if (storedUser) {
-  //   try {
-  //     user.value = JSON.parse(storedUser)
-  //   } catch (e) {
-  //     console.error('Error parsing user data:', e)
-  //   }
-  // }
-
   fetchUserRealtime()
 
-  // Set up event listeners
   document.addEventListener('click', closeDropdown)
   window.addEventListener('resize', handleResize)
-
-  // Handle responsive behavior
   handleResize()
 
-  // Fetch IP and network info
+  // Get IP Address
   try {
-    const res = await fetch('https://api.ipify.org?format=json');
-    const ipData = await res.json();
-    ipAddress.value = ipData.ip;
+    const res = await fetch('https://api.ipify.org?format=json')
+    const ipData = await res.json()
+    ipAddress.value = ipData.ip
   } catch (error) {
-    console.error('Error fetching IP:', error);
-    ipAddress.value = 'Unknown';
+    console.error('Error fetching IP:', error)
+    ipAddress.value = 'Unknown'
   }
 
-  // Set up network info
+  // Network Info
   if ('connection' in navigator) {
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection
 
     const updateWifiInfo = () => {
-      wifiStrength.value = conn.downlinkMax ? Math.min(conn.downlinkMax * 10, 100) : 70;
-      wifiNetwork.value = conn.effectiveType || 'WiFi';
-    };
+      wifiStrength.value = conn.downlinkMax ? Math.min(conn.downlinkMax * 10, 100) : 70
+      wifiNetwork.value = conn.effectiveType || 'WiFi'
+    }
 
-    // Initial set
-    updateWifiInfo();
+    updateWifiInfo()
 
-    // Watch for network changes
     if (conn.addEventListener) {
-      conn.addEventListener('change', updateWifiInfo);
+      conn.addEventListener('change', updateWifiInfo)
     }
   }
 
-  // Load notifications from localStorage first for immediate display
+  // Load notifications from localStorage
   const saved = localStorage.getItem('notifications')
   if (saved) {
     notifications.value = JSON.parse(saved)
   }
 
-  // Then fetch from Firestore and set up real-time listener
-  await fetchNotifications();
-  unsubscribeNotifications = setupNotificationsListener();
+  await fetchNotifications()
+  unsubscribeNotifications = setupNotificationsListener()
 
-  // Set up watering schedules listener
-  fetchWateringSchedules();
+  // Watch watering schedules
+  fetchWateringSchedules()
 
-  // Set up interval for checking scheduled notifications
+  // Check for scheduled watering every second
   setInterval(() => {
     currentTime.value = Date.now();
     const now = Date.now();
-    savedSchedules.value.forEach((schedule) => {
-      // Skip if no notification needed, no scheduled time, or already completed (for start)
+
+    savedSchedules.value.forEach(async (schedule) => {
       if (!schedule.notifyWatering || !schedule.scheduledTime || schedule.completed) return;
 
       const start = schedule.scheduledTime;
+      const isStarting = Math.abs(now - start) <= 2000;
 
-      // START notification
-      const isStarting = Math.abs(now - start) <= 2000; // Check if current time is within 2s of start
       if (isStarting && !notifiedStartIds.has(schedule.id)) {
         sendScheduleNotification(schedule, 'started');
+        notifiedStartIds.add(schedule.id);
+
+        try {
+          const motorDocRef = doc(db, 'motor_status', 'current');
+          const motorSnapshot = await getDoc(motorDocRef);
+
+          const nowDate = new Date();
+          const formattedTime = nowDate.toLocaleString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          });
+
+          if (!motorSnapshot.exists() || motorSnapshot.data().status === false) {
+            // ✅ Turn ON the motor
+            await updateDoc(motorDocRef, {
+              status: true,
+              timestamp: serverTimestamp(),
+              formattedTime: formattedTime,
+              user: 'system',
+              device_id: 'main_motor'
+            });
+            console.log(`✅ Motor turned ON for schedule ${schedule.id}`);
+          }
+
+          // ✅ Always log to history (even if already ON)
+          const historyRef = collection(db, 'motor_status', 'history', 'logs');
+          await addDoc(historyRef, {
+            status: true,
+            scheduleId: schedule.id,
+            triggeredBy: 'auto',
+            timestamp: serverTimestamp(),
+            device_id: 'main_motor',
+            user: 'system',
+            formattedTime: formattedTime
+          });
+          console.log(`📜 Motor ON event logged in history.`);
+
+          // ✅ Send to FastAPI backend
+          try {
+            const response = await axios.post('http://localhost:8000/api/motor_status/', {
+              status: true,
+              device_id: 'main_motor',
+              user: 'system',
+              timestamp: nowDate.toISOString(),
+              formatted_time: formattedTime
+            });
+            console.log('📤 Motor ON status sent to FastAPI backend:', response.data);
+          } catch (apiErr) {
+            console.error('❌ Error sending motor ON status to backend:', apiErr);
+          }
+
+        } catch (err) {
+          console.error(`❌ Error processing motor status for schedule ${schedule.id}:`, err);
+        }
       }
     });
   }, 1000);
+
+
 })
+
 
 onBeforeUnmount(() => {
   // Clean up event listeners
