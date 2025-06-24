@@ -479,12 +479,14 @@ import {
   Info,
   AlertTriangle,
   XCircle,
-  X
+  X,
+  CloudLightning
 } from 'lucide-vue-next'
 import axios from 'axios'
 import { eventBus } from '../../eventBus'
 import { sendPushNotification } from '../../utils/notify.js'
 import { initWaterStream, onWaterLevelUpdate } from '../../utils/water.js'
+import { getWeatherData, mapWeatherCode } from '../../utils/weather.js'
 import api from '../../api/index.js'
 import {
   getFirestore,
@@ -505,6 +507,9 @@ import {
   getDocsFromServer,
   onSnapshot
 } from 'firebase/firestore'
+
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from '../../api/firebase.js'
 
 const db = getFirestore()
 
@@ -562,6 +567,12 @@ const showToast = ref(false)
 const toastMessage = ref('')
 const toastSeverity = ref('info')
 const toastTimeout = ref(null)
+const toastQueue = ref([]);
+const isToastActive = ref(false);
+
+const processingScheduleIds = ref(new Set());
+
+
 
 // const sendSMS = async (phone, message) => {
 //   try {
@@ -579,17 +590,44 @@ const toastTimeout = ref(null)
 //   }
 // }
 
+// const showToastMessage = (message, severity = 'info') => {
+//   if (toastTimeout.value) clearTimeout(toastTimeout.value)
+
+//   toastMessage.value = message
+//   toastSeverity.value = severity
+//   showToast.value = true
+
+//   toastTimeout.value = setTimeout(() => {
+//     showToast.value = false
+//   }, 10000)
+// }
+
+const processToastQueue = () => {
+  if (toastQueue.value.length === 0 || isToastActive.value) return;
+  
+  isToastActive.value = true;
+  const nextToast = toastQueue.value.shift();
+  toastMessage.value = nextToast.message;
+  toastSeverity.value = nextToast.severity;
+  showToast.value = true;
+
+  setTimeout(() => {
+    showToast.value = false;
+    setTimeout(() => {
+      isToastActive.value = false;
+      processToastQueue();
+    }, 300); // Wait for exit animation
+  }, 10000);
+};
+
+// Modified showToastMessage to use queue
 const showToastMessage = (message, severity = 'info') => {
-  if (toastTimeout.value) clearTimeout(toastTimeout.value)
+  toastQueue.value.push({ message, severity });
+  if (!isToastActive.value) {
+    processToastQueue();
+  }
+};
 
-  toastMessage.value = message
-  toastSeverity.value = severity
-  showToast.value = true
-
-  toastTimeout.value = setTimeout(() => {
-    showToast.value = false
-  }, 10000)
-}
 
 const toastStyles = computed(() => {
   switch (toastSeverity.value) {
@@ -843,88 +881,108 @@ const fetchWateringSchedules = () => {
   const schedulesRef = collection(db, 'watering_schedules');
   const schedulesQuery = query(schedulesRef, orderBy('scheduledTime', 'asc'));
 
-  if (unsubscribeSchedules) unsubscribeSchedules(); // Clean up previous listener
+  if (unsubscribeSchedules) unsubscribeSchedules();
+
+  // Track processed schedule completions
+  const processedCompletions = new Set();
+  let isMotorOffOperationInProgress = false;
 
   unsubscribeSchedules = onSnapshot(schedulesQuery, async (snapshot) => {
     const schedules = [];
     const now = Date.now();
 
-    snapshot.docChanges().forEach(async (change) => {
+    // Process changes sequentially
+    for (const change of snapshot.docChanges()) {
       const docSnap = change.doc;
       const data = docSnap.data();
       const scheduleId = docSnap.id;
 
-      // Normalize timestamp if needed
+      // Convert timestamp if needed
       if (data.scheduledTime && data.scheduledTime < 1e12) {
         data.scheduledTime = data.scheduledTime * 1000;
       }
 
-      // ✅ Check for schedule marked as completed
-      // if (change.type === 'modified' && data.completed === true) {
-      //   try {
-      //     const motorRef = doc(db, 'motor_status', 'current');
-      //     const motorSnapshot = await getDoc(motorRef);
+      // Handle completed schedules
+      if (change.type === 'modified' && data.completed === true) {
+        // Skip if already processed or operation in progress
+        if (processedCompletions.has(scheduleId) || isMotorOffOperationInProgress) {
+          continue;
+        }
 
-      //     if (motorSnapshot.exists()) {
-      //       const motorData = motorSnapshot.data();
+        processedCompletions.add(scheduleId);
+        isMotorOffOperationInProgress = true;
 
-      //       if (motorData.status === true) {
-      //         const nowDate = new Date();
-      //         const formattedTime = nowDate.toLocaleString('en-US', {
-      //           weekday: 'short',
-      //           month: 'short',
-      //           day: 'numeric',
-      //           hour: '2-digit',
-      //           minute: '2-digit',
-      //           hour12: true
-      //         });
+        try {
+          const motorRef = doc(db, 'motor_status', 'current');
+          const motorSnapshot = await getDoc(motorRef);
 
-      //         // ✅ Update motor status to OFF
-      //         await updateDoc(motorRef, {
-      //           status: false,
-      //           timestamp: serverTimestamp(),
-      //           formattedTime: formattedTime,
-      //           user: 'system',
-      //           device_id: 'main_motor'
-      //         });
+          if (motorSnapshot.exists()) {
+            const motorData = motorSnapshot.data();
 
-      //         // ✅ Log to history
-      //         const historyRef = collection(db, 'motor_status', 'history', 'logs');
-      //         await addDoc(historyRef, {
-      //           status: false,
-      //           timestamp: serverTimestamp(),
-      //           device_id: 'main_motor',
-      //           user: 'system',
-      //           formattedTime: formattedTime
-      //         });
+            // Only proceed if motor is actually ON
+            if (motorData.status === true) {
+              const nowDate = new Date();
+              const formattedTime = nowDate.toLocaleString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+              });
 
-      //         // ✅ Send to FastAPI backend
-      //         try {
-      //           const response = await axios.post('http://localhost:8000/api/motor_status/', {
-      //             status: false,
-      //             device_id: 'main_motor',
-      //             user: 'system',
-      //             timestamp: nowDate.toISOString(),
-      //             formatted_time: formattedTime
-      //           });
+              // 1. Update motor status (single operation)
+              await updateDoc(motorRef, {
+                status: false,
+                timestamp: serverTimestamp(),
+                formattedTime: formattedTime,
+                user: 'system',
+                device_id: 'main_motor'
+              });
 
-      //           console.log('📤 Motor status sent to FastAPI backend:', response.data);
-      //         } catch (error) {
-      //           console.error('❌ Failed to send motor status to backend:', error);
-      //         }
+              // 2. Create SINGLE history log
+              const historyRef = collection(db, 'motor_status', 'history', 'logs');
+              await addDoc(historyRef, {
+                status: false,
+                timestamp: serverTimestamp(),
+                device_id: 'main_motor',
+                user: 'system',
+                formattedTime: formattedTime,
+                relatedSchedule: scheduleId
+              });
 
-      //         // ✅ Show toast
-      //         showToastMessage('Motor turned OFF automatically after watering completed.');
-      //         console.log(`🛑 Motor turned OFF because schedule ${scheduleId} completed.`);
-      //       }
-      //     }
-      //   } catch (err) {
-      //     console.error(`❌ Error turning off motor after schedule ${scheduleId} completed:`, err);
-      //   }
-      // }
-    });
+              // 3. Send SINGLE request to backend
+              try {
+                const payload = {
+                  status: false,
+                  device_id: 'main_motor',
+                  user: 'system',
+                  timestamp: nowDate.toISOString(),
+                  formatted_time: formattedTime,
+                  source: 'schedule'
+                };
+                
+                const response = await axios.post(
+                  'http://localhost:8000/api/motor_status/',
+                  payload
+                );
+                console.log('✅ Motor OFF status processed for schedule', scheduleId);
+              } catch (error) {
+                console.error('❌ Backend API error:', error.message);
+              }
 
-    // 🧠 Rebuild savedSchedules array
+              showToastMessage('Motor turned OFF after watering completed.');
+            }
+          }
+        } catch (err) {
+          console.error(`Error processing schedule completion ${scheduleId}:`, err);
+        } finally {
+          isMotorOffOperationInProgress = false;
+        }
+      }
+    }
+
+    // Update schedules list
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
       const scheduleId = docSnap.id;
@@ -937,9 +995,8 @@ const fetchWateringSchedules = () => {
     });
 
     savedSchedules.value = schedules;
-    // calculateNextWateringTime();
   }, (error) => {
-    console.error("❌ Error listening to watering schedules:", error);
+    console.error("Error listening to watering schedules:", error);
   });
 };
 
@@ -1062,6 +1119,330 @@ const fetchUserRealtime = () => {
   return unsubscribe // Optional: in case you want to unsubscribe on unmount
 }
 
+const isSevereWeather = (condition) => {
+  if (!condition) return false;
+  const severeConditions = [
+    'Heavy Rain',
+    'Rain Showers',
+    'Heavy Rain Showers',
+    'Violent Rain Showers',
+    'Thunderstorm',
+    'Thunderstorm with Hail',
+    'Severe Thunderstorm',
+  ];
+  return severeConditions.includes(condition);
+};
+
+const sendSmsAlert = async (phoneNumber, message) => {
+  if (!phoneNumber) {
+    console.warn('No phone number available for user to send SMS alert.');
+    return;
+  }
+  try {
+    // This requires a backend endpoint to handle the actual SMS sending logic
+    // for security and to manage credentials.
+    // await api.post('/send-sms', {
+    //   phone: phoneNumber,
+    //   message: message,
+    // });
+    console.log(`SMS alert sent to ${phoneNumber}`);
+  } catch (error) {
+    console.error('Error sending SMS alert via backend:', error);
+  }
+};
+
+const saveWeatherAlertToFirebase = async (notificationDetails) => {
+  try {
+    // Check for existing notification for this date and type
+    const notificationsRef = collection(db, 'notifications');
+    const q = query(
+      notificationsRef,
+      where('date', '==', notificationDetails.date),
+      where('type', '==', 'weather_alert')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      console.log('Weather alert already exists for this date. Skipping save.');
+      return false; // Return false to indicate duplicate
+    }
+
+    // If not found, save it
+    await addDoc(notificationsRef, {
+      ...notificationDetails,
+      read: false,
+      timestamp: serverTimestamp(),
+    });
+    console.log('Weather alert notification saved to Firebase.');
+    return true; // Return true to indicate new notification
+  } catch (error) {
+    console.error('Error saving weather alert to Firebase:', error);
+    return false;
+  }
+};
+
+
+const thunderstormConditions = [
+  'Thunderstorm',
+  'Thunderstorm with Hail',
+  'Severe Thunderstorm'
+];
+
+const severityMap = {
+  'Heavy Rain': 1,
+  'Rain Showers': 1,
+  'Heavy Rain Showers': 2,
+  'Violent Rain Showers': 3,
+  'Thunderstorm': 4,
+  'Thunderstorm with Hail': 5,
+  'Severe Thunderstorm': 6
+};
+
+const getSeverityLevel = (condition) => {
+  return severityMap[condition] || 0;
+};
+
+
+const checkWeatherForecastForAlerts = async () => {
+  console.log('Checking weather forecast for alerts...');
+  try {
+    const weatherData = await getWeatherData();
+    
+    if (!weatherData || !weatherData.forecast) {
+      console.warn('Could not retrieve weather forecast data.');
+      return;
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const shownAlerts = JSON.parse(localStorage.getItem('shownWeatherAlerts') || '{}');
+    const smsSentDates = new Set(JSON.parse(localStorage.getItem('smsSentDates') || '[]'));
+
+    // Collect all severe weather alerts
+    for (const day of weatherData.forecast.slice(0, 3)) {
+      const condition = mapWeatherCode(day.condition_code);
+      const dateStr = day.date.split('T')[0];
+      
+      if (isSevereWeather(condition)) {
+        const weekday = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long' });
+        const message = `Warning: ${condition} forecasted for ${weekday}.`;
+        
+        // Skip if we've already shown this alert today
+        if (shownAlerts[dateStr] === today) continue;
+        
+        // Save notification to Firebase if it doesn't exist
+        const notificationSaved = await saveWeatherAlertToFirebase({ 
+          title: 'Severe Weather Alert', 
+          message, 
+          severity: 'warning', 
+          type: 'weather_alert', 
+          date: dateStr 
+        });
+
+        // Only show toast if notification was saved (new)
+        if (notificationSaved) {
+          showToastMessage(message, 'warning');
+          shownAlerts[dateStr] = today; // Mark as shown today
+          localStorage.setItem('shownWeatherAlerts', JSON.stringify(shownAlerts));
+        }
+        
+        // Send SMS only for thunderstorm conditions and only once per day
+        if (thunderstormConditions.includes(condition)) {
+          const shouldSendSms = !smsSentDates.has(dateStr) && user.value?.phoneNumber;
+          
+          if (shouldSendSms) {
+            await sendSmsAlert(user.value.phoneNumber, message);
+            smsSentDates.add(dateStr);
+            localStorage.setItem('smsSentDates', JSON.stringify([...smsSentDates]));
+          }
+        }
+      }
+    }
+    
+  } catch (error) {
+    console.error('Failed to check weather forecast for alerts:', error);
+    showToastMessage('Failed to check weather alerts', 'warning');
+  }
+};
+
+// const checkWeatherForecastForAlerts = async () => {
+//   console.log('Checking weather forecast for alerts...');
+//   try {
+//     const weatherData = await getWeatherData();
+    
+//     if (!weatherData || !weatherData.forecast) {
+//       console.warn('Could not retrieve weather forecast data.');
+//       return;
+//     }
+
+//     const today = new Date().toISOString().split('T')[0];
+//     const notifiedDates = new Set(JSON.parse(localStorage.getItem('notifiedWeatherDates') || '[]'));
+
+//     for (const day of weatherData.forecast.slice(0, 3)) {
+//       // Map condition code to human-readable string
+//       const condition = mapWeatherCode(day.condition_code);
+//       const dateStr = day.date.split('T')[0]; // Extract date part only
+      
+//       if (isSevereWeather(condition)) {
+//         // Skip if we've already notified for this date
+//         if (notifiedDates.has(dateStr)) continue;
+        
+//         const weekday = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long' });
+//         const message = `Warning: ${condition} forecasted for ${weekday}.`;
+        
+//         // Show toast immediately
+//         showToastMessage(message, 'warning');
+        
+//         // Save to Firebase (with duplicate check)
+//         await saveWeatherAlertToFirebase({ 
+//           title: 'Severe Weather Alert', 
+//           message, 
+//           severity: 'warning', 
+//           type: 'weather_alert', 
+//           date: dateStr 
+//         });
+        
+//         // Send SMS if user has phone number
+//         if (user.value && user.value.phoneNumber) {
+//           await sendSmsAlert(user.value.phoneNumber, message);
+//         }
+        
+//         // Mark this date as notified
+//         notifiedDates.add(dateStr);
+//       }
+//     }
+    
+//     // Save notified dates to localStorage
+//   } catch (error) {
+//     console.error('Failed to check weather forecast for alerts:', error);
+//     showToastMessage('Failed to check weather alerts', 'warning');
+//   }
+// };
+
+let userPhone = ref(null)
+
+const evaluateSoilMoisture = (level) => {
+  const today = new Date().toISOString().split('T')[0];
+  
+  if (level <= 10) {
+    saveSoilMoistureAlertToFirebase({
+      title: 'Critical Soil Moisture',
+      message: `Soil moisture is critically low (${level}%)! Immediate watering required.`,
+      severity: 'critical',
+      type: 'soil_moisture',
+      date: today
+    });
+  } else if (level <= 20) {
+    saveSoilMoistureAlertToFirebase({
+      title: 'Low Soil Moisture',
+      message: `Soil moisture is low (${level}%). Consider watering soon.`,
+      severity: 'warning',
+      type: 'soil_moisture',
+      date: today
+    });
+  }
+}
+
+const saveSoilMoistureAlertToFirebase = async (notificationDetails) => {
+  try {
+    // Check for existing notifications of same type and severity today
+    const q = query(
+      collection(db, 'notifications'),
+      where('date', '==', notificationDetails.date),
+      where('type', '==', 'soil_moisture'),
+      where('severity', '==', notificationDetails.severity)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      console.log(`${notificationDetails.severity} soil moisture alert already exists for today. Skipping save.`);
+      return;
+    }
+
+    await addDoc(collection(db, 'notifications'), {
+      ...notificationDetails,
+      read: false,
+      timestamp: serverTimestamp()
+    });
+    
+    console.log('Soil moisture notification saved:', notificationDetails.severity);
+    showToastMessage(notificationDetails.message, notificationDetails.severity);
+    
+    // Use the new SMS function for critical alerts
+    if (notificationDetails.severity === 'critical' && user.value?.phoneNumber) {
+      const smsMessage = `${notificationDetails.title}: ${notificationDetails.message}`;
+      await sendSoilMoistureSmsAlert(user.value.phoneNumber, smsMessage);
+    }
+  } catch (error) {
+    console.error('Error saving soil moisture alert:', error);
+    showToastMessage('Failed to save soil moisture alert', 'warning');
+  }
+};
+
+const sendSoilMoistureSmsAlert = async (phoneNumber, message) => {
+  if (!phoneNumber) {
+    console.warn('No phone number available to send soil moisture SMS alert');
+    return;
+  }
+  
+  try {
+    // Replace with your actual SMS endpoint
+    // const response = await axios.post('http://127.0.0.1:8000/send-sms', {
+    //   phone: phoneNumber,
+    //   message: message
+    // });
+        // await api.post('/send-sms', {
+    //   phone: phoneNumber,
+    //   message: message,
+    // });
+
+    console.log(`✅ SMS alert sent to ${phoneNumber}` );
+    return true;
+  } catch (error) {
+    console.error('❌ Soil moisture SMS error:', error);
+    showToastMessage('Failed to send soil moisture SMS', 'warning');
+    return false;
+  }
+}
+
+const setupSoilMoistureListener = () => {
+  try {
+    const soilMoistureQuery = query(
+      collection(db, "3sensor_readings", "esp32-2", "readings"),
+      orderBy("timestamp", "desc"),
+      limit(1)
+    );
+    
+    const unsubscribe = onSnapshot(soilMoistureQuery, (snapshot) => {
+      if (!snapshot.empty) {
+        const sensorData = snapshot.docs[0].data();
+        const soilMoistureValue = sensorData.soilMoisture;
+        
+        console.log("🔄 Latest soil moisture reading:", soilMoistureValue);
+        
+        if (typeof soilMoistureValue === 'number') {
+          evaluateSoilMoisture(soilMoistureValue);
+        } else {
+          console.warn("⚠️ Soil moisture value is not a number:", soilMoistureValue);
+        }
+      } else {
+        console.log("ℹ️ No soil moisture data available yet.");
+      }
+    }, (error) => {
+      console.error("❌ Soil moisture listener error:", error);
+      showToastMessage('Soil moisture monitoring failed', 'warning');
+    });
+    
+    return unsubscribe;  // Return the unsubscribe function
+    
+  } catch (err) {
+    console.error("❌ Soil moisture setup error:", err);
+    showToastMessage('Failed to setup soil moisture monitoring', 'warning');
+    return () => {}; // Return dummy function for cleanup
+  }
+}
+
+let unsubscribeSoilMoisture = null;
+
 onMounted(async () => {
   fetchUserRealtime()
 
@@ -1106,38 +1487,136 @@ onMounted(async () => {
 
   // Watch watering schedules
   fetchWateringSchedules()
+  checkWeatherForecastForAlerts();
+  setInterval(checkWeatherForecastForAlerts, 3 * 60 * 60 * 1000); // Every 3 hours
+
 
   // Check for scheduled watering every second
-  setInterval(() => {
-    currentTime.value = Date.now();
-    const now = Date.now();
+  // setInterval(() => {
+  //   currentTime.value = Date.now();
+  //   const now = Date.now();
 
-    savedSchedules.value.forEach(async (schedule) => {
-      if (!schedule.notifyWatering || !schedule.scheduledTime || schedule.completed) return;
+  //   savedSchedules.value.forEach(async (schedule) => {
+  //     if (!schedule.notifyWatering || !schedule.scheduledTime || schedule.completed) return;
 
-      const start = schedule.scheduledTime;
-      const isStarting = Math.abs(now - start) <= 2000;
+  //     const start = schedule.scheduledTime;
+  //     const isStarting = Math.abs(now - start) <= 2000;
 
-      if (isStarting && !notifiedStartIds.has(schedule.id)) {
+  //     if (isStarting && !notifiedStartIds.has(schedule.id)) {
+  //       sendScheduleNotification(schedule, 'started');
+  //       notifiedStartIds.add(schedule.id);
+
+  //       try {
+  //         const motorDocRef = doc(db, 'motor_status', 'current');
+  //         const motorSnapshot = await getDoc(motorDocRef);
+
+  //         const nowDate = new Date();
+  //         const formattedTime = nowDate.toLocaleString('en-US', {
+  //           weekday: 'short',
+  //           month: 'short',
+  //           day: 'numeric',
+  //           hour: '2-digit',
+  //           minute: '2-digit',
+  //           hour12: true
+  //         });
+
+  //         if (!motorSnapshot.exists() || motorSnapshot.data().status === false) {
+  //           // ✅ Turn ON the motor
+  //           await updateDoc(motorDocRef, {
+  //             status: true,
+  //             timestamp: serverTimestamp(),
+  //             formattedTime: formattedTime,
+  //             user: 'system',
+  //             device_id: 'main_motor'
+  //           });
+  //           console.log(`✅ Motor turned ON for schedule ${schedule.id}`);
+  //         }
+
+  //         // ✅ Always log to history (even if already ON)
+  //         const historyRef = collection(db, 'motor_status', 'history', 'logs');
+  //         await addDoc(historyRef, {
+  //           status: true,
+  //           scheduleId: schedule.id,
+  //           triggeredBy: 'auto',
+  //           timestamp: serverTimestamp(),
+  //           device_id: 'main_motor',
+  //           user: 'system',
+  //           formattedTime: formattedTime
+  //         });
+  //         console.log(`📜 Motor ON event logged in history.`);
+
+  //         // ✅ Send to FastAPI backend
+  //         try {
+  //           const response = await axios.post('http://localhost:8000/api/motor_status/', {
+  //             status: true,
+  //             device_id: 'main_motor',
+  //             user: 'system',
+  //             timestamp: nowDate.toISOString(),
+  //             formatted_time: formattedTime,
+  //             source: 'schedule'
+  //           });
+  //           console.log('📤 Motor ON status sent to FastAPI backend:', response.data);
+  //         } catch (apiErr) {
+  //           console.error('❌ Error sending motor ON status to backend:', apiErr);
+  //         }
+
+  //       } catch (err) {
+  //         console.error(`❌ Error processing motor status for schedule ${schedule.id}:`, err);
+  //       }
+  //     }
+  //   });
+  // }, 1000);
+
+  setInterval(async () => {
+  currentTime.value = Date.now();
+  const now = Date.now();
+  const processedThisRun = new Set();
+  let motorOperationLock = false; // Lock to prevent duplicate motor operations
+
+  // Process schedules sequentially
+  for (const schedule of savedSchedules.value) {
+    // Skip conditions
+    if (!schedule.notifyWatering || 
+        !schedule.scheduledTime || 
+        schedule.completed ||
+        processedThisRun.has(schedule.id) ||
+        processingScheduleIds.value.has(schedule.id)) {
+      continue;
+    }
+
+    // Mark as processed
+    processedThisRun.add(schedule.id);
+    processingScheduleIds.value.add(schedule.id);
+
+    const start = schedule.scheduledTime;
+    const isStarting = Math.abs(now - start) <= 2000;
+
+    if (isStarting && !notifiedStartIds.has(schedule.id)) {
+      try {
+        // 1. Send notification
         sendScheduleNotification(schedule, 'started');
         notifiedStartIds.add(schedule.id);
 
-        try {
+        // 2. Prepare common data
+        const nowDate = new Date();
+        const formattedTime = nowDate.toLocaleString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+
+        // 3. Check motor status (with lock to prevent duplicates)
+        if (!motorOperationLock) {
+          motorOperationLock = true;
+          
           const motorDocRef = doc(db, 'motor_status', 'current');
           const motorSnapshot = await getDoc(motorDocRef);
 
-          const nowDate = new Date();
-          const formattedTime = nowDate.toLocaleString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-          });
-
+          // Only update if motor is not already ON
           if (!motorSnapshot.exists() || motorSnapshot.data().status === false) {
-            // ✅ Turn ON the motor
             await updateDoc(motorDocRef, {
               status: true,
               timestamp: serverTimestamp(),
@@ -1148,7 +1627,7 @@ onMounted(async () => {
             console.log(`✅ Motor turned ON for schedule ${schedule.id}`);
           }
 
-          // ✅ Always log to history (even if already ON)
+          // 4. Create SINGLE history log
           const historyRef = collection(db, 'motor_status', 'history', 'logs');
           await addDoc(historyRef, {
             status: true,
@@ -1159,30 +1638,37 @@ onMounted(async () => {
             user: 'system',
             formattedTime: formattedTime
           });
-          console.log(`📜 Motor ON event logged in history.`);
 
-          // ✅ Send to FastAPI backend
+          // 5. Send SINGLE request to backend
           try {
             const response = await axios.post('http://localhost:8000/api/motor_status/', {
               status: true,
               device_id: 'main_motor',
               user: 'system',
               timestamp: nowDate.toISOString(),
-              formatted_time: formattedTime
+              formatted_time: formattedTime,
+              source: 'schedule'
             });
-            console.log('📤 Motor ON status sent to FastAPI backend:', response.data);
+            console.log('📤 Motor status sent to backend');
           } catch (apiErr) {
-            console.error('❌ Error sending motor ON status to backend:', apiErr);
+            console.error('❌ Backend update error:', apiErr);
           }
-
-        } catch (err) {
-          console.error(`❌ Error processing motor status for schedule ${schedule.id}:`, err);
+        } else {
+          console.log('🔒 Motor operation already in progress, skipping duplicate');
         }
+      } catch (err) {
+        console.error(`❌ Error processing schedule ${schedule.id}:`, err);
+      } finally {
+        motorOperationLock = false;
+        processingScheduleIds.value.delete(schedule.id);
       }
-    });
-  }, 1000);
+    }
+  }
+}, 1000);
 
 
+   const user = await fetchUserRealtime(); 
+  unsubscribeSoilMoisture = setupSoilMoistureListener();
 })
 
 
@@ -1195,6 +1681,7 @@ onBeforeUnmount(() => {
   // Clean up Firestore listeners
   if (unsubscribeSchedules) unsubscribeSchedules();
   if (unsubscribeNotifications) unsubscribeNotifications();
+   if (unsubscribeSoilMoisture) unsubscribeSoilMoisture();
 })
 
 // Watch for route changes to close dropdowns

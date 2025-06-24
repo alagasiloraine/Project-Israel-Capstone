@@ -1,6 +1,6 @@
 <template>
   <div class="h-screen flex bg-white font-poppins overflow-hidden">
-    <Sidebar />
+    <Sidebar /> 
     <main class="flex-1 flex flex-col h-screen pt-32">
       <div class="flex-1 w-full px-4 sm:px-6 md:px:8 lg:px-10 overflow-hidden">
         <!-- Enhanced main container with more appealing design -->
@@ -861,10 +861,10 @@
                       <div 
                         v-for="(day, index) in calendarDays" 
                         :key="index"
-                        @click="selectCalendarDate(day)"
+                        @click="!day.isDisabled && selectCalendarDate(day)"
                         :class="[
-                          'h-9 flex items-center justify-center rounded-full text-sm transition-all cursor-pointer',
-                          day.isCurrentMonth ? 'hover:bg-green-50' : 'text-gray-400',
+                          'h-9 flex items-center justify-center rounded-full text-sm transition-all',
+                          day.isCurrentMonth ? (day.isDisabled ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-green-50 cursor-pointer') : 'text-gray-400',
                           isSelectedDate(day) ? 'bg-green-500 text-white font-medium hover:bg-green-600' : '',
                           isToday(day) && !isSelectedDate(day) ? 'border border-green-500 text-green-600' : '',
                           day.hasOneTimeSchedule && day.isCurrentMonth && !isSelectedDate(day) ? 'border-2 border-orange-400 text-orange-600 font-medium' : ''
@@ -1213,10 +1213,18 @@
             </button>
             <button
               @click="confirmDeleteSchedule"
+              :disabled="isDeletingSchedule"
               class="bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors flex items-center gap-2"
             >
-              <Trash2 class="w-4 h-4" />
-              <span>Delete</span>
+              <template v-if="isDeletingSchedule">
+                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Deleting...</span>
+              </template>
+              <template v-else>
+                <Trash2 class="w-4 h-4" />
+                <span>Delete</span>
+              </template>
+
             </button>
           </div>
         </div>
@@ -1388,6 +1396,7 @@ const notifiedEndIds = new Set()
 
 const isLoading = ref(false)
 const isTogglingMotor = ref(false)
+const isDeletingSchedule = ref(false) 
 
 
 // Display pagination buttons
@@ -1929,84 +1938,6 @@ watch(showToggleConfirmationDialog, async (newVal) => {
   }
 });
 
-// NEW: Function to confirm and execute water pump toggle
-// const confirmToggleWaterPump = async () => {
-//   try {
-//     // Toggle the state
-//     waterPumpActive.value = !waterPumpActive.value
-
-//     console.log('Toggling water pump to:', waterPumpActive.value ? 'ON' : 'OFF')
-
-//     // Get current timestamp
-//     const now = new Date()
-//     const formattedTime = now.toLocaleString('en-US', {
-//       weekday: 'short',
-//       month: 'short',
-//       day: 'numeric',
-//       hour: '2-digit',
-//       minute: '2-digit',
-//       hour12: true
-//     })
-
-//     // Create the status document
-//     const statusData = {
-//       status: waterPumpActive.value,
-//       timestamp: serverTimestamp(),
-//       device_id: 'main_motor',
-//       user: 'system',
-//       formattedTime: formattedTime
-//     }
-
-//     console.log('Saving data to Firebase motor_status collection:', statusData)
-
-//     // Save to Firebase
-//     await setDoc(doc(db, 'motor_status', 'current'), statusData)
-//     console.log('Successfully saved current status to Firebase')
-
-//     const historyRef = collection(db, 'motor_status', 'history', 'logs')
-//     await addDoc(historyRef, statusData)
-//     console.log('Successfully added to history logs')
-
-//     // Add to UI activity log
-//     const newActivity = {
-//       status: waterPumpActive.value,
-//       timestamp: `Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-//     }
-//     motorActivities.value.unshift(newActivity)
-
-//     // Show toast
-//     showToastMessage(`Motor turned ${waterPumpActive.value ? 'ON' : 'OFF'} successfully`)
-//     showToggleConfirmationDialog.value = false
-
-//     // ✅ Send motor status to FastAPI backend here
-//     try {
-//       const response = await axios.post('http://localhost:8000/api/motor_status/', {
-//         status: waterPumpActive.value,
-//         device_id: 'main_motor',
-//         user: 'system',
-//         timestamp: now.toISOString(),
-//         formatted_time: formattedTime
-//       })
-
-//       console.log('Motor status sent to FastAPI backend:', response.data)
-//     } catch (error) {
-//       console.error('Error sending motor status to FastAPI:', error)
-//     }
-
-//   } catch (error) {
-//     console.error('Error saving motor status to Firebase:', error)
-//     console.error('Error details:', {
-//       code: error.code,
-//       message: error.message,
-//       stack: error.stack
-//     })
-
-//     waterPumpActive.value = !waterPumpActive.value
-//     showToastMessage('Error saving motor status. Please check console for details.')
-//     showToggleConfirmationDialog.value = false
-//   }
-// }
-
 const confirmToggleWaterPump = async () => {
   try {
     isTogglingMotor.value = true;
@@ -2061,6 +1992,7 @@ const confirmToggleWaterPump = async () => {
 
       for (const docSnap of snapshot.docs) {
         const data = docSnap.data()
+        const scheduleId = docSnap.id
 
         let start;
         if (data.scheduledTime instanceof Timestamp) {
@@ -2073,11 +2005,30 @@ const confirmToggleWaterPump = async () => {
         const end = new Date(start.getTime() + duration * 60 * 1000)
 
         if (now >= start && now <= end) {
-          await updateDoc(doc(db, 'watering_schedules', docSnap.id), {
+          // Mark as completed in Firestore
+          await updateDoc(doc(db, 'watering_schedules', scheduleId), {
             completed: true,
             cancellationReason: 'Cancelled manually via motor toggle'
           })
-          console.log(`⛔ Schedule ${docSnap.id} marked as cancelled`)
+          console.log(`⛔ Schedule ${scheduleId} marked as cancelled`)
+          
+          // Notify backend about schedule completion
+          try {
+            const response = await fetch("http://127.0.0.1:8000/api/watering-schedule/complete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: scheduleId })
+            });
+            
+            if (response.ok) {
+              console.log(`📢 Schedule completion sent to backend for ${scheduleId}`)
+            } else {
+              console.error(`❌ Failed to notify backend about schedule completion: ${response.status}`)
+            }
+          } catch (error) {
+            console.error('❌ Error notifying backend about schedule completion:', error)
+          }
+          
           foundOngoing = true
         }
       }
@@ -2094,16 +2045,16 @@ const confirmToggleWaterPump = async () => {
     isTogglingMotor.value = false
     showToggleConfirmationDialog.value = false
 
-
-    // Optionally send to FastAPI backend
+    // Optionally send motor status to FastAPI backend
     try {
       const response = await axios.post('http://localhost:8000/api/motor_status/', {
         status: waterPumpActive.value,
         device_id: 'main_motor',
         user: 'system',
         timestamp: now.toISOString(),
-        formatted_time: formattedTime
-      })
+        formatted_time: formattedTime,
+        source: 'manual'
+      });
       console.log('📡 Motor status sent to FastAPI:', response.data)
     } catch (error) {
       console.error('❌ Error sending motor status to FastAPI:', error)
@@ -2114,6 +2065,7 @@ const confirmToggleWaterPump = async () => {
     waterPumpActive.value = !waterPumpActive.value
     showToastMessage('Error saving motor status. Please check console for details.')
     showToggleConfirmationDialog.value = false
+    isTogglingMotor.value = false
   }
 }
 
@@ -2293,6 +2245,8 @@ const currentYear = computed(() => {
 const calendarDays = computed(() => {
   const year = currentDate.value.getFullYear()
   const month = currentDate.value.getMonth()
+  const today = new Date()
+  today.setHours(0, 0, 0, 0) // Set to start of day for comparison
 
   // First day of the month
   const firstDay = new Date(year, month, 1)
@@ -2308,36 +2262,43 @@ const calendarDays = computed(() => {
   // Add days from previous month
   const prevMonthLastDay = new Date(year, month, 0).getDate()
   for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+    const dayDate = new Date(year, month - 1, prevMonthLastDay - i)
     days.push({
       day: prevMonthLastDay - i,
-      month: month - 1, // JavaScript Date constructor handles month -1 correctly
+      month: month - 1,
       year: month === 0 ? year - 1 : year,
-      isCurrentMonth: false
-      // Note: hasOneTimeSchedule will be implicitly false/undefined here
-      // The v-if="day.hasOneTimeSchedule && day.isCurrentMonth" handles this
+      isCurrentMonth: false,
+      isDisabled: true // Always disable previous month days
     })
   }
 
   // Add days from current month
-  for (let i = 1; i <= lastDay.getDate(); i++) {
+ for (let i = 1; i <= lastDay.getDate(); i++) {
+    const dayDate = new Date(year, month, i);
+    // Only disable past dates in one-time mode
+    const isPast = wateringMode.value === 'one-time' && dayDate < today;
     days.push({
       day: i,
       month,
       year,
       isCurrentMonth: true,
-      hasOneTimeSchedule: oneTimeScheduledDates.value.includes(new Date(year, month, i).getTime())
-    })
+      isDisabled: isPast,
+      hasOneTimeSchedule: oneTimeScheduledDates.value.includes(dayDate.getTime())
+    });
   }
+
 
   // Add days from next month
   const remainingDays = 42 - days.length // 6 rows of 7 days
   for (let i = 1; i <= remainingDays; i++) {
+    const dayDate = new Date(year, month + 1, i)
     days.push({
       day: i,
-      month: month + 1, // JavaScript Date constructor handles month 12 correctly
+      month: month + 1,
       year: month === 11 ? year + 1 : year,
       isCurrentMonth: false,
-      hasOneTimeSchedule: oneTimeScheduledDates.value.includes(new Date(month === 11 ? year + 1 : year, month + 1, i).getTime())
+      isDisabled: false, // Next month days are not disabled
+      hasOneTimeSchedule: oneTimeScheduledDates.value.includes(dayDate.getTime())
     })
   }
 
@@ -2371,6 +2332,16 @@ const isSelectedDate = (day) => {
          day.year === selected.getFullYear()
 }
 
+const isSelectedDateToday = computed(() => {
+  if (!selectedDate.value) return false
+  const today = new Date()
+  return (
+    selectedDate.value.getDate() === today.getDate() &&
+    selectedDate.value.getMonth() === today.getMonth() &&
+    selectedDate.value.getFullYear() === today.getFullYear()
+  )
+})
+
 const isToday = (day) => {
   const today = new Date()
   return day.day === today.getDate() &&
@@ -2379,31 +2350,75 @@ const isToday = (day) => {
 }
 
 // Time functions
+const isOneTimeToday = computed(() => {
+  return wateringMode.value === 'one-time' && isSelectedDateToday.value;
+});
+
+// Update time control functions
 const incrementHour = () => {
-  let hour = parseInt(wateringHour.value)
-  hour = (hour + 1) % 24
-  wateringHour.value = hour
-  updateAmPm()
+  let hour = parseInt(wateringHour.value);
+  hour = (hour + 1) % 24;
+  
+  // Only enforce boundaries in one-time mode with today selected
+  if (isOneTimeToday.value) {
+    const currentHour = new Date().getHours();
+    if (hour > currentHour) {
+      wateringHour.value = hour;
+      updateAmPm();
+    }
+  } else {
+    wateringHour.value = hour;
+    updateAmPm();
+  }
 }
 
 const decrementHour = () => {
-  let hour = parseInt(wateringHour.value)
-  hour = (hour - 1 + 24) % 24
-  wateringHour.value = hour
-  updateAmPm()
+  let hour = parseInt(wateringHour.value);
+  hour = (hour - 1 + 24) % 24;
+  
+  // Only enforce boundaries in one-time mode with today selected
+  if (isOneTimeToday.value) {
+    const currentHour = new Date().getHours();
+    if (hour >= currentHour) {
+      wateringHour.value = hour;
+      updateAmPm();
+    }
+  } else {
+    wateringHour.value = hour;
+    updateAmPm();
+  }
 }
 
 const incrementMinute = () => {
-  let minute = parseInt(wateringMinute.value)
-  minute = (minute + 5) % 60
-  wateringMinute.value = minute
+  let minute = parseInt(wateringMinute.value);
+  minute = (minute + 5) % 60;
+  
+  // Only enforce boundaries in one-time mode with today selected
+  if (isOneTimeToday.value) {
+    const currentMinute = new Date().getMinutes();
+    if (minute > currentMinute) {
+      wateringMinute.value = minute;
+    }
+  } else {
+    wateringMinute.value = minute;
+  }
 }
 
 const decrementMinute = () => {
-  let minute = parseInt(wateringMinute.value)
-  minute = (minute - 5 + 60) % 60
-  wateringMinute.value = minute
+  let minute = parseInt(wateringMinute.value);
+  minute = (minute - 5 + 60) % 60;
+  
+  // Only enforce boundaries in one-time mode with today selected
+  if (isOneTimeToday.value) {
+    const currentMinute = new Date().getMinutes();
+    if (minute >= currentMinute) {
+      wateringMinute.value = minute;
+    }
+  } else {
+    wateringMinute.value = minute;
+  }
 }
+
 
 const updateAmPm = () => {
   // Update isAm based on the 24-hour format hour
@@ -2435,25 +2450,42 @@ const setAmPm = (value) => {
 
 // Validation functions
 const validateHour = () => {
-  let inputHour12 = parseInt(formattedHour.value); // This is 1-12 from input
+  let inputHour12 = parseInt(formattedHour.value);
   if (isNaN(inputHour12) || inputHour12 < 1) inputHour12 = 1;
   if (inputHour12 > 12) inputHour12 = 12;
 
   let hour24 = inputHour12;
   if (isAm.value) {
-    if (hour24 === 12) hour24 = 0; // 12 AM is 0
-  } else { // PM
-    if (hour24 < 12) hour24 += 12; // 1 PM to 11 PM
+    if (hour24 === 12) hour24 = 0;
+  } else {
+    if (hour24 < 12) hour24 += 12;
   }
+
+  // Only enforce boundaries in one-time mode with today selected
+  if (isOneTimeToday.value) {
+    const currentHour = new Date().getHours();
+    if (hour24 < currentHour) {
+      hour24 = currentHour;
+    }
+  }
+
   wateringHour.value = hour24;
-  // formattedHour will recompute based on wateringHour and isAm
 }
 
 const validateMinute = () => {
-  let minute = parseInt(formattedMinute.value)
-  if (isNaN(minute) || minute < 0) minute = 0
-  if (minute > 59) minute = 59
-  wateringMinute.value = minute
+  let minute = parseInt(formattedMinute.value);
+  if (isNaN(minute) || minute < 0) minute = 0;
+  if (minute > 59) minute = 59;
+
+  // Only enforce boundaries in one-time mode with today selected
+  if (isOneTimeToday.value) {
+    const currentMinute = new Date().getMinutes();
+    if (minute < currentMinute) {
+      minute = currentMinute;
+    }
+  }
+
+  wateringMinute.value = minute;
 }
 
 // Formatted time inputs
@@ -2567,8 +2599,18 @@ const loadScheduleData = (index) => {
 const resetScheduleForm = () => {
   wateringMode.value = 'weekly'
   wateringDays.value = [true, false, true, false, true, false, false]
-  wateringHour.value = 6 // 6 AM (24-hour format)
-  wateringMinute.value = 30
+  
+  const now = new Date()
+  // Set default time to current time + 5 minutes (rounded to nearest 5)
+  let minutes = now.getMinutes()
+  minutes = Math.ceil(minutes / 5) * 5
+  if (minutes >= 60) {
+    minutes = 0
+    now.setHours(now.getHours() + 1)
+  }
+  
+  wateringHour.value = now.getHours()
+  wateringMinute.value = minutes
   wateringDuration.value = 20
   wateringInterval.value = 2
   wateringIntervalUnit.value = 'days'
@@ -2577,9 +2619,8 @@ const resetScheduleForm = () => {
   waterFlowRate.value = 'medium'
   selectedDate.value = new Date()
   currentDate.value = new Date()
-  updateAmPm(); // Set isAm based on default hour
+  updateAmPm()
 }
-
 // Function to close the schedule modal
 const closeScheduleModal = () => {
   showScheduleModal.value = false
@@ -2624,37 +2665,6 @@ const editSchedule = (index) => {
 const removeSchedule = (index) => {
   scheduleToDeleteIndex.value = index
   showDeleteConfirmation.value = true
-}
-
-// UPDATED: Function to confirm and execute schedule deletion
-const confirmDeleteSchedule = async () => {
-  if (scheduleToDeleteIndex.value !== null && scheduleToDeleteIndex.value < savedSchedules.value.length) {
-    try {
-      const scheduleId = savedSchedules.value[scheduleToDeleteIndex.value].id
-
-      // Delete from Firebase
-      await deleteDoc(doc(db, 'watering_schedules', scheduleId))
-
-      // Remove from local array (Firebase listener will also update, but this is faster UI feedback)
-      // savedSchedules.value.splice(scheduleToDeleteIndex.value, 1) // Let onSnapshot handle UI update
-
-      // Recalculate next watering time
-      await calculateNextWateringTime()
-
-      showToastMessage('Schedule deleted successfully')
-    } catch (error) {
-      console.error('Error deleting schedule:', error)
-      showToastMessage('Error deleting schedule. Please try again.')
-    } finally {
-      showDeleteConfirmation.value = false
-      scheduleToDeleteIndex.value = null
-    }
-  } else {
-    console.error("Invalid index for deletion or schedule not found.");
-    showToastMessage('Error: Could not find schedule to delete.');
-    showDeleteConfirmation.value = false
-    scheduleToDeleteIndex.value = null
-  }
 }
 
 // Schedule summary
@@ -2809,9 +2819,6 @@ const fetchWateringSchedules = () => {
   });
 };
 
-
-
-
 // MODIFIED: Function to calculate the next watering time from the database
 let unsubscribeNextWatering = null; // To avoid multiple listeners
 
@@ -2845,11 +2852,47 @@ const calculateNextWateringTime = () => {
   isLoadingNextWatering.value = false;
 };
 
+const confirmDeleteSchedule = async () => {
+  if (scheduleToDeleteIndex.value !== null && scheduleToDeleteIndex.value < savedSchedules.value.length) {
+    isDeletingSchedule.value = true; 
+    try {
+      const scheduleId = savedSchedules.value[scheduleToDeleteIndex.value].id
+
+      // Send delete request with minimal payload
+      await fetch("http://127.0.0.1:8000/api/watering-schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete",
+          id: scheduleId
+        }),
+      });
+
+      // Delete from Firebase
+      await deleteDoc(doc(db, 'watering_schedules', scheduleId))
+
+      await calculateNextWateringTime()
+      showToastMessage('Schedule deleted successfully')
+    } catch (error) {
+      console.error('Error deleting schedule:', error)
+      showToastMessage('Error deleting schedule. Please try again.')
+    } finally {
+      showDeleteConfirmation.value = false
+      scheduleToDeleteIndex.value = null
+      isDeletingSchedule.value = false; 
+    }
+  } else {
+    console.error("Invalid index for deletion or schedule not found.");
+    showToastMessage('Error: Could not find schedule to delete.');
+    showDeleteConfirmation.value = false
+    scheduleToDeleteIndex.value = null
+  }
+}
+
 const saveWateringSchedule = async () => {
   isLoading.value = true;
   try {
     const scheduledTime = new Date();
-
     const current24Hour = wateringHour.value;
     const currentMinute = wateringMinute.value;
 
@@ -2863,50 +2906,6 @@ const saveWateringSchedule = async () => {
 
     scheduledTime.setHours(current24Hour, currentMinute, 0, 0);
 
-    const newScheduleDetails = {
-      mode: wateringMode.value,
-      hour: current24Hour,
-      minute: currentMinute,
-      duration: wateringDuration.value,
-      date: wateringMode.value === 'one-time' ? new Date(selectedDate.value) : null,
-      days: wateringMode.value === 'weekly' ? [...wateringDays.value] : null,
-    };
-
-    // ✅ Check for duplicates manually
-    const hasExactDuplicate = savedSchedules.value.some((schedule) => {
-      const isSameMode = schedule.mode === newScheduleDetails.mode;
-      const isSameHour = schedule.hour === newScheduleDetails.hour;
-      const isSameMinute = schedule.minute === newScheduleDetails.minute;
-      const isSameDuration = schedule.duration === newScheduleDetails.duration;
-      const isSameDayList = JSON.stringify(schedule.days || []) === JSON.stringify(newScheduleDetails.days || []);
-      const isSameDate =
-        wateringMode.value === 'one-time' &&
-        schedule.date &&
-        newScheduleDetails.date &&
-        new Date(schedule.date).toDateString() === newScheduleDetails.date.toDateString();
-
-      // ✨ Skip if this is the one we're editing
-      if (editingScheduleId.value && editingScheduleId.value === schedule.id) return false;
-
-      // ✅ Allow if the old one is completed
-      if (schedule.completed === true) return false;
-
-      // Compare based on mode
-      if (wateringMode.value === 'weekly') {
-        return isSameMode && isSameHour && isSameMinute && isSameDuration && isSameDayList;
-      } else if (wateringMode.value === 'one-time') {
-        return isSameMode && isSameHour && isSameMinute && isSameDuration && isSameDate;
-      } else {
-        return isSameMode && isSameHour && isSameMinute && isSameDuration;
-      }
-    });
-
-    if (hasExactDuplicate) {
-      showToastMessage("Schedule conflicts with an existing one due to overlapping time, duration, or day(s).", 'warning');
-      isLoading.value = false;
-      return;
-    }
-
     const formattedDateTime = scheduledTime.toLocaleString('en-US', {
       weekday: 'short',
       month: 'short',
@@ -2916,48 +2915,76 @@ const saveWateringSchedule = async () => {
       hour12: true,
     });
 
-    const schedulePayload = {
-      dateTime: formattedDateTime,
-      duration: wateringDuration.value,
-      mode: wateringMode.value,
-      days: wateringMode.value === 'weekly' ? [...wateringDays.value] : [],
-      skipIfRain: skipIfRain.value,
-      notifyWatering: notifyWatering.value,
-      waterFlowRate: waterFlowRate.value,
-      interval: wateringMode.value === 'custom'
-        ? {
-            value: wateringInterval.value,
-            unit: wateringIntervalUnit.value,
-          }
-        : null,
-      scheduledTime: scheduledTime.getTime(),
-      completed: false,
-    };
-
-    // 🛰️ Send to backend
-    const backendResponse = await fetch("http://127.0.0.1:8000/api/watering-schedule", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(schedulePayload),
-    });
-
-    const backendData = await backendResponse.json();
-    if (!backendResponse.ok) throw new Error(backendData.error || "Failed to save schedule in backend");
-
+    // Only send to backend AFTER Firestore save
     if (editingScheduleId.value) {
-      const docRef = doc(db, 'watering_schedules', editingScheduleId.value);
-      await updateDoc(docRef, {
-        ...schedulePayload,
+      // UPDATE EXISTING SCHEDULE
+      const firebaseData = {
+        dateTime: formattedDateTime,
+        duration: wateringDuration.value,
+        mode: wateringMode.value,
+        days: wateringMode.value === 'weekly' ? [...wateringDays.value] : [],
+        skipIfRain: skipIfRain.value,
+        notifyWatering: notifyWatering.value,
+        waterFlowRate: waterFlowRate.value,
+        interval: wateringMode.value === 'custom' ? {
+                value: wateringInterval.value,
+                unit: wateringIntervalUnit.value,
+              } : null,
+        scheduledTime: scheduledTime.getTime(),
+        completed: false,
         updatedAt: serverTimestamp(),
+      };
+
+      // 1. Update Firestore first
+      const docRef = doc(db, 'watering_schedules', editingScheduleId.value);
+      await updateDoc(docRef, firebaseData);
+      
+      // 2. Then send to backend
+      await fetch("http://127.0.0.1:8000/api/watering-schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...firebaseData,
+          id: editingScheduleId.value,
+          action: 'update'
+        }),
       });
+      
       showToastMessage('Schedule updated successfully','success');
     } else {
-      const newScheduleData = {
-        ...schedulePayload,
+      // NEW SCHEDULE
+      const firebaseData = {
+        dateTime: formattedDateTime,
+        duration: wateringDuration.value,
+        mode: wateringMode.value,
+        days: wateringMode.value === 'weekly' ? [...wateringDays.value] : [],
+        skipIfRain: skipIfRain.value,
+        notifyWatering: notifyWatering.value,
+        waterFlowRate: waterFlowRate.value,
+        interval: wateringMode.value === 'custom' ? {
+                value: wateringInterval.value,
+                unit: wateringIntervalUnit.value,
+              } : null,
+        scheduledTime: scheduledTime.getTime(),
+        completed: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
-      await addDoc(collection(db, 'watering_schedules'), newScheduleData);
+      
+      // 1. Save to Firestore first
+      const docRef = await addDoc(collection(db, 'watering_schedules'), firebaseData);
+      
+      
+      // 2. Then send to backend with real ID
+      await fetch("http://127.0.0.1:8000/api/watering-schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...firebaseData,
+          id: docRef.id,
+          action: 'add'
+        }),
+      });
       showToastMessage('New schedule saved successfully','success');
     }
 
@@ -2971,8 +2998,6 @@ const saveWateringSchedule = async () => {
     isLoading.value = false;
   }
 };
-
-
 
 const showToastMessage = (message, severity = 'info') => {
   if (toastTimeout.value) clearTimeout(toastTimeout.value)

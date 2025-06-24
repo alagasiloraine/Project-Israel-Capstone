@@ -197,41 +197,64 @@
                     </div>
                   </div>
                   
-                  <!-- Smaller Enhanced 3D Power Button with Circular Progress -->
-                  <div class="relative w-40 h-40 mx-auto transform-gpu power-button-container mt-4">
+                  <!-- Circular Display with ON/OFF percentages -->
+                  <div class="relative w-48 h-48 mx-auto mt-4">
                     <svg class="w-full h-full" viewBox="0 0 100 100">
                       <!-- Background circle -->
-                      <circle cx="50" cy="50" r="48" fill="none" stroke="#E9D5FF" stroke-width="4" />
-                      <!-- Progress circle -->
+                      <circle cx="50" cy="50" r="45" fill="none" stroke="#f3e8ff" stroke-width="8" />
+                      
+                      <!-- ON percentage arc (purple) -->
                       <circle 
                         cx="50" 
                         cy="50" 
-                        r="48" 
+                        r="45" 
                         fill="none" 
-                        stroke="#A855F7" 
-                        stroke-width="4" 
+                        stroke="#a855f7" 
+                        stroke-width="8" 
                         stroke-linecap="round"
                         :stroke-dasharray="circumference"
-                        :stroke-dashoffset="dashOffset"
+                        :stroke-dashoffset="circumference - (circumference * motorOnPercentage / 100)"
                         transform="rotate(-90 50 50)"
                       />
+                      
+                      <!-- OFF percentage arc (light purple) -->
+                      <circle 
+                        cx="50" 
+                        cy="50" 
+                        r="45" 
+                        fill="none" 
+                        stroke="#e9d5ff" 
+                        stroke-width="8" 
+                        stroke-linecap="round"
+                        :stroke-dasharray="circumference"
+                        :stroke-dashoffset="(circumference * motorOnPercentage / 100) - circumference"
+                        transform="rotate(-90 50 50)"
+                        stroke-dashoffset="0"
+                      />
                     </svg>
+                    
+                    <!-- Center Power Button -->
                     <div 
-                      class="absolute inset-2 rounded-full shadow-lg overflow-hidden cursor-default transition-all duration-300 power-button"
+                      class="absolute inset-6 rounded-full shadow-lg overflow-hidden cursor-default transition-all duration-300 power-button"
                       :class="motorStatus ? 'power-on' : 'power-off'"
                     >
                       <div class="absolute inset-0 bg-gradient-to-br from-purple-400 to-purple-600"></div>
-                      <div class="absolute inset-0 bg-black opacity-20"></div>
                       <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="text-center">
-                          <Power :class="['w-10 h-10 transition-all duration-300', motorStatus ? 'text-white' : 'text-purple-200']" />
-                          <span class="block mt-1 text-xl font-bold text-white">{{ motorStatus ? 'ON' : 'OFF' }}</span>
-                          <span class="block text-sm font-medium text-purple-100">{{ motorOnPercentage.toFixed(1) }}%</span>
-                        </div>
+                        <Power :class="['w-10 h-10 transition-all duration-300', motorStatus ? 'text-white' : 'text-purple-200']" />
                       </div>
-                      <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-20"></div>
-                      <div class="absolute inset-0 rounded-full border-4 border-purple-300 opacity-20"></div>
                       <div v-if="motorStatus" class="absolute inset-0 bg-purple-500 animate-pulse opacity-30"></div>
+                    </div>
+                    
+                    <!-- ON Percentage Label -->
+                    <div class="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/2 text-center w-16 bg-purple-200 rounded-lg border-2 border-purple-500">
+                      <div class="text-xs text-purple-700 mb-1">ON</div>
+                      <div class="text-lg font-bold text-purple-800">{{ motorOnPercentage.toFixed(1) }}%</div>
+                    </div>
+                    
+                    <!-- OFF Percentage Label -->
+                    <div class="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 text-center w-16 bg-purple-200 rounded-lg border-2 border-purple-500">
+                      <div class="text-xs text-purple-700 mb-1">OFF</div>
+                      <div class="text-lg font-bold text-purple-800">{{ (100 - motorOnPercentage).toFixed(1) }}%</div>
                     </div>
                   </div>
 
@@ -602,7 +625,7 @@
                         </span>
 
                       </div>
-                      <!-- <div class="flex items-center mt-1">
+                      <div class="flex items-center mt-1">
                         <template v-if="soilPhChange">
                           <component
                             :is="soilPhChange.direction === 'up' ? ArrowUp : ArrowDown"
@@ -618,7 +641,7 @@
                         </template>
                         <span v-else class="text-xs text-gray-500">Change from yesterday: N/A</span>
                       
-                      </div> -->
+                      </div>
                     </div>
                     <div class="bg-orange-50 p-3 rounded-2xl">
                       <FlaskConical class="w-8 h-8 text-orange-500" />
@@ -1461,7 +1484,6 @@ const initTemperatureChart = () => {
 };
 
 const initSoilPhChart = () => {
-  // if (!soilPhChartRef.value || soilPhReadings.value.length === 0) return;
   if (!soilPhChartRef.value) return;  
   try {
     if (soilPhChartInstance.value) {
@@ -1470,8 +1492,8 @@ const initSoilPhChart = () => {
 
     const labels = soilPhReadings.value.map(r => formatTimeLabel(r.timestamp));
     const data = soilPhReadings.value.map(r => r.soilPh || 0);
-    const minY = Math.min(...data, 7);
-    const maxY = Math.max(...data, 7);
+    const minY = 1; // Fixed minimum of 1
+    const maxY = Math.max(7, ...data); // Ensure max is at least 7
 
     soilPhChartInstance.value = new Chart(soilPhChartRef.value.getContext('2d'), {
       type: 'line',
@@ -1481,7 +1503,12 @@ const initSoilPhChart = () => {
           label: 'Soil pH',
           data,
           borderColor: '#f97316',
-          backgroundColor: 'rgba(249, 115, 22, 0.1)',
+          backgroundColor: (context) => {
+            const chart = context.chart;
+            const {ctx, chartArea} = chart;
+            if (!chartArea) return null; // This fixes the error
+            return createLinearGradient(ctx, chartArea);
+          },
           fill: true,
           tension: 0.4,
           borderWidth: 3,
@@ -1491,8 +1518,64 @@ const initSoilPhChart = () => {
           pointBorderWidth: 2
         }]
       },
-      options: getChartOptions('Soil pH', '', maxY, false, minY)
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: isInitialChartRender.value,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              padding: 20
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.dataset.label}: ${context.parsed.y}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            min: minY,
+            max: maxY,
+            ticks: {
+              stepSize: 1,
+              color: '#6B7280'
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#6B7280'
+            }
+          }
+        },
+        elements: {
+          line: {
+            tension: 0.4
+          }
+        }
+      }
     });
+
+    // Helper function for gradient background
+    function createLinearGradient(ctx, chartArea) {
+      const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+      gradient.addColorStop(0, 'rgba(249, 115, 22, 0.1)');
+      gradient.addColorStop(1, 'rgba(249, 115, 22, 0.3)');
+      return gradient;
+    }
   } catch (error) {
     console.error("Error initializing soil pH chart:", error);
   }

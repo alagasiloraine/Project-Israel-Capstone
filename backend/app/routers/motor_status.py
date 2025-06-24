@@ -13,22 +13,25 @@ router = APIRouter(
 ESP32_IP = "http://192.168.1.18"   # Change this if your ESP32 has a new IP
 ESP32_ENDPOINT = f"{ESP32_IP}/motor-status"
 
-# Data model
+# Updated data model with source field
 class MotorStatus(BaseModel):
     status: bool
     device_id: str
     user: str
     timestamp: datetime
     formatted_time: str
+    source: str  # New field added here
 
 # Route to handle motor toggle
 @router.post("/")
 async def save_motor_status(status_data: MotorStatus):
     print("✅ Received toggle from Vue frontend")
+    print(f"Source: {status_data.source}")  # Log the source
     print(status_data.dict())
 
     payload = {
-        "status": status_data.status  # Only forward status to ESP32
+        "status": status_data.status,
+        "source": status_data.source  # Forward source to ESP32
     }
 
     try:
@@ -38,7 +41,8 @@ async def save_motor_status(status_data: MotorStatus):
         print("✅ Successfully forwarded to ESP32.")
         return {
             "message": "Motor status received and forwarded",
-            "esp32_response": response.json()
+            "esp32_response": response.json(),
+            "source": status_data.source  # Include source in response
         }
 
     except httpx.RequestError as e:
