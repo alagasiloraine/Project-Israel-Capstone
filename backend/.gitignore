@@ -3,4 +3,9 @@ hindiItoApiKey.json
 .env
 data
 forecast_log.txt
-
+dataset.csv
+feature_importance.png
+get-pip.py
+test_serial.py
+weather_forecast_results.csv
+weather_forecast.png
