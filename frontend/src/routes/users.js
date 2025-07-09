@@ -1,105 +1,140 @@
-import LandingPage from '../views/users/LandingPage.vue'
-import Dashboard from '../views/users/Dashboard.vue'
-import CropPrediction from '../views/users/CropPrediction.vue'
-import DeviceControl from '../views/users/DeviceControl.vue'
-import SoilMoisture from '../views/users/SoilMoisture.vue'
-import WaterLevel from '../views/users/WaterLevel.vue'
-import TemperatureHumidity from '../views/users/TemperatureHumidity.vue'
-import MotorControl from '../views/users/MotorControl.vue'
-import SoilAnalysis from '../views/users/SoilAnalysis.vue'
-import UserProfile from '../views/users/UserProfile.vue'
-import About from '../views/users/About.vue'
-import OrganicSection from '../views/users/OrganicSection.vue'
-import WeatherForecast from '../views/users/WeatherForecast.vue'
-import Notifications from '../views/users/Notifications.vue'
-import SoilPH from '../views/users/SoilPH.vue'
-import npkData from '../views/users/npkData.vue'
-import ManualGuide from '../views/users/ManualGuide.vue'
+import { createWebHistory } from 'vue-router'
 
-export const userRoutes = [
+const routes = [
+  // Public routes
   {
     path: '/',
     name: 'Landing',
-    component: LandingPage
+    component: () => import('../views/users/LandingPage.vue'),
+    meta: { hideSidebar: true, isPublic: true }
   },
   {
     path: '/about',
     name: 'About',
-    component: About
+    component: () => import('../views/users/About.vue'),
+    meta: { hideSidebar: true, isPublic: true }
   },
   {
     path: '/organicsection',
     name: 'OrganicSection',
-    component: OrganicSection
+    component: () => import('../views/users/OrganicSection.vue'),
+    meta: { hideSidebar: true, isPublic: true }
   },
   {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: Dashboard
+    path: '/login',
+    name: 'Login',
+    component: () => import('../views/auth/Login.vue'),
+    meta: { hideSidebar: true, isPublic: true }
   },
   {
-    path: '/prediction',
-    name: 'CropPrediction',
-    component: CropPrediction
+    path: '/register',
+    name: 'Register',
+    component: () => import('../views/auth/Register.vue'),
+    meta: { hideSidebar: true, isPublic: true }
   },
   {
-    path: '/control',
-    name: 'DeviceControl',
-    component: DeviceControl
-  },
-    {
-    path: '/npkData',
-    name: 'npkData',
-    component: npkData
+    path: '/forgotpassword',
+    name: 'ForgotPassword',
+    component: () => import('../views/auth/ForgotPassword.vue'),
+    meta: { hideSidebar: true, isPublic: true }
   },
   {
-    path: '/soilph',
-    name: 'SoilPH',
-    component: SoilPH
+    path: '/auth/verify-otp',
+    name: 'VerifyOTP',
+    component: () => import('../views/auth/Verification.vue'),
+    meta: { hideSidebar: true, isPublic: true }
   },
+
+  // Authenticated routes (with Sidebar)
   {
-    path: '/soil-moisture',
-    name: 'SoilMoisture',
-    component: SoilMoisture
+    path: '/app',
+    component: () => import('../Main.vue'),
+    meta: { requiresAuth: true },
+    redirect: '/app/dashboard',
+    children: [
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: () => import('../views/users/Dashboard.vue')
+      },
+      {
+        path: 'prediction',
+        name: 'CropPrediction',
+        component: () => import('../views/users/CropPrediction.vue')
+      },
+      {
+        path: 'control',
+        name: 'DeviceControl',
+        component: () => import('../views/users/DeviceControl.vue')
+      },
+      {
+        path: 'npkData',
+        name: 'npkData',
+        component: () => import('../views/users/npkData.vue')
+      },
+      {
+        path: 'soilph',
+        name: 'SoilPH',
+        component: () => import('../views/users/SoilPH.vue')
+      },
+      {
+        path: 'soil-moisture',
+        name: 'SoilMoisture',
+        component: () => import('../views/users/SoilMoisture.vue')
+      },
+      {
+        path: 'water-level',
+        name: 'WaterLevel',
+        component: () => import('../views/users/WaterLevel.vue')
+      },
+      {
+        path: 'temperature-humidity',
+        name: 'TemperatureHumidity',
+        component: () => import('../views/users/TemperatureHumidity.vue')
+      },
+      {
+        path: 'motor-control',
+        name: 'MotorControl',
+        component: () => import('../views/users/MotorControl.vue')
+      },
+      {
+        path: 'soil',
+        name: 'SoilAnalysis',
+        component: () => import('../views/users/SoilAnalysis.vue')
+      },
+      {
+        path: 'profile',
+        name: 'UserProfile',
+        component: () => import('../views/users/UserProfile.vue')
+      },
+      {
+        path: 'weather',
+        name: 'WeatherForecast',
+        component: () => import('../views/users/WeatherForecast.vue')
+      },
+      {
+        path: 'notifications',
+        name: 'Notifications',
+        component: () => import('../views/users/Notifications.vue')
+      },
+      {
+        path: 'manual-guide',
+        name: 'ManualGuide',
+        component: () => import('../views/users/ManualGuide.vue')
+      },
+      {
+        path: 'recalibration',
+        name: 'Recalibration',
+        component: () => import('../views/users/ReCalibration.vue')
+      }
+    ]
   },
+  // Fallback route for 404
   {
-    path: '/water-level',
-    name: 'WaterLevel',
-    component: WaterLevel
-  },
-  {
-    path: '/temperature-humidity',
-    name: 'temperature-humidity',
-    component: TemperatureHumidity
-  },
-  {
-    path: "/motor-control",
-    name: "MotorControl",
-    component: MotorControl,
-  },
-  {
-    path: "/soil",
-    name: "SoilAnalysis",
-    component: SoilAnalysis,
-  },
-  {
-    path: "/profile",
-    name: "UserProfile",
-    component: UserProfile,
-  },
-  {
-    path: "/weather",
-    name: "WeatherForecast",
-    component: WeatherForecast,
-  },
-  {
-    path: "/notifications",
-    name: "Notifications",
-    component: Notifications,
-  },
-  {
-    path: "/manual-guide",
-    name: "ManualGuide",
-    component: ManualGuide,
-  },
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/error/NotFound.vue')
+  }
 ]
+
+export const userRoutes = routes

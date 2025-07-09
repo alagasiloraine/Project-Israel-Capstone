@@ -18,7 +18,10 @@ class Notification(BaseModel):
 @router.post("/notifications")
 async def create_notification(notification: Notification):
     try:
-        db.collection("notifications").document(notification.id).set(notification.dict())
+        data = notification.dict()
+        if not data.get("timestamp"):
+            data["timestamp"] = datetime.utcnow()
+        db.collection("notifications").document(notification.id).set(data)
         return {"message": "Notification saved successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

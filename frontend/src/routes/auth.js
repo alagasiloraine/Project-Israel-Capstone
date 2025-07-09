@@ -25,5 +25,9 @@ export const authRoutes = [
     name: 'ForgotPassword',
     component: ForgotPassword
   },
+  {
+    path: '/auth/verify-otp',
+    name: 'Verification',
+    component: Verification
+  }
 ]
-

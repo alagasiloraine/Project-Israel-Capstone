@@ -59,7 +59,7 @@
             />
           </div>
           <h2 class="text-2xl font-bold mb-1">Reset Password</h2>
-          <p class="text-sm text-gray-200/90 mt-1 text-center font-light">Don't worry! It happens. Please enter the email associated with your account.</p>
+          <p class="text-sm text-gray-200/90 mt-1 text-center font-light">Don't worry! It happens. Please enter the phone number associated with your account.</p>
         </div>
 
         <div class="relative flex justify-center z-10">
@@ -81,20 +81,22 @@
                currentStep === 2 ? 'Verify Code' : 'Create New Password' }}
           </h2>
           <p v-if="currentStep === 1" class="text-sm text-gray-600 text-center mb-6">
-            Enter your email and we'll send you a verification code to reset your password
+            Enter your phone number and we'll send you a verification code to reset your password
           </p>
 
-          <!-- Step 1: Email Input -->
-          <form v-if="currentStep === 1" @submit.prevent="handleSendResetEmail" class="space-y-4">
+          <!-- Step 1: Phone Number Input -->
+          <form v-if="currentStep === 1" @submit.prevent="handleSendResetCode" class="space-y-4">
             <div>
-              <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+              <label for="phoneNumber" class="block text-sm font-medium text-gray-700">Phone Number</label>
               <input 
-                id="email" 
-                type="email" 
-                v-model="email"
+                id="phoneNumber"
+                type="tel"
+                maxlength="13"
+                inputmode="numeric"
+                v-model="phoneNumber"
                 required 
                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
-                placeholder="Enter your email address"
+                placeholder="e.g., 09123456789"
               />
             </div>
 
@@ -110,7 +112,7 @@
           <form v-if="currentStep === 2" @submit.prevent="handleVerifyCode" class="space-y-6">
             <div class="text-center">
               <h3 class="text-sm font-semibold text-[#2B5329] mb-2">Enter the 6-digit code</h3>
-              <p class="text-sm text-gray-600">We sent to your email</p>
+              <p class="text-sm text-gray-600">We sent to your phone number</p>
             </div>
 
             <div class="flex justify-center gap-2">
@@ -152,66 +154,101 @@
             </div>
           </form>
 
-          <!-- Step 3: New Password -->
+          <!-- Step 3: New Password / PIN -->
           <form v-if="currentStep === 3" @submit.prevent="handleResetPassword" class="space-y-4">
-            <div class="text-center mb-6">
-              <p class="text-sm text-gray-600">Create a password that's both secure and easy to remember.</p>
+            <div class="text-center mb-4">
+              <p class="text-sm text-gray-600">Choose how you'd like to secure your account.</p>
             </div>
+
+            <!-- Auth Type Choice -->
             <div>
-              <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
-              <div class="relative">
-                <input 
-                  :type="showPassword ? 'text' : 'password'"
-                  id="newPassword" 
-                  v-model="newPassword"
-                  required 
-                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
-                />
-                <button 
+              <label class="block text-sm font-medium text-gray-700 mb-1">Choose New Login Type</label>
+              <div class="flex gap-2">
+                <button
                   type="button"
-                  @click="showPassword = !showPassword"
-                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  @click="resetAuthType = 'password'"
+                  :class="[
+                    'px-4 py-1.5 rounded-md text-sm font-medium transition w-full',
+                    resetAuthType === 'password'
+                      ? 'bg-[#2B5329] text-white shadow'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ]"
                 >
-                  <Eye v-if="!showPassword" class="h-4 w-4" />
-                  <EyeOff v-else class="h-4 w-4" />
+                  New Password
+                </button>
+                <button
+                  type="button"
+                  @click="resetAuthType = 'pin'"
+                  :class="[
+                    'px-4 py-1.5 rounded-md text-sm font-medium transition w-full',
+                    resetAuthType === 'pin'
+                      ? 'bg-[#2B5329] text-white shadow'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ]"
+                >
+                  New 4-digit PIN
                 </button>
               </div>
             </div>
 
-            <div>
-              <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
-              <div class="relative">
-                <input 
-                  :type="showConfirmPassword ? 'text' : 'password'"
-                  id="confirmPassword" 
-                  v-model="confirmPassword"
-                  required 
-                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
-                />
-                <button 
-                  type="button"
-                  @click="showConfirmPassword = !showConfirmPassword"
-                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                >
-                  <Eye v-if="!showConfirmPassword" class="h-4 w-4" />
-                  <EyeOff v-else class="h-4 w-4" />
-                </button>
+            <!-- Password Inputs -->
+            <div v-if="resetAuthType === 'password'" class="space-y-4">
+              <div>
+                <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
+                <div class="relative">
+                  <input 
+                    :type="showPassword ? 'text' : 'password'"
+                    id="newPassword" 
+                    v-model="newPassword"
+                    required 
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
+                  />
+                  <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    <Eye v-if="!showPassword" class="h-4 w-4" /><EyeOff v-else class="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                <div class="relative">
+                  <input 
+                    :type="showConfirmPassword ? 'text' : 'password'"
+                    id="confirmPassword" 
+                    v-model="confirmPassword"
+                    required 
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]"
+                  />
+                  <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    <Eye v-if="!showConfirmPassword" class="h-4 w-4" /><EyeOff v-else class="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- PIN Inputs -->
+            <div v-else class="space-y-4">
+              <div>
+                <label for="newPin" class="block text-sm font-medium text-gray-700">New 4-digit PIN</label>
+                <input id="newPin" type="password" v-model="newPin" required maxlength="4" pattern="\d*" inputmode="numeric" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]" />
+              </div>
+              <div>
+                <label for="confirmNewPin" class="block text-sm font-medium text-gray-700">Confirm PIN</label>
+                <input id="confirmNewPin" type="password" v-model="confirmNewPin" required maxlength="4" pattern="\d*" inputmode="numeric" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2B5329] focus:border-[#2B5329]" />
               </div>
             </div>
 
             <button 
-              type="submit" :isLoading="false"
+              type="submit" :disabled="isLoading"
               class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-[#2B5329] hover:bg-[#1F3D1F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500] transition-colors duration-200"
             >
-              {{ isLoading ? "Reseting Password..." : "Reset Password" }}
+              {{ isLoading ? "Resetting..." : "Reset Credentials" }}
             </button>
           </form>
         </div>
         <LoadingPage 
           :is-visible="isLoading"
-          title="Sending Verification Code..."
-          message="Please wait while we set up your new account"
-          @loading-complete="onLoadingComplete"
+          :title="loadingTitle"
+          message="Please wait while we process your request..."
         />
       </div>
     </div>
@@ -219,16 +256,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-vue-next'
 import api from '../../api/index.js'
 import toastr from 'toastr'
 import LoadingPage from '../layout/LoadingPage.vue'
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 
 const router = useRouter()
 const currentStep = ref(1)
-const email = ref('')
+const phoneNumber = ref('')
 const verificationCode = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
@@ -241,13 +279,39 @@ const resendTimer = ref(0)
 const isLoading = ref(false);
 let resendInterval = null
 
+const resetAuthType = ref('password') // 'password' or 'pin'
+const newPin = ref('')
+const confirmNewPin = ref('')
+
+const db = getFirestore();
+
+const loadingTitle = computed(() => {
+  if (currentStep.value === 1) return "Sending Verification Code...";
+  if (currentStep.value === 2) return "Verifying Code...";
+  if (currentStep.value === 3) return "Resetting Credentials...";
+  return "Loading...";
+});
+
+function isValidPhilippinePhoneNumber(number) {
+  const cleaned = number.trim();
+  return /^(\+639|09)\d{9}$/.test(cleaned);
+}
+
+function toE164(phone) {
+  const trimmed = phone.trim();
+  if (trimmed.startsWith('+63')) return trimmed;
+  const cleaned = trimmed.replace(/\D/g, '');
+  if (cleaned.startsWith('0')) return '+63' + cleaned.slice(1);
+  if (cleaned.startsWith('63')) return '+' + cleaned;
+  return null;
+}
+
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640
 }
 
 onMounted(() => {
   window.addEventListener('resize', handleResize)
-  startResendTimer() // Start timer when verification step is shown
 })
 
 onUnmounted(() => {
@@ -312,36 +376,100 @@ const startResendTimer = () => {
 }
 
 // Step 1: Request password reset
-const handleSendResetEmail = async () => {
+const handleSendResetCode = async () => {
+  const trimmedPhone = phoneNumber.value.trim()
+  if (!isValidPhilippinePhoneNumber(trimmedPhone)) {
+    toastr.error('Please enter a valid Philippine phone number.')
+    return
+  }
+
+  const formattedPhone = toE164(trimmedPhone)
+  if (!formattedPhone) {
+    toastr.error('Could not format phone number.')
+    return
+  }
+
+  isLoading.value = true;
+
   try {
-    isLoading.value = true;
-    const response = await api.post("/auth/forgot-password", { email: email.value });
-    toastr.success(response.data.message);
-    currentStep.value = 2; // Move to verification step
+    // 1. Check if phone number exists in Firebase users collection
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('phoneNumber', '==', formattedPhone));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      toastr.error('This phone number is not registered yet.');
+      isLoading.value = false;
+      return; // Stop execution if not registered
+    }
+
+    // 2. Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const userDoc = snapshot.docs[0];
+
+    // 3. Update user document with OTP
+    await updateDoc(doc(db, 'users', userDoc.id), {
+      otp,
+      otpSentAt: serverTimestamp()
+    });
+
+    // 4. Call backend to send OTP
+    await api.post('/otp/send', {
+      number: formattedPhone,
+      message: `Your password reset code is: ${otp}`
+    });
+
+    toastr.success('A password reset code has been sent to your phone.');
+    currentStep.value = 2; // 5. Move to verification step
+    startResendTimer(); // Start the cooldown timer
+
   } catch (error) {
-    isLoading.value = false
-    console.error("Error sending reset email:", error.response?.data || error);
-    toastr.error(error.response?.data?.detail || "Error sending reset email.");
+    console.error("Error sending reset code:", error.response?.data || error);
+    toastr.error(error.response?.data?.detail || "Error sending reset code.");
   } finally {
     isLoading.value = false;
   }
 };
 
 const handleResendCode = async () => {
-  isLoading.value = false;
+  if (resendTimer.value > 0) return;
+  isLoading.value = true;
   try {
-    // Call backend to resend the verification 
-    isLoading.value = false;
-    // Call backend to resend the verification code to the provided email address
-    const response = await api.post("/auth/forgot-password", {
-      email: email.value,
+    const trimmedPhone = phoneNumber.value.trim();
+    if (!isValidPhilippinePhoneNumber(trimmedPhone)) {
+      toastr.error('Invalid phone number.');
+      isLoading.value = false;
+      return;
+    }
+    const formattedPhone = toE164(trimmedPhone);
+
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('phoneNumber', '==', formattedPhone));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      toastr.error('This phone number is not registered.');
+      isLoading.value = false;
+      return;
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const userDoc = snapshot.docs[0];
+
+    await updateDoc(doc(db, 'users', userDoc.id), {
+      otp,
+      otpSentAt: serverTimestamp()
     });
 
-    toastr.success(response.data.message); // Notify the user that the code has been resent
-    startResendTimer(); // Start the resend timer (e.g., 30 seconds cooldown)
+    await api.post('/otp/send', {
+      number: formattedPhone,
+      message: `Your new password reset code is: ${otp}`
+    });
+
+    toastr.success("A new code has been sent to your phone.");
+    startResendTimer();
 
   } catch (error) {
-    isLoading.value = false;
     console.error("Error resending code:", error.response?.data || error);
     toastr.error(error.response?.data?.detail || "Error resending code.");
   } finally {
@@ -351,22 +479,44 @@ const handleResendCode = async () => {
 
 // ✅ Step 2: Verify the 6-digit code
 const handleVerifyCode = async () => {
-  isLoading.value = true;
-  try {
-    // Join the verification digits into a single string
-    const verificationCodeString = verificationDigits.value.join('');
+  const code = verificationDigits.value.join('').trim();
 
-    const response = await api.post("/auth/verify-code", {
-      email: email.value,
-      code: verificationCodeString  // Send the joined code as a single string
+  if (code.length !== 6) {
+    toastr.warning('Please enter the 6-digit code.');
+    return;
+  }
+
+  isLoading.value = true;
+
+  try {
+    const formattedPhone = toE164(phoneNumber.value);
+    const q = query(collection(db, 'users'), where('phoneNumber', '==', formattedPhone));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      toastr.error('User not found. Please start over.');
+      currentStep.value = 1;
+      return;
+    }
+
+    const userDoc = querySnapshot.docs[0];
+    const userData = userDoc.data();
+
+    if (userData.otp !== code) {
+      toastr.error('Invalid verification code.');
+      return;
+    }
+
+    await updateDoc(doc(db, 'users', userDoc.id), {
+      otp: '', // Clear OTP after successful verification
     });
 
-    toastr.success(response.data.message);
+    toastr.success('Code verified successfully!');
     currentStep.value = 3; // Move to password reset step
+
   } catch (error) {
-    isLoading.value = false;
-    console.error("Error verifying code:", error.response?.data || error);
-    toastr.error(error.response?.data?.detail || "Invalid verification code.");
+    console.error('Error verifying code:', error);
+    toastr.error('An error occurred during verification.');
   } finally {
     isLoading.value = false;
   }
@@ -374,36 +524,69 @@ const handleVerifyCode = async () => {
 
 
 const handleResetPassword = async () => {
-  isLoading.value = false; // Show loading state
-  // Check if the new password and confirm password match
-  if (newPassword.value !== confirmPassword.value) {
-    toastr.warning('Passwords do not match!');
+  isLoading.value = true;
+
+  const formattedPhone = toE164(phoneNumber.value);
+  if (!formattedPhone) {
+    toastr.error('Invalid phone number format.');
+    isLoading.value = false;
     return;
   }
 
-  // Check if password meets any required criteria (e.g., length, strength)
-  if (newPassword.value.length < 6) {
-    toastr.warning('Password must be at least 6 characters long.');
-    return;
+  const updateData = {
+    authType: resetAuthType.value,
+    updatedAt: serverTimestamp()
+  };
+
+  if (resetAuthType.value === 'password') {
+    if (newPassword.value !== confirmPassword.value) {
+      toastr.warning('Passwords do not match!');
+      isLoading.value = false;
+      return;
+    }
+    if (newPassword.value.length < 6) {
+      toastr.warning('Password must be at least 6 characters long.');
+      isLoading.value = false;
+      return;
+    }
+    updateData.password = newPassword.value;
+    updateData.pin = ''; // Clear PIN when setting a password
+  } else { // authType is 'pin'
+    if (newPin.value !== confirmNewPin.value) {
+      toastr.warning('PINs do not match!');
+      isLoading.value = false;
+      return;
+    }
+    if (!/^\d{4}$/.test(newPin.value)) {
+        toastr.warning('PIN must be 4 digits.');
+        isLoading.value = false;
+        return;
+    }
+    updateData.pin = newPin.value;
+    updateData.password = ''; // Clear password when setting a PIN
   }
- // Show loading state
+
   try {
-    isLoading.value = true; // Show loading state
-    // Send request to backend to reset the password
-    const response = await api.post("/auth/reset-password", {
-      email: email.value, // User's email
-      new_password: newPassword.value, // New password
-    });
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('phoneNumber', '==', formattedPhone));
+    const snapshot = await getDocs(q);
 
-    toastr.success(response.data.message); // Notify the user
-    router.push('/login'); // Redirect to login page after password is reset
+    if (snapshot.empty) {
+      toastr.error('Could not find an account with that phone number.');
+      isLoading.value = false;
+      return;
+    }
 
+    const userDocRef = snapshot.docs[0].ref;
+    await updateDoc(userDocRef, updateData);
+
+    toastr.success('Your credentials have been reset successfully.');
+    router.push('/login');
   } catch (error) {
-    isLoading.value = false; // Hide loading state
-    console.error("Error resetting password:", error.response?.data || error);
-    toastr.error(error.response?.data?.detail || "Error resetting password.");
+    console.error("Error resetting password:", error);
+    toastr.error("An error occurred while resetting your credentials.");
   } finally {
-    isLoading.value = false; // Hide loading state
+    isLoading.value = false;
   }
 };
 
@@ -487,4 +670,3 @@ input[type="text"]:focus {
   border-color: #2B5329;
 }
 </style>
-
