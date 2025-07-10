@@ -1,6 +1,24 @@
-venv
-hindiItoApiKey.json
-.env
-data
-forecast_log.txt
+# Python ignores
+__pycache__/
+*.py[cod]
 
+# VS Code settings
+.vscode/
+
+# Data files
+*.csv
+*.png
+*.txt
+
+# API keys and secrets
+hindiItoApiKey.json
+*.key
+*.secret
+
+# Environment variables
+.env
+.env.*
+
+# Specific files
+get-pip.py
+test_serial.py

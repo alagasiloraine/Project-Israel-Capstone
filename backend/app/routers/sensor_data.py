@@ -287,8 +287,8 @@
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Extra
-from typing import List
+from pydantic import BaseModel
+from typing import List, Optional
 import asyncio
 import json
 import os
@@ -300,7 +300,6 @@ from firebase_admin import credentials, firestore
 
 router = APIRouter(prefix="/api")
 
-# === Firebase Init ===
 load_dotenv()
 
 FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS")
@@ -315,114 +314,108 @@ db = firestore.client()
 
 subscribers: List[asyncio.Queue] = []
 
-# === Data Models ===
-
-# ESP32-1
+# ESP32-1 (NPK Soil pH)
 class NPKSoilPHData(BaseModel):
     nitrogen: float
     phosphorus: float
     potassium: float
     soilPh: float
+    device_id: str  # Added device_id field
 
-# ✅ ESP32-2: added device_id support
+# ESP32-2 (Moisture/Climate) - Updated to match ESP32 payload
 class MoistureClimateData(BaseModel):
     soilMoisture: float
     temperature: float
     humidity: float
-    device_id: str  # ✅ Added this line
+    device_id: str  # Added device_id field
 
-    class Config:
-        extra = Extra.ignore  # ✅ Allows extra fields without error
-
-# ESP32-3
+# ESP32-3 (Water Level)
 class WaterLevelData(BaseModel):
     waterLevel: float
+    device_id: str  # Added device_id field
 
-# ========= ESP32-1 ROUTE ==========
 @router.post("/esp32-1")
 async def receive_npk_soilph(data: NPKSoilPHData):
+    raw_data = data.dict()
+    device_id = raw_data.pop("device_id")  # Extract device_id
+
     message = {
         "type": "esp32-1",
-        "data": data.dict()
+        "data": raw_data,
+        "device_id": device_id
     }
 
-    print("📡 Received ESP32-1 Data:", message["data"])
+    print(f"📡 Received ESP32-1 Data from {device_id}:", raw_data)
 
     try:
+        # ✅ Save to 3sensor_readings > esp32-1 > readings
         db.collection("3sensor_readings").document("esp32-1").collection("readings").add({
-            **data.dict(),
-            "timestamp": firestore.SERVER_TIMESTAMP,
-            "device": "esp32-1"
+            **raw_data,
+            "device_id": device_id,
+            "timestamp": firestore.SERVER_TIMESTAMP
         })
-        print("✅ ESP32-1 data saved to Firebase")
+        print(f"✅ ESP32-1 data saved to Firebase for device {device_id}")
     except Exception as e:
-        print("❌ Firebase save error (ESP32-1):", e)
+        print(f"❌ Firebase save error (ESP32-1): {e}")
 
     for queue in subscribers:
         await queue.put(message)
 
     return {"message": "ESP32-1 data received and broadcasted"}
 
-# ========= ESP32-2 ROUTE ==========
+# ========= ESP32-2 ROUTE ========== (Updated for ESP32-ENV)
 @router.post("/esp32-2")
 async def receive_moisture_temp_hum(data: MoistureClimateData):
-    print("🟢 Step 1: ESP32-2 endpoint hit")
+    raw_data = data.dict()
+    device_id = raw_data.pop("device_id")  # Extract device_id
 
-    # Log raw received data
-    print("📥 Raw Data Received:", data)
-
-    # Prepare the message for broadcasting
     message = {
         "type": "esp32-2",
-        "data": data.dict()
+        "data": raw_data,
+        "device_id": device_id
     }
 
-    print("🟢 Step 2: Message formatted for broadcast")
-    print("📦 Message Content:", message)
+    print(f"📡 Received ESP32-2 Data from {device_id}:", raw_data)
 
-    # Try to save to Firebase
     try:
-        print("🟢 Step 3: Attempting to save to Firestore")
+        # ✅ Save to 3sensor_readings > esp32-2 > readings
         db.collection("3sensor_readings").document("esp32-2").collection("readings").add({
-            **data.dict(),
-            "timestamp": firestore.SERVER_TIMESTAMP,
-            "device": "esp32-2"
+            **raw_data,
+            "device_id": device_id,
+            "timestamp": firestore.SERVER_TIMESTAMP
         })
-        print("✅ Step 4: Data successfully saved to Firebase")
+        print(f"✅ ESP32-2 data saved to Firebase for device {device_id}")
     except Exception as e:
-        print("❌ Step 4: Firebase save error (ESP32-2):", e)
+        print(f"❌ Firebase save error (ESP32-2): {e}")
 
-    # Broadcast the message to all subscribers
-    print("🟢 Step 5: Broadcasting message to subscribers...")
     for queue in subscribers:
         await queue.put(message)
-    print("📤 Step 6: Broadcast complete")
 
     return {"message": "ESP32-2 data received and broadcasted"}
 
 # ========= ESP32-3 ROUTE ==========
 @router.post("/esp32-3")
 async def receive_water_level(data: WaterLevelData):
-    water_level = data.waterLevel
-
+    raw_data = data.dict()
+    device_id = raw_data.pop("device_id")  # Extract device_id
+    
     message = {
         "type": "esp32-3",
-        "data": {
-            "waterLevel": water_level
-        }
+        "data": raw_data,
+        "device_id": device_id
     }
 
-    print("📡 Received ESP32-3 Water Level:", water_level)
+    print(f"📡 Received ESP32-3 Water Level from {device_id}: {raw_data['waterLevel']}")
 
     try:
-        db.collection("3sensor_readings").document("esp32-3").collection("readings").add({
-            "waterLevel": water_level,
-            "timestamp": firestore.SERVER_TIMESTAMP,
-            "device": "esp32-3"
+        db.collection("water_level_readings").add({
+            **raw_data,
+            "device_id": device_id,
+            "timestamp": firestore.SERVER_TIMESTAMP
         })
-        print("✅ ESP32-3 data saved to Firebase")
+        print(f"✅ Water level saved to Firebase for device {device_id}")
     except Exception as e:
-        print("❌ Firebase save error (ESP32-3):", e)
+        print(f"❌ Firebase save error (ESP32-3): {e}")
 
     for queue in subscribers:
         await queue.put(message)
@@ -439,7 +432,6 @@ async def stream_sensor_data():
         try:
             while True:
                 data = await queue.get()
-                print(f"📤 Sending to frontend → variable: 'data' | value: {data}")
                 yield f"data: {json.dumps(jsonable_encoder(data))}\n\n"
         except asyncio.CancelledError:
             pass

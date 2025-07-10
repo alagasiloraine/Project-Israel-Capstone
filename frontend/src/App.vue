@@ -3,6 +3,8 @@
 </template>
 
 <script setup>
-// App level logic can be added here
-</script>
+import { useUserStore } from '../src/utils/user'
+const userStore = useUserStore()
+userStore.loadUser()
 
+</script>

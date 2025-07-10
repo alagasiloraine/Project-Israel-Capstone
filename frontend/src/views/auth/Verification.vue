@@ -78,12 +78,12 @@
           <!-- Right Side - Verification Form -->
           <div class="w-full md:w-1/2 bg-white p-6 flex flex-col">
             <div class="w-[90%] max-w-xs mx-auto flex-1 flex flex-col justify-center">
-              <h2 class="text-xl font-bold text-[#2B5329] text-center mb-6">Verify Your Email</h2>
+              <h2 class="text-xl font-bold text-[#2B5329] text-center mb-6">Verify Your Phone Number</h2>
 
               <form class="space-y-4" @submit.prevent="handleVerification">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 text-center mb-4">
-                    Enter the 6-digit code we sent to your email
+                    Enter the 6-digit code we sent to your phone number
                   </label>
                   <div class="flex justify-center gap-2">
                     <input 
@@ -144,6 +144,11 @@ import { ArrowLeft } from 'lucide-vue-next'
 import api from '../../api/index.js'
 import toastr from 'toastr'
 import LoadingPage from '../layout/LoadingPage.vue'
+// import { auth, googleProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber, query, where, getDocs } from "../../api/firebase.js"
+import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+const db = getFirestore();
+const auth = getAuth(); // ✅ This is required
 
 const router = useRouter()
 const route = useRoute()
@@ -155,6 +160,7 @@ const contentStyle = ref({})
 const resendTimer = ref(0)
 const uid = ref(null);
 const isLoading = ref(false);
+const phone = route.query.phone;
 
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640
@@ -197,61 +203,131 @@ const focusNext = (index) => {
 }
 
 onMounted(() => {
-  // ✅ Correctly retrieve UID from query parameters
-  uid.value = route.query.uid;
+  const phone = route.query.phone;
 
-  if (!uid.value) {
-    console.error("❌ UID is missing from the route");
+  if (!phone) {
+    console.error("❌ Phone number is missing from the route");
   } else {
-    console.log("✅ UID from route:", uid.value);
+    console.log("✅ Phone number from route:", phone);
+    // You can now fetch the user data by phone if needed
+    // fetchUserByPhone(phone); // optional: implement this if needed
   }
 });
 
-// ✅ Handle Verification Request
-const handleVerification = async () => {
-  const code = verificationCode.value.join("");
-  if (code.length !== 6) {
-    toastr.warning("Please enter a complete verification code.");
-    return;
-  }
-  isLoading.value = true;
-  try {
-    const response = await api.post("/auth/verify-email", {
-      uid: uid.value, // ✅ Use the correct UID reference
-      code: code,
-    });
 
-    if (response.data.message === "Email successfully verified") {
-      toastr.success("Your email has been verified!");
-      router.push("/login"); // Redirect to dashboard
-    }
-  } catch (error) {
-    toastr.error("Invalid verification code. Please try again.");
-    console.error("Verification Error:", error.response?.data || error);
-    isLoading.value = false;
-  }
-};
+// ✅ Handle Verification Request
+
+// const handleVerification = async () => {
+//   const code = verificationCode.value.join("").trim();
+
+//   if (code.length !== 6) {
+//     toastr.warning("Please enter the 6-digit code.");
+//     return;
+//   }
+
+//   isLoading.value = true;
+
+//   try {
+//     const result = await window.confirmationResult.confirm(code);
+//     const user = result.user;
+
+//     // ✅ Update Firestore user as verified
+//     const q = query(collection(db, "users"), where("phoneNumber", "==", phone));
+//     const querySnapshot = await getDocs(q);
+//     if (!querySnapshot.empty) {
+//       const userDoc = querySnapshot.docs[0];
+//       await updateDoc(doc(db, "users", userDoc.id), {
+//         verified: true,
+//       });
+//     }
+
+//     toastr.success("Phone number verified!");
+//     router.push("/login");
+//   } catch (error) {
+//     toastr.error("Invalid verification code.");
+//     console.error("Code confirmation error:", error);
+//   } finally {
+//     isLoading.value = false;
+//   }
+// };
 
 // ✅ Resend Code and Start Cooldown
+
 const resendCode = async () => {
   if (resendTimer.value > 0) return;
 
-  if (!uid.value) {
-    console.error("❌ UID is missing. Cannot resend code.");
-    alert("An error occurred. Please try again.");
+  try {
+    const formattedPhone = phone.startsWith("+63")
+      ? phone
+      : phone.replace(/^0/, "+63");
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // 🔁 Save new OTP to Firestore
+    const q = query(collection(db, "users"), where("phoneNumber", "==", formattedPhone));
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      await updateDoc(doc(db, "users", userDoc.id), {
+        otp,
+        otpSentAt: serverTimestamp()
+      });
+    }
+
+    // 🔁 Send OTP via backend (Vonage)
+    await api.post("/otp/send", {
+      number: formattedPhone,
+      message: `Your new OTP code is: ${otp}`
+    });
+
+    toastr.success("A new OTP has been sent to your phone.");
+    startResendCooldown();
+  } catch (error) {
+    console.error("Resend code error:", error);
+    toastr.error("Failed to resend OTP.");
+  }
+};
+
+const handleVerification = async () => {
+  const code = verificationCode.value.join("").trim();
+
+  if (code.length !== 6) {
+    toastr.warning("Please enter the 6-digit code.");
     return;
   }
 
-  try {
-    const response = await api.post("/auth/resend-code", { uid: uid.value });
+  console.log("🔐 Verifying code:", code);
+  isLoading.value = true;
 
-    if (response.data.message === "New verification code sent") {
-      alert("A new verification code has been sent to your email.");
-      startResendCooldown();
+  try {
+    const q = query(collection(db, "users"), where("phoneNumber", "==", phone));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      const userData = userDoc.data();
+
+      if (userData.otp !== code) {
+        toastr.error("Invalid verification code.");
+        return;
+      }
+
+      await updateDoc(doc(db, "users", userDoc.id), {
+        verified: true,
+        otp: "", // Optional: clear stored OTP
+      });
+
+      toastr.success("Phone number verified!");
+      router.push("/login");
+    } else {
+      toastr.error("Phone number not found.");
     }
   } catch (error) {
-    console.error("❌ Resend Error:", error.response?.data || error);
-    alert(error.response?.data?.detail || "Failed to resend the code. Try again later.");
+    console.error("❌ Error verifying OTP:", error);
+    toastr.error("Verification failed.");
+  } finally {
+    isLoading.value = false;
   }
 };
 

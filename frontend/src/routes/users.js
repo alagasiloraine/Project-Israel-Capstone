@@ -14,7 +14,8 @@ import WeatherForecast from '../views/users/WeatherForecast.vue'
 import Notifications from '../views/users/Notifications.vue'
 import SoilPH from '../views/users/SoilPH.vue'
 import npkData from '../views/users/npkData.vue'
-import ManualGuide from '../views/users/ManualGuide.vue'
+import ManualGuide from '../views/users/ManualGuide.vue' 
+import ReCalibration from '../views/users/ReCalibration.vue'
 
 export const userRoutes = [
   {
@@ -101,5 +102,10 @@ export const userRoutes = [
     path: "/manual-guide",
     name: "ManualGuide",
     component: ManualGuide,
+  },
+    {
+    path: "/recalibration",
+    name: "ReCalibration",
+    component: ReCalibration,
   },
 ]

@@ -71,40 +71,64 @@ export async function getWeatherData() {
   
     // 1) Fetch weather forecast
     const weatherRes = await fetch(
-      `https://api.open-meteo.com/v1/forecast?` +
-      `latitude=${latitude}&longitude=${longitude}` +
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
       `&current_weather=true` +
-      `&hourly=temperature_2m,weathercode,relative_humidity_2m,wind_speed_10m,wind_direction_10m,precipitation,precipitation_probability,uv_index,surface_pressure` +  // removed stray comma
+      `&hourly=temperature_2m,weathercode,relative_humidity_2m,wind_speed_10m,wind_direction_10m,precipitation,precipitation_probability,uv_index,surface_pressure` +
       `&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset` +
       `&timezone=auto&forecast_days=10`
     );
     const weatherData = await weatherRes.json();
   
-    // 2) Fetch air quality from the correct endpoint
+   // 2) Fetch air quality from the correct endpoint
     const aqRes = await fetch(
-      `https://air-quality-api.open-meteo.com/v1/air-quality?` +
-      `latitude=${latitude}&longitude=${longitude}` +
-      `&hourly=pm2_5,pm10,carbon_monoxide,nitrogen_dioxide,ozone,sulphur_dioxide` +
-      `&timezone=auto`
+      `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&hourly=pm2_5,pm10,carbon_monoxide,nitrogen_dioxide,ozone,sulphur_dioxide&timezone=auto`
     );
     const aqData = await aqRes.json();
   
     // Compute current hour index
     const now = new Date();
     const currentHour = now.toISOString().slice(0, 13) + ':00';
-    const idx = weatherData.hourly?.time?.findIndex(t => t === currentHour) ?? 0;
+    let idx = weatherData.hourly?.time?.findIndex(t => t === currentHour) ?? 0;
+    
+    // Function to find the most recent non-zero value in an array starting from index
+    const getRecentNonZero = (array, startIndex) => {
+      if (!array) return 0;
+      
+      // Check current index first
+      if (array[startIndex] !== undefined && array[startIndex] !== 0) {
+        return array[startIndex];
+      }
+      
+      // Search backwards for the most recent non-zero value
+      for (let i = startIndex - 1; i >= 0; i--) {
+        if (array[i] !== undefined && array[i] !== 0) {
+          return array[i];
+        }
+      }
+      
+      // If no non-zero found, search forwards
+      for (let i = startIndex + 1; i < array.length; i++) {
+        if (array[i] !== undefined && array[i] !== 0) {
+          return array[i];
+        }
+      }
+      
+      // If still nothing found, return 0
+      return 0;
+    };
   
-    // Build current summary
+    // Build current summary with fallback to recent non-zero data
     const current = {
-      temperature_c: weatherData.current_weather?.temperature ?? 0,
+      temperature_c: weatherData.current_weather?.temperature ?? 
+                   getRecentNonZero(weatherData.hourly?.temperature_2m, idx),
       weather_condition: mapWeatherCode(weatherData.current_weather?.weathercode),
-      humidity: weatherData.hourly?.relative_humidity_2m?.[idx] ?? 0,
-      wind_speed: weatherData.hourly?.wind_speed_10m?.[idx] ?? 0,
-      wind_direction: weatherData.hourly?.wind_direction_10m?.[idx] ?? 0,
-      precipitation: weatherData.hourly?.precipitation?.[idx] ?? 0,
-      rainChance: weatherData.hourly?.precipitation_probability?.[idx] ?? 0,
-      uv_index: weatherData.hourly?.uv_index?.[idx] ?? 0,
-      pressure: weatherData.hourly?.surface_pressure?.[idx] ?? 0,
+      humidity: getRecentNonZero(weatherData.hourly?.relative_humidity_2m, idx),
+      wind_speed: getRecentNonZero(weatherData.hourly?.wind_speed_10m, idx),
+      wind_direction: getRecentNonZero(weatherData.hourly?.wind_direction_10m, idx),
+      precipitation: getRecentNonZero(weatherData.hourly?.precipitation, idx),
+      rainChance: getRecentNonZero(weatherData.hourly?.precipitation_probability, idx),
+      uv_index: getRecentNonZero(weatherData.hourly?.uv_index, idx),
+      pressure: getRecentNonZero(weatherData.hourly?.surface_pressure, idx),
       sunrise: weatherData.daily?.sunrise?.[0] ?? '',
       sunset: weatherData.daily?.sunset?.[0] ?? '',
     };
@@ -151,6 +175,8 @@ export async function getWeatherData() {
     };
 }
 
+// ... rest of your code (getWeatherDataForPopularCities and mapWeatherCode) remains the same ...
+
 export async function getWeatherDataForPopularCities() {
     const barangays = [
         { name: 'Bulusan', latitude: 13.4037, longitude: 121.2012 },
@@ -161,25 +187,25 @@ export async function getWeatherDataForPopularCities() {
     ];
   
     const results = await Promise.all(
-        barangays.map(async (barangay) => {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${barangay.latitude}&longitude=${barangay.longitude}&current_weather=true&timezone=auto`;
-    
-            const response = await fetch(url);
-            const data = await response.json();
-    
-            const condition = mapWeatherCode(data.current_weather?.weathercode);
-            const temperature = data.current_weather?.temperature ?? 0;
-            const now = new Date();
-            const localTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-            return {
-            name: barangay.name,
-            condition,
-            temperature,
-            time: localTime
-            };
-        })
-    );
+    barangays.map(async (barangay) => {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${barangay.latitude}&longitude=${barangay.longitude}&current_weather=true&timezone=auto`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      const condition = mapWeatherCode(data.current_weather?.weathercode);
+      const temperature = data.current_weather?.temperature ?? 0;
+      const now = new Date();
+      const localTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      return {
+        name: barangay.name,
+        condition,
+        temperature,
+        time: localTime
+      };
+    })
+  );
   
     return results;
 }
@@ -212,5 +238,3 @@ export function mapWeatherCode(code) {
     };
     return mapping[code] || 'Unknown';
 }
-  
-  

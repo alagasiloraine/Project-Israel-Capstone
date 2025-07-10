@@ -1,1290 +1,715 @@
-#========================================================================================#
-
-# maataas ang accuracy nito HAHAHAHAHHA nice one pakwan
-
-# import numpy as np
-# import pandas as pd
-# import tensorflow as tf
-# from tensorflow import keras
-# from tensorflow.keras.layers import Dense, Dropout, BatchNormalization, LeakyReLU
-# from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-# from sklearn.model_selection import train_test_split, KFold
-# from sklearn.preprocessing import StandardScaler, LabelEncoder, PowerTransformer, RobustScaler
-# from sklearn.ensemble import VotingClassifier
-# from sklearn.feature_selection import SelectKBest, f_classif
-# from imblearn.over_sampling import SMOTE
-# from imblearn.combine import SMOTEENN
-# import xgboost as xgb
-# from sklearn.metrics import accuracy_score
-# import numpy as np
-
-# # Load data
-# data = pd.read_csv('crop_dataset_fixed.csv')
-# target_column = 'Crop'
-
-# # Separate features and labels
-# X = data.drop(columns=[target_column])
-# y = data[target_column]
-
-# # Enhanced feature engineering
-# def create_interaction_features(X):
-#     numeric_cols = X.select_dtypes(include=['int64', 'float64']).columns
-#     for i in range(len(numeric_cols)):
-#         for j in range(i+1, len(numeric_cols)):
-#             col1, col2 = numeric_cols[i], numeric_cols[j]
-#             X[f'{col1}_{col2}_ratio'] = X[col1] / (X[col2] + 1e-6)
-#             X[f'{col1}_{col2}_product'] = X[col1] * X[col2]
-#     return X
-
-# # Apply feature engineering
-# X = create_interaction_features(X)
-
-# # Categorical encoding
-# categorical_cols = X.select_dtypes(include=['object']).columns
-# X = pd.get_dummies(X, columns=categorical_cols)
-
-# # Feature selection
-# selector = SelectKBest(score_func=f_classif, k='all')
-# X_selected = selector.fit_transform(X, y)
-# selected_features_mask = selector.get_support()
-# selected_feature_names = X.columns[selected_features_mask].tolist()
-# X = X[selected_feature_names]
-
-# # Advanced preprocessing
-# def preprocess_features(X):
-#     power_transformer = PowerTransformer(method='yeo-johnson')
-#     robust_scaler = RobustScaler()
-    
-#     # Apply both transformers
-#     X_power = power_transformer.fit_transform(X)
-#     X_robust = robust_scaler.fit_transform(X_power)
-    
-#     return X_robust
-
-# X = preprocess_features(X)
-
-# # Enhanced sampling
-# smote_enn = SMOTEENN(random_state=42)
-# X_resampled, y_resampled = smote_enn.fit_resample(X, y)
-
-# # Label encoding
-# label_encoder = LabelEncoder()
-# y_encoded = label_encoder.fit_transform(y_resampled)
-
-# # Define deep learning model
-# def create_deep_model(input_shape, num_classes):
-#     inputs = keras.Input(shape=input_shape)
-    
-#     # First block with skip connection
-#     x = Dense(512, kernel_regularizer=keras.regularizers.l2(0.01))(inputs)
-#     x = LeakyReLU(negative_slope=0.1)(x)
-#     x = BatchNormalization()(x)
-#     x = Dropout(0.5)(x)
-    
-#     skip1 = x
-    
-#     # Second block
-#     x = Dense(256, kernel_regularizer=keras.regularizers.l2(0.01))(x)
-#     x = LeakyReLU(negative_slope=0.1)(x)
-#     x = BatchNormalization()(x)
-#     x = Dropout(0.4)(x)
-    
-#     # Add skip connection
-#     x = keras.layers.Concatenate()([x, skip1])
-    
-#     # Third block
-#     x = Dense(128, kernel_regularizer=keras.regularizers.l2(0.01))(x)
-#     x = LeakyReLU(negative_slope=0.1)(x)
-#     x = BatchNormalization()(x)
-#     x = Dropout(0.3)(x)
-    
-#     # Output
-#     outputs = Dense(num_classes, activation='softmax')(x)
-    
-#     return keras.Model(inputs, outputs)
-
-# # Create ensemble of models
-# def create_ensemble(input_shape, num_classes, n_models=3):
-#     models = []
-    
-#     for i in range(n_models):
-#         # Deep learning model
-#         dl_model = create_deep_model(input_shape, num_classes)
-#         dl_model.compile(
-#             optimizer=keras.optimizers.Adam(learning_rate=0.001),
-#             loss='sparse_categorical_crossentropy',
-#             metrics=['accuracy']
-#         )
-#         models.append(dl_model)
-        
-#         # XGBoost model
-#         xgb_model = xgb.XGBClassifier(
-#             learning_rate=0.01,
-#             n_estimators=200,
-#             max_depth=7,
-#             min_child_weight=1,
-#             gamma=0.1,
-#             subsample=0.8,
-#             colsample_bytree=0.8,
-#             objective='multi:softprob',
-#             num_class=num_classes,
-#             random_state=42+i
-#         )
-#         models.append(xgb_model)
-    
-#     return models
-
-# # Training with k-fold cross validation
-# n_splits = 5
-# kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
-
-# # Callbacks for deep learning models
-# early_stopping = EarlyStopping(
-#     monitor='val_accuracy',
-#     patience=20,
-#     restore_best_weights=True,
-#     min_delta=0.001
-# )
-
-# reduce_lr = ReduceLROnPlateau(
-#     monitor='val_accuracy',
-#     factor=0.2,
-#     patience=10,
-#     min_lr=1e-6,
-#     min_delta=0.001,
-#     verbose=1
-# )
-
-# # Train ensemble
-# def train_ensemble(X, y, input_shape, num_classes):
-#     ensemble_predictions = []
-#     fold_accuracies = []
-    
-#     for fold, (train_idx, val_idx) in enumerate(kf.split(X)):
-#         print(f"\nTraining Fold {fold + 1}/{n_splits}")
-        
-#         X_train, X_val = X[train_idx], X[val_idx]
-#         y_train, y_val = y[train_idx], y[val_idx]
-        
-#         # Create and train models for this fold
-#         models = create_ensemble(input_shape, num_classes)
-#         fold_predictions = []
-        
-#         for i, model in enumerate(models):
-#             if isinstance(model, keras.Model):
-#                 # Train deep learning model
-#                 model.fit(
-#                     X_train, y_train,
-#                     validation_data=(X_val, y_val),
-#                     epochs=100,
-#                     batch_size=32,
-#                     callbacks=[early_stopping, reduce_lr],
-#                     verbose=1
-#                 )
-#                 pred = model.predict(X_val)
-#                 fold_predictions.append(pred)
-#             else:
-#                 # Train XGBoost model
-#                 model.fit(X_train, y_train)
-#                 pred = model.predict_proba(X_val)
-#                 fold_predictions.append(pred)
-        
-#         # Average predictions for this fold
-#         fold_pred = np.mean(fold_predictions, axis=0)
-#         fold_pred_classes = np.argmax(fold_pred, axis=1)
-#         fold_accuracy = accuracy_score(y_val, fold_pred_classes)
-#         fold_accuracies.append(fold_accuracy)
-#         print(f"Fold {fold + 1} Accuracy: {fold_accuracy:.4f}")
-        
-#         ensemble_predictions.append((val_idx, fold_pred))
-    
-#     return ensemble_predictions, np.mean(fold_accuracies)
-
-# # Train the ensemble
-# input_shape = (X_resampled.shape[1],)
-# num_classes = len(np.unique(y_encoded))
-# ensemble_predictions, mean_accuracy = train_ensemble(X_resampled, y_encoded, input_shape, num_classes)
-
-# print(f"\nMean Cross-Validation Accuracy: {mean_accuracy:.4f}")
-
-# # Save predictions and actual values
-# final_predictions = np.zeros((len(X_resampled), num_classes))
-# for idx, pred in ensemble_predictions:
-#     final_predictions[idx] = pred
-
-# # Final evaluation
-# final_pred_classes = np.argmax(final_predictions, axis=1)
-# final_accuracy = accuracy_score(y_encoded, final_pred_classes)
-# print(f"Final Ensemble Accuracy: {final_accuracy:.4f}")
-
-# # Save the best model from the ensemble
-# best_model = create_deep_model(input_shape, num_classes)
-# best_model.compile(
-#     optimizer=keras.optimizers.Adam(learning_rate=0.001),
-#     loss='sparse_categorical_crossentropy',
-#     metrics=['accuracy']
-# )
-# best_model.fit(
-#     X_resampled, y_encoded,
-#     epochs=100,
-#     batch_size=32,
-#     callbacks=[early_stopping, reduce_lr],
-#     validation_split=0.2,
-#     verbose=1
-# )
-# best_model.save('best_crop_model.keras')
-
-
-
-
-
-
-
-
-# from sklearn.preprocessing import PowerTransformer, RobustScaler
-# import numpy as np
-# import pandas as pd
-# import tensorflow as tf
-# from tensorflow import keras
-# from tensorflow.keras.layers import Dense, Dropout, BatchNormalization, LeakyReLU
-# from tensorflow.keras.callbacks import EarlyStopping
-# from sklearn.model_selection import StratifiedKFold
-# from sklearn.preprocessing import LabelEncoder
-# from sklearn.feature_selection import SelectKBest, f_classif
-# from imblearn.combine import SMOTEENN
-# import xgboost as xgb
-# from sklearn.metrics import accuracy_score
-
-# # Load data
-# data = pd.read_csv('crop_dataset_fixed.csv')
-# target_column = 'Crop'
-
-# # Separate features and labels
-# X = data.drop(columns=[target_column])
-# y = data[target_column]
-
-# # Label encoding
-# label_encoder = LabelEncoder()
-# y_encoded = label_encoder.fit_transform(y)
-
-# # Feature engineering
-# def create_interaction_features(X):
-#     numeric_cols = X.select_dtypes(include=['int64', 'float64']).columns
-#     for i in range(len(numeric_cols)):
-#         for j in range(i+1, len(numeric_cols)):
-#             col1, col2 = numeric_cols[i], numeric_cols[j]
-#             X[f'{col1}_{col2}_ratio'] = X[col1] / (X[col2] + 1e-6)
-#             X[f'{col1}_{col2}_product'] = X[col1] * X[col2]
-#     return X
-
-# X = create_interaction_features(X)
-
-# # Handle categorical data
-# categorical_cols = X.select_dtypes(include=['object']).columns
-# X = pd.get_dummies(X, columns=categorical_cols)
-
-# # Feature selection
-# selector = SelectKBest(score_func=f_classif, k='all')
-# X_selected = selector.fit_transform(X, y_encoded)
-# selected_features_mask = selector.get_support()
-# selected_feature_names = X.columns[selected_features_mask].tolist()
-# X = X[selected_feature_names]
-
-# # Advanced preprocessing
-# def preprocess_features(X):
-#     X = X.replace([np.inf, -np.inf], np.nan).fillna(0)
-    
-#     power_transformer = PowerTransformer(method='yeo-johnson')
-#     robust_scaler = RobustScaler()
-    
-#     X_power = power_transformer.fit_transform(X)
-#     X_robust = robust_scaler.fit_transform(X_power)
-    
-#     return X_robust
-
-# X = preprocess_features(X)
-
-# # Resampling with SMOTEENN
-# smote_enn = SMOTEENN(random_state=42)
-# X_resampled, y_resampled = smote_enn.fit_resample(X, y_encoded)
-
-# # Re-encode labels after resampling
-# label_encoder_resampled = LabelEncoder()
-# y_resampled = label_encoder_resampled.fit_transform(y_resampled)
-# num_classes = len(np.unique(y_resampled))
-
-# # Validate class distribution
-# print("Final class distribution:", {label: count for label, count in zip(*np.unique(y_resampled, return_counts=True))})
-
-# # Define input shape
-# input_shape = (X_resampled.shape[1],)
-
-# # Ensuring a Minimum Number of Samples Per Class
-# def check_min_samples(y, min_samples=5):
-#     counts = np.bincount(y)
-#     return np.all(counts >= min_samples)
-
-# if not check_min_samples(y_resampled, min_samples=5):
-#     print("Warning: Some classes have too few samples. Consider further resampling.")
-
-# # Stratified K-Fold with Class Validation
-# n_splits = 5
-# kf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
-
-# # Deep learning model
-# def create_deep_model(input_shape, num_classes):
-#     inputs = keras.Input(shape=input_shape)
-
-#     x = Dense(512, kernel_regularizer=keras.regularizers.l2(0.01))(inputs)
-#     x = LeakyReLU(0.1)(x)
-#     x = BatchNormalization()(x)
-#     x = Dropout(0.5)(x)
-
-#     skip = x
-
-#     x = Dense(256, kernel_regularizer=keras.regularizers.l2(0.01))(x)
-#     x = LeakyReLU(0.1)(x)
-#     x = BatchNormalization()(x)
-#     x = Dropout(0.4)(x)
-
-#     x = keras.layers.concatenate([x, skip])
-
-#     x = Dense(128, kernel_regularizer=keras.regularizers.l2(0.01))(x)
-#     x = LeakyReLU(0.1)(x)
-#     x = BatchNormalization()(x)
-#     x = Dropout(0.3)(x)
-
-#     outputs = Dense(num_classes, activation='softmax')(x)
-
-#     return keras.Model(inputs, outputs)
-
-# # Training function with Class Handling
-# def train_ensemble(X, y, input_shape, num_classes):
-#     ensemble_predictions = []
-#     fold_accuracies = []
-
-#     for fold, (train_idx, val_idx) in enumerate(kf.split(X, y)):
-#         print(f"\nFold {fold+1}/{n_splits}")
-
-#         X_train, X_val = X[train_idx], X[val_idx]
-#         y_train, y_val = y[train_idx], y[val_idx]
-
-#         # Ensure all classes are present
-#         train_classes = np.unique(y_train)
-#         missing_classes = set(range(num_classes)) - set(train_classes)
-        
-#         if missing_classes:
-#             print(f"⚠️ Warning: Fold {fold+1} is missing classes {missing_classes}. Applying SMOTE.")
-#             smote = SMOTEENN(random_state=42)
-#             X_train, y_train = smote.fit_resample(X_train, y_train)
-
-#         # Create fresh models per fold
-#         models = [
-#             create_deep_model(input_shape, num_classes),
-#             xgb.XGBClassifier(
-#                 learning_rate=0.01,
-#                 n_estimators=200,
-#                 max_depth=7,
-#                 objective='multi:softprob',
-#                 num_class=num_classes,
-#                 random_state=42+fold
-#             )
-#         ]
-
-#         # Train models
-#         fold_preds = []
-#         for model in models:
-#             if isinstance(model, keras.Model):
-#                 model.compile(
-#                     optimizer=keras.optimizers.Adam(0.001),
-#                     loss='sparse_categorical_crossentropy',
-#                     metrics=['accuracy']
-#                 )
-#                 model.fit(
-#                     X_train, y_train,
-#                     validation_data=(X_val, y_val),
-#                     epochs=100,
-#                     batch_size=32,
-#                     callbacks=[EarlyStopping(patience=20, restore_best_weights=True)],
-#                     verbose=0
-#                 )
-#                 pred = model.predict(X_val)
-#             else:
-#                 model.fit(X_train, y_train)
-#                 pred = model.predict_proba(X_val)
-
-#             fold_preds.append(pred)
-
-#         # Ensemble predictions
-#         avg_pred = np.mean(fold_preds, axis=0)
-#         fold_acc = accuracy_score(y_val, np.argmax(avg_pred, axis=1))
-#         print(f"Fold {fold+1} Accuracy: {fold_acc:.4f}")
-#         fold_accuracies.append(fold_acc)
-
-#         ensemble_predictions.append((val_idx, avg_pred))
-
-#     return ensemble_predictions, np.mean(fold_accuracies)
-
-# # Execute training
-# ensemble_preds, mean_acc = train_ensemble(X_resampled, y_resampled, input_shape, num_classes)
-
-# # Save best model
-# best_model = create_deep_model(input_shape, num_classes)
-# best_model.compile(
-#     optimizer=keras.optimizers.Adam(0.001),
-#     loss='sparse_categorical_crossentropy',
-#     metrics=['accuracy']
-# )
-# best_model.fit(X_resampled, y_resampled, epochs=100, batch_size=32, callbacks=[EarlyStopping(patience=20)], validation_split=0.2, verbose=0)
-# best_model.save('crop_model.keras')
-
-
-
-
-
-
-
-# from sklearn.preprocessing import PowerTransformer, RobustScaler
-# import numpy as np
-# import pandas as pd
-# import tensorflow as tf
-# from tensorflow import keras
-# from tensorflow.keras.layers import Dense, Dropout, BatchNormalization, LeakyReLU
-# from tensorflow.keras.callbacks import EarlyStopping
-# from sklearn.model_selection import StratifiedKFold
-# from sklearn.preprocessing import LabelEncoder
-# from sklearn.feature_selection import SelectKBest, f_classif
-# from imblearn.combine import SMOTEENN
-# import xgboost as xgb
-# from sklearn.metrics import accuracy_score
-# import matplotlib.pyplot as plt
-# import os
-
-# # Create directories for saving preprocessing files and graphs
-# os.makedirs('preprocessing', exist_ok=True)
-# os.makedirs('graphs', exist_ok=True)
-
-# # Load data
-# data = pd.read_csv('crop_dataset_fixed.csv')
-# target_column = 'Crop'
-
-# # Separate features and labels
-# X = data.drop(columns=[target_column])
-# y = data[target_column]
-
-# # Label encoding
-# label_encoder = LabelEncoder()
-# y_encoded = label_encoder.fit_transform(y)
-
-# # Feature engineering
-# def create_interaction_features(X):
-#     numeric_cols = X.select_dtypes(include=['int64', 'float64']).columns
-#     for i in range(len(numeric_cols)):
-#         for j in range(i+1, len(numeric_cols)):
-#             col1, col2 = numeric_cols[i], numeric_cols[j]
-#             X[f'{col1}_{col2}_ratio'] = X[col1] / (X[col2] + 1e-6)
-#             X[f'{col1}_{col2}_product'] = X[col1] * X[col2]
-#     return X
-
-# X = create_interaction_features(X)
-
-# # Handle categorical data
-# categorical_cols = X.select_dtypes(include=['object']).columns
-# X = pd.get_dummies(X, columns=categorical_cols)
-
-# # Feature selection
-# selector = SelectKBest(score_func=f_classif, k='all')
-# X_selected = selector.fit_transform(X, y_encoded)
-# selected_features_mask = selector.get_support()
-# selected_feature_names = X.columns[selected_features_mask].tolist()
-# X = X[selected_feature_names]
-
-# # Save feature selection and label encoding
-# np.save('preprocessing/selected_feature_names.npy', selected_feature_names)
-# np.save('preprocessing/selected_features_mask.npy', selected_features_mask)
-# np.save('preprocessing/label_classes.npy', label_encoder.classes_)
-
-# # Advanced preprocessing
-# def preprocess_features(X):
-#     X = X.replace([np.inf, -np.inf], np.nan).fillna(0)
-    
-#     power_transformer = PowerTransformer(method='yeo-johnson')
-#     robust_scaler = RobustScaler()
-    
-#     X_power = power_transformer.fit_transform(X)
-#     X_robust = robust_scaler.fit_transform(X_power)
-    
-#     return X_robust, power_transformer, robust_scaler
-
-# X, power_transformer, robust_scaler = preprocess_features(X)
-
-# # Save transformers
-# np.save('preprocessing/power_transformer.npy', power_transformer)
-# np.save('preprocessing/robust_scaler.npy', robust_scaler)
-
-# # Resampling with SMOTEENN
-# smote_enn = SMOTEENN(random_state=42)
-# X_resampled, y_resampled = smote_enn.fit_resample(X, y_encoded)
-
-# # Re-encode labels after resampling
-# label_encoder_resampled = LabelEncoder()
-# y_resampled = label_encoder_resampled.fit_transform(y_resampled)
-# num_classes = len(np.unique(y_resampled))
-
-# # Define input shape
-# input_shape = (X_resampled.shape[1],)
-
-# # Deep learning model
-# def create_deep_model(input_shape, num_classes):
-#     inputs = keras.Input(shape=input_shape)
-
-#     x = Dense(512, kernel_regularizer=keras.regularizers.l2(0.01))(inputs)
-#     x = LeakyReLU(0.1)(x)
-#     x = BatchNormalization()(x)
-#     x = Dropout(0.5)(x)
-
-#     skip = x
-
-#     x = Dense(256, kernel_regularizer=keras.regularizers.l2(0.01))(x)
-#     x = LeakyReLU(0.1)(x)
-#     x = BatchNormalization()(x)
-#     x = Dropout(0.4)(x)
-
-#     x = keras.layers.concatenate([x, skip])
-
-#     x = Dense(128, kernel_regularizer=keras.regularizers.l2(0.01))(x)
-#     x = LeakyReLU(0.1)(x)
-#     x = BatchNormalization()(x)
-#     x = Dropout(0.3)(x)
-
-#     outputs = Dense(num_classes, activation='softmax')(x)
-
-#     return keras.Model(inputs, outputs)
-
-# # Training function with Class Handling
-# def train_ensemble(X, y, input_shape, num_classes, n_splits=5):
-#     ensemble_predictions = []
-#     fold_accuracies = []
-#     histories = []  # To store the training history for each fold
-
-#     # Stratified K-Fold initialization
-#     kf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
-
-#     for fold, (train_idx, val_idx) in enumerate(kf.split(X, y)):
-#         print(f"\nFold {fold+1}/{n_splits}")
-
-#         X_train, X_val = X[train_idx], X[val_idx]
-#         y_train, y_val = y[train_idx], y[val_idx]
-
-#         # Ensure all classes are present
-#         train_classes = np.unique(y_train)
-#         missing_classes = set(range(num_classes)) - set(train_classes)
-        
-#         if missing_classes:
-#             print(f"⚠️ Warning: Fold {fold+1} is missing classes {missing_classes}. Applying SMOTE.")
-#             smote = SMOTEENN(random_state=42)
-#             X_train, y_train = smote.fit_resample(X_train, y_train)
-
-#         # Create fresh models per fold
-#         models = [
-#             create_deep_model(input_shape, num_classes),
-#             xgb.XGBClassifier(
-#                 learning_rate=0.01,
-#                 n_estimators=200,
-#                 max_depth=7,
-#                 objective='multi:softprob',
-#                 num_class=num_classes,
-#                 random_state=42+fold
-#             )
-#         ]
-
-#         # Train models
-#         fold_preds = []
-#         for model in models:
-#             if isinstance(model, keras.Model):
-#                 model.compile(
-#                     optimizer=keras.optimizers.Adam(0.001),
-#                     loss='sparse_categorical_crossentropy',
-#                     metrics=['accuracy']
-#                 )
-#                 history = model.fit(
-#                     X_train, y_train,
-#                     validation_data=(X_val, y_val),
-#                     epochs=100,
-#                     batch_size=32,
-#                     callbacks=[EarlyStopping(patience=20, restore_best_weights=True)],
-#                     verbose=0
-#                 )
-#                 fold_acc = history.history['val_accuracy'][-1]  # Get the last validation accuracy
-#                 histories.append(history)  # Store the history for later use
-#                 pred = model.predict(X_val)
-#             else:
-#                 model.fit(X_train, y_train)
-#                 pred = model.predict_proba(X_val)
-
-#             fold_preds.append(pred)
-
-#         # Ensemble predictions
-#         avg_pred = np.mean(fold_preds, axis=0)
-#         fold_acc = accuracy_score(y_val, np.argmax(avg_pred, axis=1))
-#         print(f"Fold {fold+1} Accuracy: {fold_acc:.4f}")
-#         fold_accuracies.append(fold_acc)
-
-#         ensemble_predictions.append((val_idx, avg_pred))
-
-#     # Return the predictions, average accuracy, and the list of histories
-#     return ensemble_predictions, np.mean(fold_accuracies), histories
-
-# # Execute training
-# ensemble_preds, mean_acc, histories = train_ensemble(X_resampled, y_resampled, input_shape, num_classes)
-
-# # Save best model
-# best_model = create_deep_model(input_shape, num_classes)
-# best_model.compile(
-#     optimizer=keras.optimizers.Adam(0.001),
-#     loss='sparse_categorical_crossentropy',
-#     metrics=['accuracy']
-# )
-# best_model.fit(X_resampled, y_resampled, epochs=100, batch_size=32, callbacks=[EarlyStopping(patience=20)], validation_split=0.2, verbose=0)
-# best_model.save('crop_model.keras')
-
-# # Save training history plots for each fold
-# for fold_number, history in enumerate(histories, 1):
-#     plt.figure(figsize=(10, 6))
-#     plt.plot(history.history['accuracy'], label='Training Accuracy')
-#     plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
-#     plt.xlabel('Epochs')
-#     plt.ylabel('Accuracy')
-#     plt.title(f'Fold {fold_number} Accuracy')
-#     plt.legend()
-#     plt.savefig(f'graphs/fold_{fold_number}_accuracy.png')
-#     plt.close()
-
-#     # Plot Loss for each fold
-#     plt.figure(figsize=(10, 6))
-#     plt.plot(history.history['loss'], label='Training Loss')
-#     plt.plot(history.history['val_loss'], label='Validation Loss')
-#     plt.xlabel('Epochs')
-#     plt.ylabel('Loss')
-#     plt.title(f'Fold {fold_number} Loss')
-#     plt.legend()
-#     plt.savefig(f'graphs/fold_{fold_number}_loss.png')
-#     plt.close()
-
-
-
-
 import pandas as pd
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Dense, Dropout, BatchNormalization, LeakyReLU
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.preprocessing import LabelEncoder, PowerTransformer, RobustScaler
 from sklearn.feature_selection import SelectKBest, f_classif
-from imblearn.combine import SMOTEENN
-from imblearn.over_sampling import SMOTE, RandomOverSampler
+from imblearn.over_sampling import SMOTE
 import xgboost as xgb
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, balanced_accuracy_score
+from sklearn.utils import class_weight
 import matplotlib.pyplot as plt
 import os
 import joblib
+import io
+import json # Added import
+import seaborn as sns # Added import
+from contextlib import redirect_stdout
+from datetime import datetime
 
-# Create directories
-os.makedirs('preprocessing', exist_ok=True)
-os.makedirs('graphs', exist_ok=True)
+# --- Configuration ---
+DATASET_PATH = 'crop_dataset.csv'
+TARGET_COLUMN = 'Crop'
+MIN_SAMPLES_PER_CLASS = 5
+K_FEATURES_TO_SELECT = 35
+TEST_SPLIT_SIZE = 0.2
+VALIDATION_SPLIT_SIZE = 0.2 # Proportion of the (1 - TEST_SPLIT_SIZE) data
 
-# Load dataset
-data = pd.read_csv('crop_dataset.csv')
-target_column = 'Crop'
+NN_EPOCHS = 250
+NN_BATCH_SIZE = 32
+NN_LEARNING_RATE = 0.0005
+NN_L2_REG = 0.002
+NN_DROPOUT_RATES = [0.4, 0.3, 0.2]
 
-# Print initial class distribution
-print("Initial class distribution:")
-class_dist = data[target_column].value_counts()
-print(class_dist)
-print(f"Total samples: {len(data)}, Total classes: {len(class_dist)}")
+XGB_LEARNING_RATE = 0.02
+XGB_N_ESTIMATORS = 500
+XGB_MAX_DEPTH = 6
+XGB_SUBSAMPLE = 0.8
+XGB_COLSAMPLE_BYTREE = 0.8
+XGB_GAMMA = 0.1
+XGB_EARLY_STOPPING_ROUNDS = 10
 
-# Increase minimum samples required to ensure better stratification
-min_samples_required = 20  # Increased from 10 to 20 to ensure better distribution
-class_counts = data[target_column].value_counts()
-valid_classes = class_counts[class_counts >= min_samples_required].index
-excluded_classes = class_counts[class_counts < min_samples_required]
+RANDOM_STATE = 42
 
-if not excluded_classes.empty:
-    print(f"\n⚠️ Excluding crops with < {min_samples_required} samples:\n{excluded_classes}")
-    print(f"Number of excluded classes: {len(excluded_classes)}")
+PREPROCESSING_DIR = 'preprocessing'
+GRAPHS_DIR = 'graphs'
+MODELS_DIR = 'models'
 
-data = data[data[target_column].isin(valid_classes)].copy()
-print(f"\nRemaining samples: {len(data)}, Remaining classes: {len(valid_classes)}")
+# --- Helper Functions ---
 
-# If we have very few classes left, consider relaxing the criteria
-if len(valid_classes) < 5 and not excluded_classes.empty:
-    print("\n⚠️ Too few classes remain. Relaxing criteria to include more classes.")
-    min_samples_required = 10  # Relaxed criteria
-    valid_classes = class_counts[class_counts >= min_samples_required].index
-    data = pd.read_csv('crop_dataset.csv')  # Reload original data
+def setup_environment():
+    """Creates necessary directories and sets random seeds."""
+    os.makedirs(PREPROCESSING_DIR, exist_ok=True)
+    os.makedirs(GRAPHS_DIR, exist_ok=True)
+    os.makedirs(MODELS_DIR, exist_ok=True)
+    np.random.seed(RANDOM_STATE)
+    tf.random.set_seed(RANDOM_STATE)
+    print(f"🌱 Environment setup complete. Output directories: {PREPROCESSING_DIR}, {GRAPHS_DIR}, {MODELS_DIR}")
+
+def load_and_filter_data(dataset_path, target_column, min_samples_per_class):
+    """Loads the dataset and filters classes with insufficient samples."""
+    data = pd.read_csv(dataset_path)
+    print("Initial class distribution:")
+    class_dist = data[target_column].value_counts()
+    print(class_dist)
+    print(f"Total samples: {len(data)}, Total classes: {len(class_dist)}")
+
+    class_counts = data[target_column].value_counts()
+    valid_classes = class_counts[class_counts >= min_samples_per_class].index
+    excluded_classes_info = class_counts[class_counts < min_samples_per_class]
+
+    if not excluded_classes_info.empty:
+        print(f"\n⚠️ Excluding crops with < {min_samples_per_class} samples:\n{excluded_classes_info}")
+        print(f"Number of excluded classes: {len(excluded_classes_info)}")
+
     data = data[data[target_column].isin(valid_classes)].copy()
-    print(f"After relaxing criteria: {len(data)} samples, {len(valid_classes)} classes")
+    print(f"\nRemaining samples: {len(data)}, Remaining classes: {len(valid_classes)}")
 
-# Encode labels
-label_encoder = LabelEncoder()
-data[target_column] = label_encoder.fit_transform(data[target_column])
-np.save('preprocessing/label_classes.npy', label_encoder.classes_)
+    if len(valid_classes) < 2:
+        print("\n❌ Error: Not enough classes with sufficient samples to perform classification. Exiting.")
+        exit()
+    return data, class_dist
 
-# Split features and encoded labels
-X = data.drop(columns=[target_column])
-y_encoded = data[target_column].values  # Convert to numpy array
+def encode_target(data_df, target_column):
+    """Encodes the target column and saves the encoder classes."""
+    label_encoder = LabelEncoder()
+    data_df[target_column] = label_encoder.fit_transform(data_df[target_column])
+    np.save(os.path.join(PREPROCESSING_DIR, 'label_classes.npy'), label_encoder.classes_)
+    num_classes_original_encoding = len(label_encoder.classes_)
+    print(f"\n🏷️ Target column '{target_column}' encoded. Number of classes: {num_classes_original_encoding}")
+    return data_df, label_encoder, num_classes_original_encoding
 
-# Check encoded class distribution
-print("\nEncoded class distribution:")
-encoded_dist = pd.Series(y_encoded).value_counts().sort_index()
-print(encoded_dist)
-
-# Feature engineering
-def create_interaction_features(X):
-    numeric_cols = X.select_dtypes(include=['int64', 'float64']).columns
-    # Print columns being used for interaction features
-    print(f"\nCreating interaction features from: {numeric_cols.tolist()}")
-    
+def engineer_features(df_X):
+    """Creates interaction features from numerical columns."""
+    numeric_cols = df_X.select_dtypes(include=np.number).columns.tolist()
+    print(f"\n🛠️ Creating interaction features from: {numeric_cols}")
+    X_eng = df_X.copy()
     for i in range(len(numeric_cols)):
         for j in range(i + 1, len(numeric_cols)):
             col1, col2 = numeric_cols[i], numeric_cols[j]
-            X[f'{col1}_{col2}_ratio'] = X[col1] / (X[col2] + 1e-6)
-            X[f'{col1}_{col2}_product'] = X[col1] * X[col2]
-    return X
-
-X = create_interaction_features(X)
-print(f"Features after interaction: {X.shape[1]}")
-
-# Handle any unexpected categorical features
-X = pd.get_dummies(X)
-print(f"Features after one-hot encoding: {X.shape[1]}")
-
-# Feature selection
-selector = SelectKBest(score_func=f_classif, k='all')
-X_selected = selector.fit_transform(X, y_encoded)
-selected_features_mask = selector.get_support()
-selected_feature_names = X.columns[selected_features_mask].tolist()
-
-# Display top features with scores
-feature_scores = selector.scores_
-sorted_idx = np.argsort(feature_scores)[::-1]
-top_features = [(X.columns[i], feature_scores[i]) for i in sorted_idx[:10]]
-print("\nTop 10 features by importance:")
-for feature, score in top_features:
-    print(f"{feature}: {score:.2f}")
-
-# Keep all features or select top k
-k_features = min(30, X.shape[1])  # Limit to top 30 features
-selector = SelectKBest(score_func=f_classif, k=k_features)
-X_selected = selector.fit_transform(X, y_encoded)
-selected_features_mask = selector.get_support()
-selected_feature_names = X.columns[selected_features_mask].tolist()
-
-print(f"\nSelected {len(selected_feature_names)} features for model training")
-X = X[selected_feature_names]
-
-# Save selected feature info
-np.save('preprocessing/selected_feature_names.npy', np.array(selected_feature_names, dtype=object))
-np.save('preprocessing/selected_features_mask.npy', selected_features_mask)
-
-# Preprocessing (transform, scale)
-def preprocess_features(X):
-    # Check for and handle any NaN or inf values
-    X = X.replace([np.inf, -np.inf], np.nan)
+            X_eng[f'{col1}_div_{col2}'] = X_eng[col1] / (X_eng[col2] + 1e-6)
+            X_eng[f'{col1}_x_{col2}'] = X_eng[col1] * X_eng[col2]
+            X_eng[f'{col1}_plus_{col2}'] = X_eng[col1] + X_eng[col2]
+            X_eng[f'{col1}_minus_{col2}'] = X_eng[col1] - X_eng[col2]
     
-    if X.isna().any().any():
-        print(f"Found {X.isna().sum().sum()} NaN values, filling with 0")
-        X = X.fillna(0)
+    print(f"Features after interaction: {X_eng.shape[1]}")
+    X_eng = pd.get_dummies(X_eng, dummy_na=False)
+    print(f"Features after one-hot encoding (if any new categoricals arose): {X_eng.shape[1]}")
+    return X_eng
+
+def select_features_func(X_engineered, y_encoded_values, k_features_count):
+    """Selects top k features using SelectKBest."""
+    k_to_select = min(k_features_count, X_engineered.shape[1])
+    selector = SelectKBest(score_func=f_classif, k=k_to_select)
+    selector.fit_transform(X_engineered, y_encoded_values) # Fit to get mask
+    selected_features_mask = selector.get_support()
+    selected_feature_names_list = X_engineered.columns[selected_features_mask].tolist()
+
+    print(f"\n🎯 Selected {len(selected_feature_names_list)} features for model training.")
+    X_selected_df = X_engineered[selected_feature_names_list]
+    np.save(os.path.join(PREPROCESSING_DIR, 'selected_feature_names.npy'), np.array(selected_feature_names_list, dtype=object))
+    return X_selected_df, selected_feature_names_list
+
+def preprocess_data_func(df_X_selected):
+    """Applies PowerTransform and RobustScaler to features."""
+    print("\n🔄 Preprocessing features (PowerTransform, RobustScale)...")
+    df_X_processed = df_X_selected.copy()
+    df_X_processed = df_X_processed.replace([np.inf, -np.inf], np.nan)
+    if df_X_processed.isna().any().any():
+        print(f"Found {df_X_processed.isna().sum().sum()} NaN values, filling with column median.")
+        for col in df_X_processed.columns[df_X_processed.isna().any()]:
+            df_X_processed[col] = df_X_processed[col].fillna(df_X_processed[col].median())
+    if df_X_processed.isna().any().any():
+        print(f"Found remaining {df_X_processed.isna().sum().sum()} NaN values after median fill, filling with 0.")
+        df_X_processed = df_X_processed.fillna(0)
+
+    pt = PowerTransformer(method='yeo-johnson', standardize=False)
+    rs = RobustScaler()
     
-    power_transformer = PowerTransformer(method='yeo-johnson')
-    robust_scaler = RobustScaler()
+    X_power = pt.fit_transform(df_X_processed)
+    X_robust = rs.fit_transform(X_power)
     
-    # Convert to numpy array if it's a DataFrame
-    if isinstance(X, pd.DataFrame):
-        X_values = X.values
+    joblib.dump(pt, os.path.join(PREPROCESSING_DIR, 'power_transformer.joblib'))
+    joblib.dump(rs, os.path.join(PREPROCESSING_DIR, 'robust_scaler.joblib'))
+    print("✅ Preprocessing complete. Transformers saved.")
+    return X_robust, pt, rs
+
+def handle_imbalance(X_proc, y_enc, random_state_val):
+    """Handles class imbalance using SMOTE or calculates class weights."""
+    print("\n⚖️ Handling class imbalance...")
+    print("Class distribution before resampling:")
+    print(pd.Series(y_enc).value_counts().sort_index())
+
+    min_class_count = pd.Series(y_enc).value_counts().min()
+    num_unique_classes = len(np.unique(y_enc))
+    calculated_class_weights = None
+    X_res, y_res = X_proc, y_enc
+
+    smote_min_samples_for_k5 = 6 # SMOTE's k_neighbors default is 5, needs k+1 samples
+    # Condition for applying SMOTE: significant imbalance (e.g. min class < 50 samples) AND enough samples for SMOTE
+    if min_class_count < 50 and num_unique_classes > 1 and min_class_count >= smote_min_samples_for_k5:
+        print(f"Applying SMOTE. Smallest class has {min_class_count} samples.")
+        smote_k = min(5, min_class_count - 1) # Adjust k_neighbors
+        smote = SMOTE(random_state=random_state_val, k_neighbors=smote_k if smote_k > 0 else 1)
+        X_res, y_res = smote.fit_resample(X_proc, y_enc)
+        print("Class distribution after SMOTE:")
+        print(pd.Series(y_res).value_counts().sort_index())
     else:
-        X_values = X
-    
-    X_power = power_transformer.fit_transform(X_values)
-    X_robust = robust_scaler.fit_transform(X_power)
-    return X_robust, power_transformer, robust_scaler
+        if num_unique_classes > 1:
+            if min_class_count < smote_min_samples_for_k5 :
+                 print(f"Skipping SMOTE: smallest class ({min_class_count} samples) is too small for default k_neighbors.")
+            else:
+                 print("Skipping SMOTE: classes seem relatively balanced or not meeting SMOTE criteria.")
+            weights = class_weight.compute_class_weight('balanced', classes=np.unique(y_res), y=y_res)
+            calculated_class_weights = dict(enumerate(weights))
+            print("Calculated class weights for NN model as SMOTE was not applied.")
+    return X_res, y_res, calculated_class_weights
 
-X_processed, power_transformer, robust_scaler = preprocess_features(X)
+def split_data_func(X_input, y_input, test_size, val_size, random_state_val):
+    """Splits data into training, validation, and test sets."""
+    print("\n📊 Splitting data...")
+    final_counts = pd.Series(y_input).value_counts()
+    stratify_tts = y_input if final_counts.min() >= 2 else None
 
-# Save preprocessing objects
-joblib.dump(power_transformer, 'preprocessing/power_transformer.joblib')
-joblib.dump(robust_scaler, 'preprocessing/robust_scaler.joblib')
+    X_train_val_data, X_test_data, y_train_val_data, y_test_data = train_test_split(
+        X_input, y_input, test_size=test_size, random_state=random_state_val, stratify=stratify_tts
+    )
 
-# Get class distribution after preprocessing to check for any issues
-print("\nClass distribution after preprocessing:")
-print(pd.Series(y_encoded).value_counts().sort_index())
+    train_val_counts = pd.Series(y_train_val_data).value_counts()
+    stratify_tv = y_train_val_data if train_val_counts.min() >= 2 else None
 
-# Determine appropriate resampling strategy based on class distribution
-min_class_count = pd.Series(y_encoded).value_counts().min()
-num_classes = len(np.unique(y_encoded))
+    X_train_data, X_val_data, y_train_data, y_val_data = train_test_split(
+        X_train_val_data, y_train_val_data, test_size=val_size, random_state=random_state_val, stratify=stratify_tv
+    )
+    print(f"Training set: {X_train_data.shape[0]} samples, {X_train_data.shape[1]} features")
+    print(f"Validation set: {X_val_data.shape[0]} samples")
+    print(f"Test set: {X_test_data.shape[0]} samples")
+    return X_train_data, X_val_data, X_test_data, y_train_data, y_val_data, y_test_data
 
-# Check if we can use SMOTEENN or should use a simpler approach
-if min_class_count >= 5 and num_classes < 30:
-    print("\nUsing SMOTEENN for resampling")
-    smote_enn = SMOTEENN(random_state=42)
-    X_resampled, y_resampled = smote_enn.fit_resample(X_processed, y_encoded)
-elif min_class_count >= 2:
-    print("\nUsing SMOTE for resampling (without ENN)")
-    k_neighbors = min(5, min_class_count - 1)
-    smote = SMOTE(k_neighbors=k_neighbors, random_state=42)
-    X_resampled, y_resampled = smote.fit_resample(X_processed, y_encoded)
-else:
-    print("\nUsing RandomOverSampler for resampling")
-    ros = RandomOverSampler(random_state=42)
-    X_resampled, y_resampled = ros.fit_resample(X_processed, y_encoded)
+def build_nn_model(input_shape_val, num_classes_val, l2_reg, dropout_rates_list):
+    """Builds the Keras Neural Network model."""
+    inputs = keras.Input(shape=input_shape_val)
+    x = Dense(256, kernel_regularizer=keras.regularizers.l2(l2_reg))(inputs)
+    x = LeakyReLU(negative_slope=0.01)(x) # Updated parameter
+    x = BatchNormalization()(x) # BatchNormalization helps with higher learning rates and regularization
+    x = Dropout(dropout_rates_list[0])(x)
 
-print(f"Data shape after resampling: {X_resampled.shape}")
-print("Class distribution after resampling:")
-resampled_dist = pd.Series(y_resampled).value_counts().sort_index()
-print(resampled_dist)
-
-num_classes = len(np.unique(y_resampled))
-input_shape = (X_resampled.shape[1],)
-
-# Deep Learning Model - Simplified for small datasets
-def create_deep_model(input_shape, num_classes):
-    inputs = keras.Input(shape=input_shape)
-    x = Dense(128, kernel_regularizer=keras.regularizers.l2(0.01))(inputs)
-    x = LeakyReLU(0.1)(x)
+    x = Dense(128, kernel_regularizer=keras.regularizers.l2(l2_reg))(x)
+    x = LeakyReLU(negative_slope=0.01)(x) # Updated parameter
     x = BatchNormalization()(x)
-    x = Dropout(0.4)(x)
-    
-    x = Dense(64, kernel_regularizer=keras.regularizers.l2(0.01))(x)
-    x = LeakyReLU(0.1)(x)
+    x = Dropout(dropout_rates_list[1])(x)
+
+    x = Dense(64, kernel_regularizer=keras.regularizers.l2(l2_reg))(x)
+    x = LeakyReLU(negative_slope=0.01)(x) # Updated parameter
     x = BatchNormalization()(x)
-    x = Dropout(0.3)(x)
+    x = Dropout(dropout_rates_list[2])(x)
     
-    outputs = Dense(num_classes, activation='softmax')(x)
-    return keras.Model(inputs, outputs)
+    outputs = Dense(num_classes_val, activation='softmax')(x)
+    model = keras.Model(inputs, outputs)
+    return model
 
-# ALTERNATIVE APPROACH: Single train/test split instead of cross-validation
-# This avoids the issues with rare classes in folds
-print("\nUsing single train/test split instead of cross-validation due to imbalanced classes")
+def train_nn_model_func(nn_model_obj, X_train_data, y_train_data, X_val_data, y_val_data, epochs, batch_size, class_weights_map):
+    """Compiles and trains the Neural Network model."""
+    print("\n🧠 Training Neural Network model...")
+    opt = keras.optimizers.Adam(learning_rate=NN_LEARNING_RATE)
+    nn_model_obj.compile(
+        optimizer=opt,
+        loss='sparse_categorical_crossentropy',
+        metrics=['accuracy', tf.keras.metrics.SparseTopKCategoricalAccuracy(k=3, name='top_3_accuracy')]
+    )
 
-# Check for classes that have too few samples for stratification
-class_counts = pd.Series(y_resampled).value_counts()
-min_class_count = class_counts.min()
+    es = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True, verbose=1)
+    rlr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=15, min_lr=0.00001, verbose=1)
 
-# If any class has too few samples, don't use stratification
-if min_class_count < 2:
-    print(f"⚠️ At least one class has only {min_class_count} sample(s), which is too few for stratification.")
-    print("Disabling stratification for train/test split.")
-    stratify_param = None
-else:
-    stratify_param = y_resampled
+    train_params = {
+        'validation_data': (X_val_data, y_val_data),
+        'epochs': epochs,
+        'batch_size': batch_size,
+        'callbacks': [es, rlr],
+        'verbose': 1
+    }
+    if class_weights_map:
+        train_params['class_weight'] = class_weights_map
+        print("Using class weights for NN training.")
 
-# Split into train/test (80/20)
-X_train, X_test, y_train, y_test = train_test_split(
-    X_resampled, y_resampled, 
-    test_size=0.2, 
-    random_state=42,
-    stratify=stratify_param  # Only stratify if we have enough samples per class
-)
+    history = nn_model_obj.fit(X_train_data, y_train_data, **train_params)
+    print("✅ Neural Network training complete.")
+    return history
 
-print(f"Training set: {X_train.shape[0]} samples")
-print(f"Test set: {X_test.shape[0]} samples")
-
-# Check for class representation
-train_classes = np.unique(y_train)
-test_classes = np.unique(y_test)
-missing_classes = set(test_classes) - set(train_classes)
-
-if missing_classes:
-    print(f"⚠️ Classes in test but not in training: {missing_classes}")
-    # Add a few samples to training for these classes
-    for cls in missing_classes:
-        # Find samples in test with this class
-        cls_indices = np.where(y_test == cls)[0]
-        # Move some to training (up to half, at least 1)
-        move_count = max(1, min(len(cls_indices) // 2, 3))
-        move_indices = cls_indices[:move_count]
-        
-        # Add to training
-        X_train = np.vstack([X_train, X_test[move_indices]])
-        y_train = np.append(y_train, y_test[move_indices])
-        
-        # Remove from test (create new arrays excluding the moved indices)
-        keep_indices = np.array([i for i in range(len(y_test)) if i not in move_indices])
-        X_test = X_test[keep_indices]
-        y_test = y_test[keep_indices]
-    
-    print("After adjustment:")
-    print(f"Training classes: {len(np.unique(y_train))}")
-    print(f"Test classes: {len(np.unique(y_test))}")
-
-# Train neural network model
-print("\nTraining neural network model...")
-nn_model = create_deep_model(input_shape, num_classes)
-nn_model.compile(
-    optimizer=keras.optimizers.Adam(0.001),
-    loss='sparse_categorical_crossentropy',
-    metrics=['accuracy']
-)
-
-early_stopping = EarlyStopping(
-    monitor='val_loss',
-    patience=10,
-    restore_best_weights=True,
-    verbose=1
-)
-
-nn_history = nn_model.fit(
-    X_train, y_train,
-    validation_data=(X_test, y_test),
-    epochs=50,
-    batch_size=32,
-    callbacks=[early_stopping],
-    verbose=1
-)
-
-# Train XGBoost model
-print("\nTraining XGBoost model...")
-xgb_model = xgb.XGBClassifier(
-    learning_rate=0.01,
-    n_estimators=100,
-    max_depth=4,
-    objective='multi:softprob',
-    num_class=num_classes,
-    random_state=42
-)
-
-try:
-    xgb_model.fit(X_train, y_train)
-    print("XGBoost model training completed")
-except Exception as e:
-    print(f"XGBoost training failed: {e}")
-    xgb_model = None
-
-# Evaluate neural network
-nn_preds = nn_model.predict(X_test)
-nn_pred_classes = np.argmax(nn_preds, axis=1)
-nn_accuracy = accuracy_score(y_test, nn_pred_classes)
-print(f"\nNeural Network Test Accuracy: {nn_accuracy:.4f}")
-
-# Try to get detailed metrics
-try:
-    nn_report = classification_report(y_test, nn_pred_classes, output_dict=True)
-    print("Neural Network Classification Report:")
-    print(f"Weighted Precision: {nn_report['weighted avg']['precision']:.4f}")
-    print(f"Weighted Recall: {nn_report['weighted avg']['recall']:.4f}")
-    print(f"Weighted F1-score: {nn_report['weighted avg']['f1-score']:.4f}")
-except Exception as e:
-    print(f"Could not generate detailed metrics: {e}")
-
-# Evaluate XGBoost if training succeeded
-if xgb_model is not None:
-    xgb_preds = xgb_model.predict(X_test)
-    xgb_accuracy = accuracy_score(y_test, xgb_preds)
-    print(f"XGBoost Test Accuracy: {xgb_accuracy:.4f}")
-    
-    # Try to get detailed metrics
+def build_and_train_xgb_model_func(X_train_data, y_train_data, X_val_data, y_val_data, num_classes_val, random_state_val):
+    """Builds and trains the XGBoost model."""
+    print("\n🌲 Training XGBoost model...")
+    xgb_model_obj = xgb.XGBClassifier(
+        learning_rate=XGB_LEARNING_RATE,
+        n_estimators=XGB_N_ESTIMATORS,
+        max_depth=XGB_MAX_DEPTH,
+        objective='multi:softprob',
+        num_class=num_classes_val,
+        random_state=random_state_val,
+        use_label_encoder=False,
+        eval_metric='mlogloss',
+        subsample=XGB_SUBSAMPLE,
+        colsample_bytree=XGB_COLSAMPLE_BYTREE,
+        gamma=XGB_GAMMA
+    )
     try:
-        xgb_report = classification_report(y_test, xgb_preds, output_dict=True)
-        print("XGBoost Classification Report:")
-        print(f"Weighted Precision: {xgb_report['weighted avg']['precision']:.4f}")
-        print(f"Weighted Recall: {xgb_report['weighted avg']['recall']:.4f}")
-        print(f"Weighted F1-score: {xgb_report['weighted avg']['f1-score']:.4f}")
+        xgb_model_obj.fit(X_train_data, y_train_data,
+                      eval_set=[(X_val_data, y_val_data)],
+                      early_stopping_rounds=XGB_EARLY_STOPPING_ROUNDS, # Correctly in fit() for scikit-learn wrapper
+                      verbose=False)
+        print("✅ XGBoost model training completed.")
+        return xgb_model_obj
     except Exception as e:
-        print(f"Could not generate detailed metrics: {e}")
+        print(f"❌ XGBoost training failed: {e}")
+        return None
 
-# Create ensemble if both models are available
-if xgb_model is not None:
-    print("\nCreating ensemble model...")
-    # Simple averaging ensemble
-    xgb_proba = xgb_model.predict_proba(X_test)
-    ensemble_proba = (nn_preds + xgb_proba) / 2
-    ensemble_preds = np.argmax(ensemble_proba, axis=1)
-    ensemble_accuracy = accuracy_score(y_test, ensemble_preds)
-    print(f"Ensemble Test Accuracy: {ensemble_accuracy:.4f}")
+def evaluate_model_performance(model, X_test_data, y_test_data, model_name="Model"):
+    """Evaluates the model and prints performance metrics."""
+    if hasattr(model, 'predict_proba'): # XGBoost or similar
+        preds_proba = model.predict_proba(X_test_data)
+        pred_classes = np.argmax(preds_proba, axis=1)
+    else: # Keras model
+        preds_proba = model.predict(X_test_data)
+        pred_classes = np.argmax(preds_proba, axis=1)
     
-    # Determine best model
-    if ensemble_accuracy > max(nn_accuracy, xgb_accuracy):
-        print("Ensemble model is best")
-        best_model_type = "ensemble"
-    elif nn_accuracy > xgb_accuracy:
-        print("Neural Network model is best")
-        best_model_type = "nn"
-    else:
-        print("XGBoost model is best")
-        best_model_type = "xgb"
-else:
-    print("Using Neural Network as the final model (XGBoost failed)")
-    best_model_type = "nn"
+    accuracy = accuracy_score(y_test_data, pred_classes)
+    balanced_accuracy = balanced_accuracy_score(y_test_data, pred_classes)
+    print(f"\n{model_name} Test Accuracy: {accuracy:.4f}")
+    print(f"{model_name} Balanced Test Accuracy: {balanced_accuracy:.4f}")
 
-# Save neural network model
-nn_model.save('crop_nn_model.keras')
-print("✅ Neural Network model saved as 'crop_nn_model.keras'")
-
-# Save XGBoost model if available
-if xgb_model is not None:
-    joblib.dump(xgb_model, 'crop_xgb_model.joblib')
-    print("✅ XGBoost model saved as 'crop_xgb_model.joblib'")
-
-# Also save a "best" model reference
-with open('best_model.txt', 'w') as f:
-    f.write(best_model_type)
-print(f"✅ Best model type ({best_model_type}) saved to 'best_model.txt'")
-
-# Save model architecture as a JSON file for easier inspection
-with open('model_architecture.json', 'w') as f:
-    f.write(nn_model.to_json())
-
-# Save training plots for neural network
-plt.figure(figsize=(12, 5))
-plt.subplot(1, 2, 1)
-plt.plot(nn_history.history['accuracy'], label='Training Accuracy')
-plt.plot(nn_history.history['val_accuracy'], label='Validation Accuracy')
-plt.title('Model Accuracy')
-plt.xlabel('Epochs')
-plt.ylabel('Accuracy')
-plt.legend()
-
-plt.subplot(1, 2, 2)
-plt.plot(nn_history.history['loss'], label='Training Loss')
-plt.plot(nn_history.history['val_loss'], label='Validation Loss')
-plt.title('Model Loss')
-plt.xlabel('Epochs')
-plt.ylabel('Loss')
-plt.legend()
-
-plt.tight_layout()
-plt.savefig('graphs/model_performance.png')
-plt.close()
-
-# Save confusion matrix if possible
-try:
-    from sklearn.metrics import confusion_matrix
-    import seaborn as sns
-    
-    # Create confusion matrix
-    cm = confusion_matrix(y_test, nn_pred_classes)
-    
-    # If there are many classes, limit the visualization
-    if len(np.unique(y_test)) > 20:
-        print("Too many classes for confusion matrix visualization")
-    else:
-        plt.figure(figsize=(10, 8))
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-        plt.title('Confusion Matrix')
-        plt.ylabel('True Label')
-        plt.xlabel('Predicted Label')
-        plt.savefig('graphs/confusion_matrix.png')
-        plt.close()
-        print("✅ Confusion matrix saved to 'graphs/confusion_matrix.png'")
-except Exception as e:
-    print(f"Could not generate confusion matrix: {e}")
-
-# # Create a prediction function
-# def predict_crop(features_dict):
-#     """
-#     Make a prediction for crop recommendation based on soil and weather features.
-    
-#     Args:
-#         features_dict: Dictionary with keys for N, P, K, Temp, Humidity, pH, Soil Moisture
-        
-#     Returns:
-#         Predicted crop name and probability
-#     """
-#     # Convert input to DataFrame
-#     input_df = pd.DataFrame([features_dict])
-    
-#     # Create interaction features
-#     for i, col1 in enumerate(['N (ppm)', 'P (ppm)', 'K (ppm)', 'Temp (°C)', 'Humidity (%)', 'pH', 'Soil Moisture (%)']):
-#         for j, col2 in enumerate(['N (ppm)', 'P (ppm)', 'K (ppm)', 'Temp (°C)', 'Humidity (%)', 'pH', 'Soil Moisture (%)'])[i+1:]:
-#             if col1 in input_df.columns and col2 in input_df.columns:
-#                 input_df[f'{col1}_{col2}_ratio'] = input_df[col1] / (input_df[col2] + 1e-6)
-#                 input_df[f'{col1}_{col2}_product'] = input_df[col1] * input_df[col2]
-    
-#     # One-hot encode any categorical features (if any)
-#     input_df = pd.get_dummies(input_df)
-    
-#     # Ensure all selected features are present
-#     for feature in selected_feature_names:
-#         if feature not in input_df.columns:
-#             input_df[feature] = 0
-    
-#     # Select only the features used in training
-#     input_df = input_df[selected_feature_names]
-    
-#     # Apply transformations
-#     input_transformed = power_transformer.transform(input_df)
-#     input_scaled = robust_scaler.transform(input_transformed)
-    
-#     # Get predictions
-#     if best_model_type == "nn":
-#         probabilities = nn_model.predict(input_scaled)[0]
-#         predicted_class_idx = np.argmax(probabilities)
-#         confidence = probabilities[predicted_class_idx]
-#     elif best_model_type == "xgb":
-#         probabilities = xgb_model.predict_proba(input_scaled)[0]
-#         predicted_class_idx = np.argmax(probabilities)
-#         confidence = probabilities[predicted_class_idx]
-#     else:  # ensemble
-#         nn_probs = nn_model.predict(input_scaled)[0]
-#         xgb_probs = xgb_model.predict_proba(input_scaled)[0]
-#         probabilities = (nn_probs + xgb_probs) / 2
-#         predicted_class_idx = np.argmax(probabilities)
-#         confidence = probabilities[predicted_class_idx]
-    
-#     # Convert back to original crop name
-#     predicted_crop = label_encoder.classes_[predicted_class_idx]
-    
-#     return {
-#         'crop': predicted_crop,
-#         'confidence': float(confidence),
-#         'class_idx': int(predicted_class_idx)
-#     }
-
-# # Save the prediction function
-# with open('prediction_function.py', 'w') as f:
-#     f.write("""
-# import pandas as pd
-# import numpy as np
-# import joblib
-# import os
-# import tensorflow as tf
-# from tensorflow import keras
-
-# # Load preprocessing objects
-# power_transformer = joblib.load('preprocessing/power_transformer.joblib')
-# robust_scaler = joblib.load('preprocessing/robust_scaler.joblib')
-# selected_feature_names = np.load('preprocessing/selected_feature_names.npy', allow_pickle=True)
-# label_classes = np.load('preprocessing/label_classes.npy')
-
-# # Load models
-# nn_model = keras.models.load_model('crop_nn_model.keras')
-# try:
-#     xgb_model = joblib.load('crop_xgb_model.joblib')
-#     have_xgb = True
-# except:
-#     have_xgb = False
-
-# # Read best model type
-# with open('best_model.txt', 'r') as f:
-#     best_model_type = f.read().strip()
-
-# def predict_crop(features_dict):
-#     \"\"\"
-#     Make a prediction for crop recommendation based on soil and weather features.
-    
-#     Args:
-#         features_dict: Dictionary with keys for N, P, K, Temp, Humidity, pH, Soil Moisture
-        
-#     Returns:
-#         Predicted crop name and probability
-#     \"\"\"
-#     # Convert input to DataFrame
-#     input_df = pd.DataFrame([features_dict])
-    
-#     # Create interaction features
-#     for i, col1 in enumerate(['N (ppm)', 'P (ppm)', 'K (ppm)', 'Temp (°C)', 'Humidity (%)', 'pH', 'Soil Moisture (%)']):
-#         for j, col2 in enumerate(['N (ppm)', 'P (ppm)', 'K (ppm)', 'Temp (°C)', 'Humidity (%)', 'pH', 'Soil Moisture (%)'])[i+1:]:
-#             if col1 in input_df.columns and col2 in input_df.columns:
-#                 input_df[f'{col1}_{col2}_ratio'] = input_df[col1] / (input_df[col2] + 1e-6)
-#                 input_df[f'{col1}_{col2}_product'] = input_df[col1] * input_df[col2]
-    
-#     # One-hot encode any categorical features (if any)
-#     input_df = pd.get_dummies(input_df)
-    
-#     # Ensure all selected features are present
-#     for feature in selected_feature_names:
-#         if feature not in input_df.columns:
-#             input_df[feature] = 0
-    
-#     # Select only the features used in training
-#     input_df = input_df[selected_feature_names]
-    
-#     # Apply transformations
-#     input_transformed = power_transformer.transform(input_df)
-#     input_scaled = robust_scaler.transform(input_transformed)
-    
-#     # Get predictions
-#     if best_model_type == "nn" or not have_xgb:
-#         probabilities = nn_model.predict(input_scaled)[0]
-#         predicted_class_idx = np.argmax(probabilities)
-#         confidence = probabilities[predicted_class_idx]
-#     elif best_model_type == "xgb":
-#         probabilities = xgb_model.predict_proba(input_scaled)[0]
-#         predicted_class_idx = np.argmax(probabilities)
-#         confidence = probabilities[predicted_class_idx]
-#     else:  # ensemble
-#         nn_probs = nn_model.predict(input_scaled)[0]
-#         xgb_probs = xgb_model.predict_proba(input_scaled)[0]
-#         probabilities = (nn_probs + xgb_probs) / 2
-#         predicted_class_idx = np.argmax(probabilities)
-#         confidence = probabilities[predicted_class_idx]
-    
-#     # Convert back to original crop name
-#     predicted_crop = label_classes[predicted_class_idx]
-    
-#     return {
-#         'crop': predicted_crop,
-#         'confidence': float(confidence),
-#         'class_idx': int(predicted_class_idx)
-#     }
-# """)
-
-# print("\n✅ Prediction function saved to 'prediction_function.py'")
-
-# Save a summary of the model and training process
-# Save a summary of the model and training process
-with open('training_summary.txt', 'w', encoding='utf-8') as f:
-    f.write(f"Crop Classification Model Training Summary\n")
-    f.write(f"========================================\n\n")
-    f.write(f"Dataset Information:\n")
-    f.write(f"- Total classes: {num_classes}\n")
-    f.write(f"- Total samples after filtering: {len(data)}\n")
-    f.write(f"- Samples after resampling: {len(y_resampled)}\n\n")
-    
-    f.write(f"Model Architecture:\n")
-    # Instead of using summary with print_fn, capture the summary as string
-    # and write it safely
     try:
-        # Using StringIO to capture the summary output
-        import io
-        from contextlib import redirect_stdout
-        
-        summary_str = io.StringIO()
-        with redirect_stdout(summary_str):
-            nn_model.summary()
-        
-        f.write(summary_str.getvalue())
+        report = classification_report(y_test_data, pred_classes, output_dict=True, zero_division=0)
+        print(f"{model_name} Classification Report:")
+        print(f"  Weighted Precision: {report['weighted avg']['precision']:.4f}")
+        print(f"  Weighted Recall: {report['weighted avg']['recall']:.4f}")
+        print(f"  Weighted F1-score: {report['weighted avg']['f1-score']:.4f}")
     except Exception as e:
-        f.write(f"Could not write full model summary: {str(e)}\n")
-        f.write(f"- Input shape: {input_shape}\n")
-        f.write(f"- Output classes: {num_classes}\n")
-        f.write(f"- Model type: Sequential with Dense layers\n")
-    
-    f.write(f"\nTraining Performance:\n")
-    if nn_history:
-        f.write(f"- Neural network test accuracy: {nn_accuracy:.4f}\n")
-        f.write(f"- Best validation accuracy: {max(nn_history.history['val_accuracy']):.4f}\n")
-        f.write(f"- Best validation loss: {min(nn_history.history['val_loss']):.4f}\n")
-    
-    if xgb_model is not None:
-        f.write(f"- XGBoost test accuracy: {xgb_accuracy:.4f}\n")
-    
-    if xgb_model is not None:
-        f.write(f"- Ensemble test accuracy: {ensemble_accuracy:.4f}\n")
-    
-    f.write(f"\nSelected Features ({len(selected_feature_names)}):\n")
-    for i, feature in enumerate(selected_feature_names, 1):
-        f.write(f"{i}. {feature}\n")
+        print(f"Could not generate detailed metrics for {model_name}: {e}")
+    return preds_proba, pred_classes, accuracy, balanced_accuracy
 
-print("\n✅ Training summary saved to 'training_summary.txt'")
-print("\n✅ Training completed successfully!")
+def create_ensemble_predictions(nn_probs, xgb_probs, y_test_data):
+    """Creates ensemble predictions and evaluates them."""
+    print("\n🤝 Creating ensemble model (NN + XGBoost)...")
+    ensemble_proba_val = (0.5 * nn_probs + 0.5 * xgb_probs)
+    ensemble_preds_val = np.argmax(ensemble_proba_val, axis=1)
+    ensemble_accuracy_val = accuracy_score(y_test_data, ensemble_preds_val)
+    balanced_ensemble_accuracy_val = balanced_accuracy_score(y_test_data, ensemble_preds_val)
+    print(f"Ensemble Test Accuracy: {ensemble_accuracy_val:.4f}")
+    print(f"Ensemble Balanced Test Accuracy: {balanced_ensemble_accuracy_val:.4f}")
 
-# Print recommendations for deployment
-print("\n=== RECOMMENDATIONS FOR DEPLOYMENT ===")
-print("1. Use the saved models in 'crop_nn_model.keras' and/or 'crop_xgb_model.joblib'")
-print("2. Use the prediction function in 'prediction_function.py' for making new predictions")
-print("3. Ensure all preprocessing objects in the 'preprocessing' directory are available")
-print("4. Consider collecting more data for classes with few samples")
-print("5. Periodically retrain the model as more data becomes available")
+    try:
+        report = classification_report(y_test_data, ensemble_preds_val, output_dict=True, zero_division=0)
+        print("Ensemble Classification Report:")
+        print(f"  Weighted Precision: {report['weighted avg']['precision']:.4f}")
+        print(f"  Weighted Recall: {report['weighted avg']['recall']:.4f}")
+        print(f"  Weighted F1-score: {report['weighted avg']['f1-score']:.4f}")
+    except Exception as e:
+        print(f"Could not generate detailed metrics for Ensemble: {e}")
+    return ensemble_preds_val, ensemble_accuracy_val, balanced_ensemble_accuracy_val
+
+def determine_best_model_type(nn_bal_acc, xgb_bal_acc, ens_bal_acc, xgb_model_obj):
+    """Determines the best model based on balanced accuracy."""
+    print("\n🏆 Determining best model...")
+    model_scores = {"nn": nn_bal_acc}
+    if xgb_model_obj:
+        model_scores["xgb"] = xgb_bal_acc
+        if ens_bal_acc > 0: # Ens_bal_acc will be 0 if xgb_model is None
+            model_scores["ensemble"] = ens_bal_acc
+
+    if not model_scores:
+        final_best_model_type = "nn" # Should not happen
+    else:
+        final_best_model_type = max(model_scores, key=model_scores.get)
+    
+    print(f"Best performing model type: {final_best_model_type.upper()} with Balanced Accuracy {model_scores.get(final_best_model_type, 0.0):.4f}")
+    return final_best_model_type
+
+def save_training_artifacts(nn_model_obj, xgb_model_obj, best_model_type_val, nn_history_obj, 
+                            y_test_data, nn_pred_classes_val, xgb_pred_classes_val, ensemble_preds_val,
+                            num_classes_for_model_val, label_encoder_obj):
+    """Saves models, plots, and other training artifacts."""
+    print("\n💾 Saving models and artifacts...")
+    nn_model_obj.save(os.path.join(MODELS_DIR, 'crop_nn_model.keras'))
+    print("✅ Neural Network model saved.")
+
+    if xgb_model_obj:
+        joblib.dump(xgb_model_obj, os.path.join(MODELS_DIR, 'crop_xgb_model.joblib'))
+        print("✅ XGBoost model saved.")
+
+    with open(os.path.join(MODELS_DIR, 'best_model.txt'), 'w') as f:
+        f.write(best_model_type_val)
+    print(f"✅ Best model type ({best_model_type_val}) saved.")
+
+    with open(os.path.join(MODELS_DIR, 'model_architecture.json'), 'w') as f:
+        f.write(nn_model_obj.to_json())
+    print("✅ NN model architecture saved.")
+
+    # Save NN training plots
+    plt.figure(figsize=(12, 5))
+    plt.subplot(1, 2, 1)
+    plt.plot(nn_history_obj.history['accuracy'], label='Training Accuracy')
+    plt.plot(nn_history_obj.history['val_accuracy'], label='Validation Accuracy')
+    plt.title('NN Model Accuracy')
+    plt.xlabel('Epochs'); plt.ylabel('Accuracy'); plt.legend()
+    plt.subplot(1, 2, 2)
+    plt.plot(nn_history_obj.history['loss'], label='Training Loss')
+    plt.plot(nn_history_obj.history['val_loss'], label='Validation Loss')
+    plt.title('NN Model Loss')
+    plt.xlabel('Epochs'); plt.ylabel('Loss'); plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(GRAPHS_DIR, 'nn_model_performance.png'))
+    plt.close()
+    print("✅ NN performance plots saved.")
+
+    # Save confusion matrix for the best model
+    cm_preds = nn_pred_classes_val
+    if best_model_type_val == "xgb" and xgb_model_obj:
+        cm_preds = xgb_pred_classes_val
+    elif best_model_type_val == "ensemble" and xgb_model_obj:
+        cm_preds = ensemble_preds_val
+    
+    try:
+        cm = confusion_matrix(y_test_data, cm_preds)
+        if num_classes_for_model_val > 20:
+            np.savetxt(os.path.join(GRAPHS_DIR, 'confusion_matrix.csv'), cm, delimiter=',', fmt='%d')
+        else:
+            plt.figure(figsize=(max(10, num_classes_for_model_val // 2), max(8, num_classes_for_model_val // 2.5)))
+            sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                        xticklabels=label_encoder_obj.classes_, yticklabels=label_encoder_obj.classes_)
+            plt.title(f'Confusion Matrix ({best_model_type_val.upper()})')
+            plt.ylabel('True Label'); plt.xlabel('Predicted Label'); plt.tight_layout()
+            plt.savefig(os.path.join(GRAPHS_DIR, 'confusion_matrix.png'))
+            plt.close()
+        print("✅ Confusion matrix saved.")
+    except Exception as e:
+        print(f"Could not generate confusion matrix: {e}")
+
+# --- Saving Models and Artifacts ---
+# --- Prediction Function Saving ---
+def generate_prediction_script_file(original_features_list_val, target_column_val):
+    """Generates the standalone prediction_function.py script."""
+    print("\n⚙️ Generating prediction_function.py...")
+    # Get original feature names before engineering for the prediction function's docstring/guidance
+    # original_feature_names_list = pd.read_csv(DATASET_PATH).drop(columns=[target_column_val]).columns.tolist()
+
+    prediction_code = f"""
+import pandas as pd
+import numpy as np
+import joblib
+import os
+import tensorflow as tf
+from tensorflow import keras # Required for custom layers like LeakyReLU if used directly
+
+# --- Define Paths ---
+SCRIPT_DIR = os.path.dirname(__file__) # Assumes script is run from its location
+PREPROCESSING_DIR_PRED = os.path.join(SCRIPT_DIR, '{PREPROCESSING_DIR}')
+MODELS_DIR_PRED = os.path.join(SCRIPT_DIR, '{MODELS_DIR}')
+
+power_transformer = joblib.load(os.path.join(PREPROCESSING_DIR_PRED, 'power_transformer.joblib'))
+robust_scaler = joblib.load(os.path.join(PREPROCESSING_DIR_PRED, 'robust_scaler.joblib'))
+selected_feature_names = np.load(os.path.join(PREPROCESSING_DIR_PRED, 'selected_feature_names.npy'), allow_pickle=True).tolist()
+label_encoder_classes = np.load(os.path.join(PREPROCESSING_DIR_PRED, 'label_classes.npy'), allow_pickle=True)
+
+nn_model_path = os.path.join(MODELS_DIR_PRED, 'crop_nn_model.keras')
+xgb_model_path = os.path.join(MODELS_DIR_PRED, 'crop_xgb_model.joblib')
+best_model_type_path = os.path.join(MODELS_DIR_PRED, 'best_model.txt')
+
+nn_model = keras.models.load_model(nn_model_path)
+xgb_model = None
+have_xgb = False
+if os.path.exists(xgb_model_path):
+    try:
+        xgb_model = joblib.load(xgb_model_path)
+        have_xgb = True
+    except Exception as e:
+        print(f"Warning: Could not load XGBoost model: {{e}}")
+
+best_model_type = "nn" # Default
+if os.path.exists(best_model_type_path):
+    with open(best_model_type_path, 'r') as f:
+        best_model_type = f.read().strip()
+else:
+    print(f"Warning: best_model.txt not found. Defaulting to NN model for predictions.")
+
+
+# --- Feature Engineering Function (must match training) ---
+def create_interaction_features(df_X):
+    numeric_cols = df_X.select_dtypes(include=np.number).columns.tolist()
+    X_eng = df_X.copy()
+    for i in range(len(numeric_cols)):
+        for j in range(i + 1, len(numeric_cols)):
+            col1, col2 = numeric_cols[i], numeric_cols[j]
+            X_eng[f'{{col1}}_div_{{col2}}'] = X_eng[col1] / (X_eng[col2] + 1e-6)
+            X_eng[f'{{col1}}_x_{{col2}}'] = X_eng[col1] * X_eng[col2]
+            X_eng[f'{{col1}}_plus_{{col2}}'] = X_eng[col1] + X_eng[col2]
+            X_eng[f'{{col1}}_minus_{{col2}}'] = X_eng[col1] - X_eng[col2]
+    return X_eng
+
+# --- Prediction Function ---
+def predict_crop(features_dict):
+    \"\"\"
+    Make a prediction for crop recommendation.
+    
+    Args:
+        features_dict: Dictionary with keys for {original_features_list_val}
+        
+    Returns:
+        Dictionary with 'crop', 'confidence', and 'all_crop_probabilities'
+    \"\"\"
+    input_df = pd.DataFrame([features_dict])
+    
+    # 1. Feature Engineering (must be identical to training)
+    input_df_eng = create_interaction_features(input_df)
+    
+    # 2. Handle Categoricals (if any new ones were created, though unlikely with numeric inputs)
+    input_df_eng = pd.get_dummies(input_df_eng, dummy_na=False)
+    
+    # 3. Align features with training (add missing, reorder, and select)
+    # Add missing columns with 0 (features model was trained on but not in input)
+    for feature in selected_feature_names:
+        if feature not in input_df_eng.columns:
+            input_df_eng[feature] = 0
+    # Ensure correct order and selection of features
+    input_df_selected = input_df_eng[selected_feature_names]
+            
+    # 4. Preprocessing (transform, scale)
+    input_df_selected = input_df_selected.replace([np.inf, -np.inf], np.nan)
+    # Fill NaNs based on training strategy (e.g., with 0 or median if that was used)
+    # For safety, let's fill with 0 if any NaNs remain after engineering/selection.
+    # A more robust way would be to save medians from training if used for filling.
+    if input_df_selected.isna().any().any():
+        input_df_selected = input_df_selected.fillna(0) 
+
+    input_power = power_transformer.transform(input_df_selected)
+    input_robust = robust_scaler.transform(input_power)
+    
+    # 5. Prediction
+    if best_model_type == "ensemble" and have_xgb:
+        nn_probs_single = nn_model.predict(input_robust)[0]
+        xgb_probs_single = xgb_model.predict_proba(input_robust)[0]
+        # Ensure consistent shape if num_classes differs slightly (should not happen with proper setup)
+        # This is a safeguard; ideally, both models output probs for all original classes.
+        if len(nn_probs_single) != len(xgb_probs_single):
+             # Fallback or error handling needed if class counts are inconsistent - added print warning
+             # For now, let's assume nn_model has the definitive class count
+             if len(nn_probs_single) > len(xgb_probs_single):
+                 padded_xgb_probs = np.zeros(len(nn_probs_single))
+                 padded_xgb_probs[:len(xgb_probs_single)] = xgb_probs_single
+                 xgb_probs_single = padded_xgb_probs
+             else: # xgb_probs_single is longer, truncate or pad nn_probs
+                 padded_nn_probs = np.zeros(len(xgb_probs_single))
+                 padded_nn_probs[:len(nn_probs_single)] = nn_probs_single
+                 nn_probs_single = padded_nn_probs
+             print(f"Warning: NN and XGBoost models have inconsistent output shapes (NN: {{len(nn_probs_single)}}, XGB: {{len(xgb_probs_single)}}). Attempting to align for ensemble.")
+             # A more robust solution might involve re-training one of the models or aligning classes explicitly.
+        probabilities = (0.5 * nn_probs_single + 0.5 * xgb_probs_single) # Consistent 0.5/0.5 weights
+    elif best_model_type == "xgb" and have_xgb:
+        probabilities = xgb_model.predict_proba(input_robust)[0]
+    else: # Default to NN or if XGB failed/not chosen
+        probabilities = nn_model.predict(input_robust)[0]
+        
+    predicted_class_idx = np.argmax(probabilities)
+    confidence = float(probabilities[predicted_class_idx])
+    predicted_crop = label_encoder_classes[predicted_class_idx]
+
+    all_crop_probabilities = {{
+        label_encoder_classes[i]: float(probabilities[i]) 
+        for i in range(len(probabilities))
+    }}
+    
+    return {{
+        'crop': predicted_crop,
+        'confidence': confidence,
+        'class_idx': int(predicted_class_idx),
+        'all_crop_probabilities': all_crop_probabilities
+    }}
+
+if __name__ == '__main__':
+    # Example usage:
+    # Ensure your feature names match exactly those in 'original_feature_names_list'
+    # These are the features BEFORE any engineering.
+    example_features = {{
+        '{original_features_list_val[0] if len(original_features_list_val) > 0 else "feature_1"}': 100, 
+        '{original_features_list_val[1] if len(original_features_list_val) > 1 else "feature_2"}': 50, 
+        '{original_features_list_val[2] if len(original_features_list_val) > 2 else "feature_3"}': 50, 
+        # Add more features as per your original dataset
+        # '{original_features_list_val[3]}': 25, 
+        # '{original_features_list_val[4]}': 70, 
+        # '{original_features_list_val[5]}': 6.5, 
+        # '{original_features_list_val[6]}': 60
+    }}
+    # Fill remaining original features with a default value (e.g., 0 or mean) if not provided in the example
+    all_original_features = {original_features_list_val}
+    for feat_name in all_original_features:
+        if feat_name not in example_features:
+            example_features[feat_name] = 0 # Or a typical/mean value
+
+    prediction = predict_crop(example_features)
+    print(f"\nExample Prediction:")
+    print(f"  Predicted Crop: {{prediction.get('crop', 'N/A')}}")
+    print(f"  Confidence: {{prediction.get('confidence', 0.0):.4f}}")
+    # print(f"  All Probabilities: {{prediction.get('all_crop_probabilities', {{}})}}")
+
+"""
+    with open('prediction_function.py', 'w', encoding='utf-8') as f:
+        f.write(prediction_code)
+    print("✅ Prediction function saved to 'prediction_function.py'")
+
+def generate_summary_file_func(dataset_path_val, target_column_val, initial_class_dist,
+                               min_samples_val, filtered_data_len, num_classes_orig_encoding,
+                               y_resampled_len, X_engineered_shape, selected_features_names_list,
+                               nn_model_obj, nn_history_obj, nn_bal_acc_val, xgb_model_obj, xgb_bal_acc_val,
+                               ensemble_bal_acc_val, best_model_type_val):
+    """Generates a summary text file of the training process."""
+    print("\n📝 Generating training_summary.txt...")
+    with open('training_summary.txt', 'w', encoding='utf-8') as f:
+        f.write(f"Crop Classification Model Training Summary - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write("======================================================================\n\n")
+        f.write(f"Dataset Information:\n")
+        f.write(f"- Dataset Path: {dataset_path_val}\n")
+        f.write(f"- Target Column: {target_column_val}\n")
+        f.write(f"- Initial total samples: {initial_class_dist.sum()}, Initial classes: {len(initial_class_dist)}\n")
+        f.write(f"- Min samples per class filter: {min_samples_val}\n")
+        f.write(f"- Samples after filtering: {filtered_data_len}\n")
+        f.write(f"- Classes after filtering (used for model output): {num_classes_orig_encoding}\n")
+        f.write(f"- Samples after resampling (if any): {y_resampled_len}\n\n")
+        
+        f.write(f"Feature Engineering & Selection:\n")
+        f.write(f"- Number of features after engineering: {X_engineered_shape[1]}\n")
+        f.write(f"- Number of selected features for model: {len(selected_features_names_list)}\n\n")
+
+        f.write(f"Model Architecture (Neural Network):\n")
+        summary_str_io = io.StringIO()
+        with redirect_stdout(summary_str_io):
+            nn_model_obj.summary()
+        f.write(summary_str_io.getvalue())
+        
+        f.write(f"\nTraining Performance (Balanced Accuracy on Test Set):\n")
+        if nn_history_obj:
+            f.write(f"- Neural Network Balanced Accuracy: {nn_bal_acc_val:.4f}\n")
+            f.write(f"- Neural Network Best Validation Accuracy (raw): {max(nn_history_obj.history['val_accuracy']):.4f}\n")
+            f.write(f"- Neural Network Best Validation Loss: {min(nn_history_obj.history['val_loss']):.4f}\n")
+        
+        if xgb_model_obj:
+            f.write(f"- XGBoost Balanced Accuracy: {xgb_bal_acc_val:.4f}\n")
+        
+        if xgb_model_obj and ensemble_bal_acc_val > 0:
+            f.write(f"- Ensemble Balanced Accuracy: {ensemble_bal_acc_val:.4f}\n")
+        
+        f.write(f"\n- Best Model Type (based on Balanced Accuracy): {best_model_type_val.upper()}\n")
+
+        f.write(f"\nSelected Features ({len(selected_features_names_list)}):\n")
+        for i, feature_name in enumerate(selected_features_names_list, 1):
+            f.write(f"{i}. {feature_name}\n")
+    print("✅ Training summary saved to 'training_summary.txt'")
+
+# --- Main Execution ---
+def main():
+    setup_environment()
+
+    # 1. Load and Filter Data
+    data, initial_class_distribution = load_and_filter_data(DATASET_PATH, TARGET_COLUMN, MIN_SAMPLES_PER_CLASS)
+    original_feature_names = data.drop(columns=[TARGET_COLUMN]).columns.tolist() # Get before encoding
+
+    # 2. Encode Target
+    data, label_encoder, num_classes_original_encoding = encode_target(data, TARGET_COLUMN)
+    X = data.drop(columns=[TARGET_COLUMN])
+    y_encoded = data[TARGET_COLUMN].values
+
+    # 3. Feature Engineering
+    X_engineered = engineer_features(X)
+
+    # 4. Feature Selection
+    X_selected, selected_feature_names = select_features_func(X_engineered, y_encoded, K_FEATURES_TO_SELECT)
+
+    # 5. Preprocessing
+    X_processed, power_transformer, robust_scaler = preprocess_data_func(X_selected)
+
+    # 6. Handle Imbalance
+    X_resampled, y_resampled, class_weights_dict = handle_imbalance(X_processed, y_encoded, RANDOM_STATE)
+
+    # 7. Split Data
+    X_train, X_val, X_test, y_train, y_val, y_test = split_data_func(
+        X_resampled, y_resampled, TEST_SPLIT_SIZE, VALIDATION_SPLIT_SIZE, RANDOM_STATE
+    )
+
+    # Determine model input shape and number of classes
+    input_shape = (X_train.shape[1],)
+    num_classes_for_model = num_classes_original_encoding # Crucial: model output must match original encoding
+    print(f"\nModel Configuration: Input Shape={input_shape}, Num Classes={num_classes_for_model}")
+
+    # 8. Neural Network Training
+    nn_model = build_nn_model(input_shape, num_classes_for_model, NN_L2_REG, NN_DROPOUT_RATES)
+    nn_history = train_nn_model_func(nn_model, X_train, y_train, X_val, y_val, NN_EPOCHS, NN_BATCH_SIZE, class_weights_dict)
+
+    # 9. XGBoost Training
+    xgb_model = build_and_train_xgb_model_func(X_train, y_train, X_val, y_val, num_classes_for_model, RANDOM_STATE)
+
+    # 10. Evaluation
+    print("\n📊 Evaluating models on the Test Set...")
+    nn_preds_proba, nn_pred_classes, nn_accuracy, nn_balanced_accuracy = evaluate_model_performance(
+        nn_model, X_test, y_test, "Neural Network"
+    )
+
+    xgb_preds_proba, xgb_pred_classes, xgb_accuracy, xgb_balanced_accuracy = (None, None, 0.0, 0.0)
+    if xgb_model:
+        xgb_preds_proba, xgb_pred_classes, xgb_accuracy, xgb_balanced_accuracy = evaluate_model_performance(
+            xgb_model, X_test, y_test, "XGBoost"
+        )
+
+    # 11. Ensemble
+    ensemble_preds, ensemble_accuracy, ensemble_balanced_accuracy = (None, 0.0, 0.0)
+    if xgb_model and nn_preds_proba is not None and xgb_preds_proba is not None:
+        ensemble_preds, ensemble_accuracy, ensemble_balanced_accuracy = create_ensemble_predictions(
+            nn_preds_proba, xgb_preds_proba, y_test
+        )
+
+    # 12. Determine Best Model
+    best_model_type = determine_best_model_type(
+        nn_balanced_accuracy, xgb_balanced_accuracy, ensemble_balanced_accuracy, xgb_model
+    )
+
+    # 13. Save Artifacts
+    save_training_artifacts(nn_model, xgb_model, best_model_type, nn_history,
+                            y_test, nn_pred_classes, xgb_pred_classes, ensemble_preds,
+                            num_classes_for_model, label_encoder)
+
+    # 14. Generate Prediction Script
+    generate_prediction_script_file(original_feature_names, TARGET_COLUMN)
+
+    # 15. Generate Summary File
+    generate_summary_file_func(DATASET_PATH, TARGET_COLUMN, initial_class_distribution,
+                               MIN_SAMPLES_PER_CLASS, len(data), num_classes_original_encoding,
+                               len(y_resampled), X_engineered.shape, selected_feature_names,
+                               nn_model, nn_history, nn_balanced_accuracy, xgb_model, xgb_balanced_accuracy,
+                               ensemble_balanced_accuracy, best_model_type)
+
+    print("\n🎉 Training pipeline completed successfully!")
+    print_deployment_recommendations()
+
+# --- Training Summary ---
+def print_deployment_recommendations():
+    """Prints recommendations for deploying the trained models."""
+    print("\n=== RECOMMENDATIONS FOR DEPLOYMENT ===")
+    print(f"1. Use the saved models in the '{MODELS_DIR}' directory: 'crop_nn_model.keras' and (if available) 'crop_xgb_model.joblib'.")
+    print(f"2. The '{os.path.join(MODELS_DIR, 'best_model.txt')}' file indicates which model performed best (based on Balanced Accuracy).")
+    print("3. Use 'prediction_function.py' for making new predictions. It's configured to use the best model and necessary preprocessors.")
+    print(f"4. Ensure all preprocessing objects in the '{PREPROCESSING_DIR}' directory are co-located with 'prediction_function.py' and models for it to work.")
+    print("5. For classes with few samples, monitor their prediction performance. If unsatisfactory, consider collecting more data or exploring advanced techniques like few-shot learning.")
+    print("6. Periodically retrain the model with new, representative data to maintain and improve its performance over time.")
+
+if __name__ == "__main__":
+    main()
