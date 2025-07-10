@@ -522,6 +522,7 @@
 
 </template>
 
+
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -2071,6 +2072,7 @@ watch(() => route.path, () => {
   showProfileTooltip.value = false
 })
 </script>
+
 
 <style scoped>
 .router-link-active {

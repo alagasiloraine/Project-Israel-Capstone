@@ -18,6 +18,9 @@ hindiItoApiKey.json
 # Environment variables
 .env
 .env.*
+venv/
+backend/venv/
+*.dll
 
 # Specific files
 get-pip.py
